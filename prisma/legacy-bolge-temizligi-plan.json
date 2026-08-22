@@ -1,0 +1,2452 @@
+{
+ "tarih": "2026-08-22T10:27:00.216Z",
+ "yedek": "nakliyeDB-2026-08-22T10-24-59.sql",
+ "silinecekBolge": [
+  {
+   "id": 296,
+   "slug": "acipayam",
+   "title": "Acıpayam Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 62,
+   "slug": "adana",
+   "title": "Adana Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 120,
+   "slug": "adiyaman",
+   "title": "Adıyaman Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 57,
+   "slug": "afyonkarahisar",
+   "title": "Afyonkarahisar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 103,
+   "slug": "agri",
+   "title": "Ağrı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 284,
+   "slug": "akcaabat",
+   "title": "Akçaabat Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 321,
+   "slug": "akcakale",
+   "title": "Akçakale Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 227,
+   "slug": "akdeniz",
+   "title": "Akdeniz Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 301,
+   "slug": "akhisar",
+   "title": "Akhisar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 74,
+   "slug": "aksaray",
+   "title": "Aksaray Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 241,
+   "slug": "aksehir",
+   "title": "Akşehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 194,
+   "slug": "aksu",
+   "title": "Aksu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 138,
+   "slug": "akyurt",
+   "title": "Akyurt Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 266,
+   "slug": "alacam",
+   "title": "Alaçam Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 191,
+   "slug": "alanya",
+   "title": "Alanya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 303,
+   "slug": "alasehir",
+   "title": "Alaşehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 165,
+   "slug": "aliaga",
+   "title": "Aliağa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 359,
+   "slug": "alpu",
+   "title": "Alpu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 341,
+   "slug": "altieylul",
+   "title": "Altıeylül Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 130,
+   "slug": "altindag",
+   "title": "Altındağ Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 368,
+   "slug": "altinordu",
+   "title": "Altınordu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 93,
+   "slug": "amasya",
+   "title": "Amasya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 234,
+   "slug": "anamur",
+   "title": "Anamur Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 68,
+   "slug": "ankara",
+   "title": "Ankara Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 60,
+   "slug": "antalya",
+   "title": "Antalya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 256,
+   "slug": "araban",
+   "title": "Araban Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 101,
+   "slug": "ardahan",
+   "title": "Ardahan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 287,
+   "slug": "arsin",
+   "title": "Arsin Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 96,
+   "slug": "artvin",
+   "title": "Artvin Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 273,
+   "slug": "askale",
+   "title": "Aşkale Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 258,
+   "slug": "atakum",
+   "title": "Atakum Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 140,
+   "slug": "ayas",
+   "title": "Ayaş Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 54,
+   "slug": "aydin",
+   "title": "Aydın Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 340,
+   "slug": "ayvalik",
+   "title": "Ayvalık Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 269,
+   "slug": "aziziye",
+   "title": "Aziziye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 260,
+   "slug": "bafra",
+   "title": "Bafra Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 331,
+   "slug": "baglar",
+   "title": "Bağlar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 142,
+   "slug": "bala",
+   "title": "Bala Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 157,
+   "slug": "balcova",
+   "title": "Balçova Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 50,
+   "slug": "balikesir",
+   "title": "Balıkesir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 338,
+   "slug": "bandirma",
+   "title": "Bandırma Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 87,
+   "slug": "bartin",
+   "title": "Bartın Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 212,
+   "slug": "basiskele",
+   "title": "Başiskele Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 352,
+   "slug": "baskale",
+   "title": "Başkale Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 377,
+   "slug": "baskil",
+   "title": "Baskil Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 117,
+   "slug": "batman",
+   "title": "Batman Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 98,
+   "slug": "bayburt",
+   "title": "Bayburt Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 174,
+   "slug": "bayindir",
+   "title": "Bayındır Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 154,
+   "slug": "bayrakli",
+   "title": "Bayraklı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 168,
+   "slug": "bergama",
+   "title": "Bergama Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 134,
+   "slug": "beypazari",
+   "title": "Beypazarı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 242,
+   "slug": "beysehir",
+   "title": "Beyşehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 51,
+   "slug": "bilecik",
+   "title": "Bilecik Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 107,
+   "slug": "bingol",
+   "title": "Bingöl Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 319,
+   "slug": "birecik",
+   "title": "Birecik Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 335,
+   "slug": "bismil",
+   "title": "Bismil Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 105,
+   "slug": "bitlis",
+   "title": "Bitlis Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 360,
+   "slug": "bodrum",
+   "title": "Bodrum Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 89,
+   "slug": "bolu",
+   "title": "Bolu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 151,
+   "slug": "bornova",
+   "title": "Bornova Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 236,
+   "slug": "bozyazi",
+   "title": "Bozyazı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 152,
+   "slug": "buca",
+   "title": "Buca Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 294,
+   "slug": "buldan",
+   "title": "Buldan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 281,
+   "slug": "bunyan",
+   "title": "Bünyan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 67,
+   "slug": "burdur",
+   "title": "Burdur Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 343,
+   "slug": "burhaniye",
+   "title": "Burhaniye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 44,
+   "slug": "bursa",
+   "title": "Bursa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 144,
+   "slug": "camlidere",
+   "title": "Çamlıdere Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 49,
+   "slug": "canakkale",
+   "title": "Çanakkale Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 259,
+   "slug": "canik",
+   "title": "Canik Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 124,
+   "slug": "cankaya",
+   "title": "Çankaya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 79,
+   "slug": "cankiri",
+   "title": "Çankırı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 261,
+   "slug": "carsamba",
+   "title": "Çarşamba Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 207,
+   "slug": "cayirova",
+   "title": "Çayırova Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 324,
+   "slug": "cerkezkoy",
+   "title": "Çerkezköy Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 160,
+   "slug": "cesme",
+   "title": "Çeşme Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 220,
+   "slug": "ceyhan",
+   "title": "Ceyhan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 357,
+   "slug": "cifteler",
+   "title": "Çifteler Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 155,
+   "slug": "cigli",
+   "title": "Çiğli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 246,
+   "slug": "cihanbeyli",
+   "title": "Cihanbeyli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 337,
+   "slug": "cinar",
+   "title": "Çınar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 313,
+   "slug": "cine",
+   "title": "Çine Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 295,
+   "slug": "civril",
+   "title": "Çivril Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 322,
+   "slug": "corlu",
+   "title": "Çorlu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 94,
+   "slug": "corum",
+   "title": "Çorum Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 136,
+   "slug": "cubuk",
+   "title": "Çubuk Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 217,
+   "slug": "cukurova",
+   "title": "Çukurova Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 244,
+   "slug": "cumra",
+   "title": "Çumra Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 365,
+   "slug": "dalaman",
+   "title": "Dalaman Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 206,
+   "slug": "darica",
+   "title": "Darıca Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 366,
+   "slug": "datca",
+   "title": "Datça Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 203,
+   "slug": "demre",
+   "title": "Demre Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 56,
+   "slug": "denizli",
+   "title": "Denizli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 210,
+   "slug": "derince",
+   "title": "Derince Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 278,
+   "slug": "develi",
+   "title": "Develi Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 310,
+   "slug": "didim",
+   "title": "Didim Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 173,
+   "slug": "dikili",
+   "title": "Dikili Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 214,
+   "slug": "dilovasi",
+   "title": "Dilovası Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 115,
+   "slug": "diyarbakir",
+   "title": "Diyarbakır Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 195,
+   "slug": "dosemealti",
+   "title": "Döşemealtı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 90,
+   "slug": "duzce",
+   "title": "Düzce Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 47,
+   "slug": "edirne",
+   "title": "Edirne Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 342,
+   "slug": "edremit",
+   "title": "Edremit Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 349,
+   "slug": "edremit-van",
+   "title": "Edremit Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 306,
+   "slug": "efeler",
+   "title": "Efeler Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 109,
+   "slug": "elazig",
+   "title": "Elazığ Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 137,
+   "slug": "elmadag",
+   "title": "Elmadağ Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 202,
+   "slug": "elmali",
+   "title": "Elmalı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 348,
+   "slug": "ercis",
+   "title": "Erciş Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 344,
+   "slug": "erdek",
+   "title": "Erdek Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 232,
+   "slug": "erdemli",
+   "title": "Erdemli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 240,
+   "slug": "eregli",
+   "title": "Ereğli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 332,
+   "slug": "ergani",
+   "title": "Ergani Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 326,
+   "slug": "ergene",
+   "title": "Ergene Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 111,
+   "slug": "erzincan",
+   "title": "Erzincan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 99,
+   "slug": "erzurum",
+   "title": "Erzurum Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 70,
+   "slug": "eskisehir",
+   "title": "Eskişehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 128,
+   "slug": "etimesgut",
+   "title": "Etimesgut Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 148,
+   "slug": "evren",
+   "title": "Evren Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 315,
+   "slug": "eyyubiye",
+   "title": "Eyyübiye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 370,
+   "slug": "fatsa",
+   "title": "Fatsa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 361,
+   "slug": "fethiye",
+   "title": "Fethiye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 199,
+   "slug": "finike",
+   "title": "Finike Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 166,
+   "slug": "foca",
+   "title": "Foça Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 113,
+   "slug": "gaziantep",
+   "title": "Gaziantep Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 156,
+   "slug": "gaziemir",
+   "title": "Gaziemir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 200,
+   "slug": "gazipasa",
+   "title": "Gazipaşa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 205,
+   "slug": "gebze",
+   "title": "Gebze Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 178,
+   "slug": "gemlik",
+   "title": "Gemlik Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 311,
+   "slug": "germencik",
+   "title": "Germencik Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 350,
+   "slug": "gevas",
+   "title": "Gevaş Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 85,
+   "slug": "giresun",
+   "title": "Giresun Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 132,
+   "slug": "golbasi",
+   "title": "Gölbaşı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 208,
+   "slug": "golcuk",
+   "title": "Gölcük Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 372,
+   "slug": "golkoy",
+   "title": "Gölköy Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 345,
+   "slug": "gonen",
+   "title": "Gönen Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 145,
+   "slug": "gudul",
+   "title": "Güdül Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 97,
+   "slug": "gumushane",
+   "title": "Gümüşhane Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 181,
+   "slug": "gursu",
+   "title": "Gürsu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 164,
+   "slug": "guzelbahce",
+   "title": "Güzelbahçe Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 280,
+   "slug": "hacilar",
+   "title": "Hacılar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 112,
+   "slug": "hakkari",
+   "title": "Hakkari Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 314,
+   "slug": "haliliye",
+   "title": "Haliliye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 63,
+   "slug": "hatay",
+   "title": "Hatay Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 265,
+   "slug": "havza",
+   "title": "Havza Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 141,
+   "slug": "haymana",
+   "title": "Haymana Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 274,
+   "slug": "hinis",
+   "title": "Hınıs Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 292,
+   "slug": "honaz",
+   "title": "Honaz Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 272,
+   "slug": "horasan",
+   "title": "Horasan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 102,
+   "slug": "igdir",
+   "title": "Iğdır Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 245,
+   "slug": "ilgin",
+   "title": "Ilgın Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 257,
+   "slug": "ilkadim",
+   "title": "İlkadım Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 223,
+   "slug": "imamoglu",
+   "title": "İmamoğlu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 279,
+   "slug": "incesu",
+   "title": "İncesu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 312,
+   "slug": "incirliova",
+   "title": "İncirliova Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 179,
+   "slug": "inegol",
+   "title": "İnegöl Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 358,
+   "slug": "inonu",
+   "title": "İnönü Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 346,
+   "slug": "ipekyolu",
+   "title": "İpekyolu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 253,
+   "slug": "islahiye",
+   "title": "İslahiye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 66,
+   "slug": "isparta",
+   "title": "Isparta Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 52,
+   "slug": "izmir",
+   "title": "İzmir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 204,
+   "slug": "izmit",
+   "title": "İzmit Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 186,
+   "slug": "iznik",
+   "title": "İznik Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 139,
+   "slug": "kahramankazan",
+   "title": "Kahramankazan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 64,
+   "slug": "kahramanmaras",
+   "title": "Kahramanmaraş Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 143,
+   "slug": "kalecik",
+   "title": "Kalecik Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 215,
+   "slug": "kandira",
+   "title": "Kandıra Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 325,
+   "slug": "kapakli",
+   "title": "Kapaklı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 153,
+   "slug": "karabaglar",
+   "title": "Karabağlar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 88,
+   "slug": "karabuk",
+   "title": "Karabük Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 184,
+   "slug": "karacabey",
+   "title": "Karacabey Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 224,
+   "slug": "karaisali",
+   "title": "Karaisalı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 375,
+   "slug": "karakocan",
+   "title": "Karakoçan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 317,
+   "slug": "karakopru",
+   "title": "Karaköprü Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 76,
+   "slug": "karaman",
+   "title": "Karaman Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 213,
+   "slug": "karamursel",
+   "title": "Karamürsel Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 248,
+   "slug": "karapinar",
+   "title": "Karapınar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 222,
+   "slug": "karatas",
+   "title": "Karataş Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 239,
+   "slug": "karatay",
+   "title": "Karatay Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 339,
+   "slug": "karesi",
+   "title": "Karesi Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 100,
+   "slug": "kars",
+   "title": "Kars Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 150,
+   "slug": "karsiyaka",
+   "title": "Karşıyaka Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 211,
+   "slug": "kartepe",
+   "title": "Kartepe Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 197,
+   "slug": "kas",
+   "title": "Kaş Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 91,
+   "slug": "kastamonu",
+   "title": "Kastamonu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 330,
+   "slug": "kayapinar",
+   "title": "Kayapınar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 71,
+   "slug": "kayseri",
+   "title": "Kayseri Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 378,
+   "slug": "keban",
+   "title": "Keban Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 125,
+   "slug": "kecioren",
+   "title": "Keçiören Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 171,
+   "slug": "kemalpasa",
+   "title": "Kemalpaşa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 196,
+   "slug": "kemer",
+   "title": "Kemer Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 189,
+   "slug": "kepez",
+   "title": "Kepez Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 182,
+   "slug": "kestel",
+   "title": "Kestel Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 121,
+   "slug": "kilis",
+   "title": "Kilis Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 78,
+   "slug": "kirikkale",
+   "title": "Kırıkkale Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 48,
+   "slug": "kirklareli",
+   "title": "Kırklareli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 77,
+   "slug": "kirsehir",
+   "title": "Kırşehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 135,
+   "slug": "kizilcahamam",
+   "title": "Kızılcahamam Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 42,
+   "slug": "kocaeli",
+   "title": "Kocaeli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 276,
+   "slug": "kocasinan",
+   "title": "Kocasinan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 149,
+   "slug": "konak",
+   "title": "Konak Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 69,
+   "slug": "konya",
+   "title": "Konya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 190,
+   "slug": "konyaalti",
+   "title": "Konyaaltı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 209,
+   "slug": "korfez",
+   "title": "Körfez Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 201,
+   "slug": "korkuteli",
+   "title": "Korkuteli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 374,
+   "slug": "kovancilar",
+   "title": "Kovancılar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 221,
+   "slug": "kozan",
+   "title": "Kozan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 305,
+   "slug": "kula",
+   "title": "Kula Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 247,
+   "slug": "kulu",
+   "title": "Kulu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 198,
+   "slug": "kumluca",
+   "title": "Kumluca Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 309,
+   "slug": "kusadasi",
+   "title": "Kuşadası Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 58,
+   "slug": "kutahya",
+   "title": "Kütahya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 289,
+   "slug": "macka",
+   "title": "Maçka Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 110,
+   "slug": "malatya",
+   "title": "Malatya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 328,
+   "slug": "malkara",
+   "title": "Malkara Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 127,
+   "slug": "mamak",
+   "title": "Mamak Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 192,
+   "slug": "manavgat",
+   "title": "Manavgat Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 53,
+   "slug": "manisa",
+   "title": "Manisa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 116,
+   "slug": "mardin",
+   "title": "Mardin Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 363,
+   "slug": "marmaris",
+   "title": "Marmaris Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 275,
+   "slug": "melikgazi",
+   "title": "Melikgazi Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 163,
+   "slug": "menderes",
+   "title": "Menderes Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 161,
+   "slug": "menemen",
+   "title": "Menemen Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 362,
+   "slug": "mentese",
+   "title": "Menteşe Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 238,
+   "slug": "meram",
+   "title": "Meram Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 291,
+   "slug": "merkezefendi",
+   "title": "Merkezefendi Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 61,
+   "slug": "mersin",
+   "title": "Mersin Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 230,
+   "slug": "mezitli",
+   "title": "Mezitli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 364,
+   "slug": "milas",
+   "title": "Milas Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 180,
+   "slug": "mudanya",
+   "title": "Mudanya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 55,
+   "slug": "mugla",
+   "title": "Muğla Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 351,
+   "slug": "muradiye",
+   "title": "Muradiye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 188,
+   "slug": "muratpasa",
+   "title": "Muratpaşa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 106,
+   "slug": "mus",
+   "title": "Muş Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 183,
+   "slug": "mustafakemalpasa",
+   "title": "Mustafakemalpaşa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 235,
+   "slug": "mut",
+   "title": "Mut Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 147,
+   "slug": "nallihan",
+   "title": "Nallıhan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 158,
+   "slug": "narlidere",
+   "title": "Narlıdere Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 307,
+   "slug": "nazilli",
+   "title": "Nazilli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 73,
+   "slug": "nevsehir",
+   "title": "Nevşehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 75,
+   "slug": "nigde",
+   "title": "Niğde Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 176,
+   "slug": "nilufer",
+   "title": "Nilüfer Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 252,
+   "slug": "nizip",
+   "title": "Nizip Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 255,
+   "slug": "nurdagi",
+   "title": "Nurdağı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 169,
+   "slug": "odemis",
+   "title": "Ödemiş Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 354,
+   "slug": "odunpazari",
+   "title": "Odunpazarı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 285,
+   "slug": "of",
+   "title": "Of Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 254,
+   "slug": "oguzeli",
+   "title": "Oğuzeli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 270,
+   "slug": "oltu",
+   "title": "Oltu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 84,
+   "slug": "ordu",
+   "title": "Ordu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 185,
+   "slug": "orhangazi",
+   "title": "Orhangazi Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 367,
+   "slug": "ortaca",
+   "title": "Ortaca Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 283,
+   "slug": "ortahisar",
+   "title": "Ortahisar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 175,
+   "slug": "osmangazi",
+   "title": "Osmangazi Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 65,
+   "slug": "osmaniye",
+   "title": "Osmaniye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 353,
+   "slug": "ozalp",
+   "title": "Özalp Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 268,
+   "slug": "palandoken",
+   "title": "Palandöken Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 376,
+   "slug": "palu",
+   "title": "Palu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 290,
+   "slug": "pamukkale",
+   "title": "Pamukkale Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 271,
+   "slug": "pasinler",
+   "title": "Pasinler Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 371,
+   "slug": "persembe",
+   "title": "Perşembe Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 133,
+   "slug": "polatli",
+   "title": "Polatlı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 225,
+   "slug": "pozanti",
+   "title": "Pozantı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 131,
+   "slug": "pursaklar",
+   "title": "Pursaklar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 83,
+   "slug": "rize",
+   "title": "Rize Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 250,
+   "slug": "sahinbey",
+   "title": "Şahinbey Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 43,
+   "slug": "sakarya",
+   "title": "Sakarya Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 302,
+   "slug": "salihli",
+   "title": "Salihli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 81,
+   "slug": "samsun",
+   "title": "Samsun Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 114,
+   "slug": "sanliurfa",
+   "title": "Şanlıurfa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 327,
+   "slug": "saray",
+   "title": "Saray Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 293,
+   "slug": "saraykoy",
+   "title": "Sarayköy Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 249,
+   "slug": "sarayonu",
+   "title": "Sarayönü Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 219,
+   "slug": "saricam",
+   "title": "Sarıçam Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 329,
+   "slug": "sarkoy",
+   "title": "Şarköy Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 167,
+   "slug": "seferihisar",
+   "title": "Seferihisar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 251,
+   "slug": "sehitkamil",
+   "title": "Şehitkamil Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 299,
+   "slug": "sehzadeler",
+   "title": "Şehzadeler Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 172,
+   "slug": "selcuk",
+   "title": "Selçuk Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 237,
+   "slug": "selcuklu",
+   "title": "Selçuklu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 146,
+   "slug": "sereflikochisar",
+   "title": "Şereflikoçhisar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 193,
+   "slug": "serik",
+   "title": "Serik Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 243,
+   "slug": "seydisehir",
+   "title": "Seydişehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 216,
+   "slug": "seyhan",
+   "title": "Seyhan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 118,
+   "slug": "siirt",
+   "title": "Siirt Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 233,
+   "slug": "silifke",
+   "title": "Silifke Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 336,
+   "slug": "silvan",
+   "title": "Silvan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 129,
+   "slug": "sincan",
+   "title": "Sincan Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 92,
+   "slug": "sinop",
+   "title": "Sinop Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 119,
+   "slug": "sirnak",
+   "title": "Şırnak Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 72,
+   "slug": "sivas",
+   "title": "Sivas Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 316,
+   "slug": "siverek",
+   "title": "Siverek Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 356,
+   "slug": "sivrihisar",
+   "title": "Sivrihisar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 308,
+   "slug": "soke",
+   "title": "Söke Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 304,
+   "slug": "soma",
+   "title": "Soma Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 323,
+   "slug": "suleymanpasa",
+   "title": "Süleymanpaşa Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 334,
+   "slug": "sur",
+   "title": "Sur Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 320,
+   "slug": "suruc",
+   "title": "Suruç Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 277,
+   "slug": "talas",
+   "title": "Talas Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 231,
+   "slug": "tarsus",
+   "title": "Tarsus Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 297,
+   "slug": "tavas",
+   "title": "Tavas Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 46,
+   "slug": "tekirdag",
+   "title": "Tekirdağ Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 262,
+   "slug": "tekkekoy",
+   "title": "Tekkeköy Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 355,
+   "slug": "tepebasi",
+   "title": "Tepebaşı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 264,
+   "slug": "terme",
+   "title": "Terme Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 170,
+   "slug": "tire",
+   "title": "Tire Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 95,
+   "slug": "tokat",
+   "title": "Tokat Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 162,
+   "slug": "torbali",
+   "title": "Torbalı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 228,
+   "slug": "toroslar",
+   "title": "Toroslar Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 82,
+   "slug": "trabzon",
+   "title": "Trabzon Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 108,
+   "slug": "tunceli",
+   "title": "Tunceli Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 300,
+   "slug": "turgutlu",
+   "title": "Turgutlu Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 347,
+   "slug": "tusba",
+   "title": "Tuşba Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 373,
+   "slug": "ulubey",
+   "title": "Ulubey Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 369,
+   "slug": "unye",
+   "title": "Ünye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 159,
+   "slug": "urla",
+   "title": "Urla Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 59,
+   "slug": "usak",
+   "title": "Uşak Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 288,
+   "slug": "vakfikebir",
+   "title": "Vakfıkebir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 104,
+   "slug": "van",
+   "title": "Van Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 263,
+   "slug": "vezirkopru",
+   "title": "Vezirköprü Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 318,
+   "slug": "viransehir",
+   "title": "Viranşehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 282,
+   "slug": "yahyali",
+   "title": "Yahyalı Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 267,
+   "slug": "yakutiye",
+   "title": "Yakutiye Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 45,
+   "slug": "yalova",
+   "title": "Yalova Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 126,
+   "slug": "yenimahalle",
+   "title": "Yenimahalle Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 187,
+   "slug": "yenisehir",
+   "title": "Yenişehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 333,
+   "slug": "yenisehir-diyarbakir",
+   "title": "Yenişehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 229,
+   "slug": "yenisehir-mersin",
+   "title": "Yenişehir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 177,
+   "slug": "yildirim",
+   "title": "Yıldırım Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 286,
+   "slug": "yomra",
+   "title": "Yomra Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 80,
+   "slug": "yozgat",
+   "title": "Yozgat Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 226,
+   "slug": "yumurtalik",
+   "title": "Yumurtalık Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 298,
+   "slug": "yunusemre",
+   "title": "Yunusemre Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 218,
+   "slug": "yuregir",
+   "title": "Yüreğir Evden Eve Nakliyat",
+   "isActive": false
+  },
+  {
+   "id": 86,
+   "slug": "zonguldak",
+   "title": "Zonguldak Evden Eve Nakliyat",
+   "isActive": false
+  }
+ ],
+ "silinecekGorsel": [
+  {
+   "anahtar": "adana-sehirler-arasi-nakliyat-gorseli-b6db7c",
+   "sahipler": [
+    "adana (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "adana-sehirler-arasi-nakliyat-gorseli-b6db7c-1024.webp",
+    "adana-sehirler-arasi-nakliyat-gorseli-b6db7c-320.webp",
+    "adana-sehirler-arasi-nakliyat-gorseli-b6db7c-640.webp"
+   ]
+  },
+  {
+   "anahtar": "agri-parca-esya-nakliyat-gorsel-a85b4f",
+   "sahipler": [
+    "agri (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "agri-parca-esya-nakliyat-gorsel-a85b4f-1024.webp",
+    "agri-parca-esya-nakliyat-gorsel-a85b4f-320.webp",
+    "agri-parca-esya-nakliyat-gorsel-a85b4f-640.webp"
+   ]
+  },
+  {
+   "anahtar": "ankara-ofis-tasima-gorseli-015904",
+   "sahipler": [
+    "ankara (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "ankara-ofis-tasima-gorseli-015904-1024.webp",
+    "ankara-ofis-tasima-gorseli-015904-320.webp",
+    "ankara-ofis-tasima-gorseli-015904-640.webp"
+   ]
+  },
+  {
+   "anahtar": "ankara-nakliyat-gorseli-64d951",
+   "sahipler": [
+    "ankara (fiyat faktörü görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "ankara-nakliyat-gorseli-64d951-1024.webp",
+    "ankara-nakliyat-gorseli-64d951-320.webp",
+    "ankara-nakliyat-gorseli-64d951-640.webp"
+   ]
+  },
+  {
+   "anahtar": "antalya-nakliyat-gorseli-cee0fc",
+   "sahipler": [
+    "antalya (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "antalya-nakliyat-gorseli-cee0fc-1024.webp",
+    "antalya-nakliyat-gorseli-cee0fc-320.webp",
+    "antalya-nakliyat-gorseli-cee0fc-640.webp"
+   ]
+  },
+  {
+   "anahtar": "antalya-sehirler-arasi-nakliyat-gorseli-be3e36",
+   "sahipler": [
+    "antalya (fiyat faktörü görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "antalya-sehirler-arasi-nakliyat-gorseli-be3e36-1024.webp",
+    "antalya-sehirler-arasi-nakliyat-gorseli-be3e36-320.webp",
+    "antalya-sehirler-arasi-nakliyat-gorseli-be3e36-640.webp"
+   ]
+  },
+  {
+   "anahtar": "bodrum-evden-eve-nakliyat-gorseli-349920",
+   "sahipler": [
+    "bodrum (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "bodrum-evden-eve-nakliyat-gorseli-349920-1024.webp",
+    "bodrum-evden-eve-nakliyat-gorseli-349920-320.webp",
+    "bodrum-evden-eve-nakliyat-gorseli-349920-640.webp"
+   ]
+  },
+  {
+   "anahtar": "bornova-sehirler-arasi-nakliyat-gorseli-3cf6d9",
+   "sahipler": [
+    "bornova (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "bornova-sehirler-arasi-nakliyat-gorseli-3cf6d9-1024.webp",
+    "bornova-sehirler-arasi-nakliyat-gorseli-3cf6d9-320.webp",
+    "bornova-sehirler-arasi-nakliyat-gorseli-3cf6d9-640.webp"
+   ]
+  },
+  {
+   "anahtar": "buca-beyaz-esya-nakliyat-gorseli-6a02d2",
+   "sahipler": [
+    "buca (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "buca-beyaz-esya-nakliyat-gorseli-6a02d2-1024.webp",
+    "buca-beyaz-esya-nakliyat-gorseli-6a02d2-320.webp",
+    "buca-beyaz-esya-nakliyat-gorseli-6a02d2-640.webp"
+   ]
+  },
+  {
+   "anahtar": "bursa-esya-tasima-gorseli-3efee9",
+   "sahipler": [
+    "bursa (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "bursa-esya-tasima-gorseli-3efee9-1024.webp",
+    "bursa-esya-tasima-gorseli-3efee9-320.webp",
+    "bursa-esya-tasima-gorseli-3efee9-640.webp"
+   ]
+  },
+  {
+   "anahtar": "bursa-nakliye-araci-gorseli-5f8db7",
+   "sahipler": [
+    "bursa (fiyat faktörü görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "bursa-nakliye-araci-gorseli-5f8db7-1024.webp",
+    "bursa-nakliye-araci-gorseli-5f8db7-320.webp",
+    "bursa-nakliye-araci-gorseli-5f8db7-640.webp"
+   ]
+  },
+  {
+   "anahtar": "canakkale-evden-eve-nakliyat-gorseli-0cec40",
+   "sahipler": [
+    "canakkale (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "canakkale-evden-eve-nakliyat-gorseli-0cec40-1024.webp",
+    "canakkale-evden-eve-nakliyat-gorseli-0cec40-320.webp",
+    "canakkale-evden-eve-nakliyat-gorseli-0cec40-640.webp"
+   ]
+  },
+  {
+   "anahtar": "cankaya-nakliyat-gorseli-3722b2",
+   "sahipler": [
+    "cankaya (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "cankaya-nakliyat-gorseli-3722b2-1024.webp",
+    "cankaya-nakliyat-gorseli-3722b2-320.webp",
+    "cankaya-nakliyat-gorseli-3722b2-640.webp"
+   ]
+  },
+  {
+   "anahtar": "diyarbakir-beyaz-esya-nakliyat-a7c7ca",
+   "sahipler": [
+    "diyarbakir (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "diyarbakir-beyaz-esya-nakliyat-a7c7ca-1024.webp",
+    "diyarbakir-beyaz-esya-nakliyat-a7c7ca-320.webp",
+    "diyarbakir-beyaz-esya-nakliyat-a7c7ca-640.webp"
+   ]
+  },
+  {
+   "anahtar": "erzurum-nakliyat-gorseli-745915",
+   "sahipler": [
+    "erzurum (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "erzurum-nakliyat-gorseli-745915-1024.webp",
+    "erzurum-nakliyat-gorseli-745915-320.webp",
+    "erzurum-nakliyat-gorseli-745915-640.webp"
+   ]
+  },
+  {
+   "anahtar": "eskisehir-evden-eve-tasima-gorseli-9097b7",
+   "sahipler": [
+    "eskisehir (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "eskisehir-evden-eve-tasima-gorseli-9097b7-1024.webp",
+    "eskisehir-evden-eve-tasima-gorseli-9097b7-320.webp",
+    "eskisehir-evden-eve-tasima-gorseli-9097b7-640.webp"
+   ]
+  },
+  {
+   "anahtar": "gaziantep-esya-tasima-gorseli-0b5cd4",
+   "sahipler": [
+    "gaziantep (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "gaziantep-esya-tasima-gorseli-0b5cd4-1024.webp",
+    "gaziantep-esya-tasima-gorseli-0b5cd4-320.webp",
+    "gaziantep-esya-tasima-gorseli-0b5cd4-640.webp"
+   ]
+  },
+  {
+   "anahtar": "gebze-esya-tasima-gorseli-53349b",
+   "sahipler": [
+    "gebze (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "gebze-esya-tasima-gorseli-53349b-1024.webp",
+    "gebze-esya-tasima-gorseli-53349b-320.webp",
+    "gebze-esya-tasima-gorseli-53349b-640.webp"
+   ]
+  },
+  {
+   "anahtar": "izmir-esya-tasima-gorseli-168732",
+   "sahipler": [
+    "izmir (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "izmir-esya-tasima-gorseli-168732-1024.webp",
+    "izmir-esya-tasima-gorseli-168732-320.webp",
+    "izmir-esya-tasima-gorseli-168732-640.webp"
+   ]
+  },
+  {
+   "anahtar": "izmir-nakliyat-gorseli-59427b",
+   "sahipler": [
+    "izmir (fiyat faktörü görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "izmir-nakliyat-gorseli-59427b-1024.webp",
+    "izmir-nakliyat-gorseli-59427b-320.webp",
+    "izmir-nakliyat-gorseli-59427b-640.webp"
+   ]
+  },
+  {
+   "anahtar": "izmit-sehir-ici-tasima-gorseli-764eca",
+   "sahipler": [
+    "izmit (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "izmit-sehir-ici-tasima-gorseli-764eca-1024.webp",
+    "izmit-sehir-ici-tasima-gorseli-764eca-320.webp",
+    "izmit-sehir-ici-tasima-gorseli-764eca-640.webp"
+   ]
+  },
+  {
+   "anahtar": "karsiyaka-mobilya-nakliyat-gorseli-c09adb",
+   "sahipler": [
+    "karsiyaka (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "karsiyaka-mobilya-nakliyat-gorseli-c09adb-1024.webp",
+    "karsiyaka-mobilya-nakliyat-gorseli-c09adb-320.webp",
+    "karsiyaka-mobilya-nakliyat-gorseli-c09adb-640.webp"
+   ]
+  },
+  {
+   "anahtar": "kayseri-sehirler-arasi-nakliyat-gorseli-6b4857",
+   "sahipler": [
+    "kayseri (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "kayseri-sehirler-arasi-nakliyat-gorseli-6b4857-1024.webp",
+    "kayseri-sehirler-arasi-nakliyat-gorseli-6b4857-320.webp",
+    "kayseri-sehirler-arasi-nakliyat-gorseli-6b4857-640.webp"
+   ]
+  },
+  {
+   "anahtar": "kecioren-nakliyat-gorseli-0d6bfd",
+   "sahipler": [
+    "kecioren (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "kecioren-nakliyat-gorseli-0d6bfd-1024.webp",
+    "kecioren-nakliyat-gorseli-0d6bfd-320.webp",
+    "kecioren-nakliyat-gorseli-0d6bfd-640.webp"
+   ]
+  },
+  {
+   "anahtar": "kepez-evden-eve-nakliyat-gorseli-6f0d8f",
+   "sahipler": [
+    "kepez (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "kepez-evden-eve-nakliyat-gorseli-6f0d8f-1024.webp",
+    "kepez-evden-eve-nakliyat-gorseli-6f0d8f-320.webp",
+    "kepez-evden-eve-nakliyat-gorseli-6f0d8f-640.webp"
+   ]
+  },
+  {
+   "anahtar": "kocaeli-evden-eve-nakliyat-gorseli-37042e",
+   "sahipler": [
+    "kocaeli (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "kocaeli-evden-eve-nakliyat-gorseli-37042e-1024.webp",
+    "kocaeli-evden-eve-nakliyat-gorseli-37042e-320.webp",
+    "kocaeli-evden-eve-nakliyat-gorseli-37042e-640.webp"
+   ]
+  },
+  {
+   "anahtar": "konya-sehirler-arasi-nakliyat-gorseli-08df54",
+   "sahipler": [
+    "konya (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "konya-sehirler-arasi-nakliyat-gorseli-08df54-1024.webp",
+    "konya-sehirler-arasi-nakliyat-gorseli-08df54-320.webp",
+    "konya-sehirler-arasi-nakliyat-gorseli-08df54-640.webp"
+   ]
+  },
+  {
+   "anahtar": "marmaris-nakliyat-gorseli-a53eef",
+   "sahipler": [
+    "marmaris (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "marmaris-nakliyat-gorseli-a53eef-1024.webp",
+    "marmaris-nakliyat-gorseli-a53eef-320.webp",
+    "marmaris-nakliyat-gorseli-a53eef-640.webp"
+   ]
+  },
+  {
+   "anahtar": "mersin-sehirler-arasi-nakliyat-gorseli-923f91",
+   "sahipler": [
+    "mersin (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "mersin-sehirler-arasi-nakliyat-gorseli-923f91-1024.webp",
+    "mersin-sehirler-arasi-nakliyat-gorseli-923f91-320.webp",
+    "mersin-sehirler-arasi-nakliyat-gorseli-923f91-640.webp"
+   ]
+  },
+  {
+   "anahtar": "mugla-nakliyat-gorseli-cf5c5f",
+   "sahipler": [
+    "mugla (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "mugla-nakliyat-gorseli-cf5c5f-1024.webp",
+    "mugla-nakliyat-gorseli-cf5c5f-320.webp",
+    "mugla-nakliyat-gorseli-cf5c5f-640.webp"
+   ]
+  },
+  {
+   "anahtar": "nilufer-parca-esya-tasima-gorseli-8e2c9f",
+   "sahipler": [
+    "nilufer (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "nilufer-parca-esya-tasima-gorseli-8e2c9f-1024.webp",
+    "nilufer-parca-esya-tasima-gorseli-8e2c9f-320.webp",
+    "nilufer-parca-esya-tasima-gorseli-8e2c9f-640.webp"
+   ]
+  },
+  {
+   "anahtar": "osmangazi-parca-esya-nakliyat-gorseli-e13df2",
+   "sahipler": [
+    "osmangazi (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "osmangazi-parca-esya-nakliyat-gorseli-e13df2-1024.webp",
+    "osmangazi-parca-esya-nakliyat-gorseli-e13df2-320.webp",
+    "osmangazi-parca-esya-nakliyat-gorseli-e13df2-640.webp"
+   ]
+  },
+  {
+   "anahtar": "samsun-montajli-nakliyat-gorseli-d8b508",
+   "sahipler": [
+    "samsun (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "samsun-montajli-nakliyat-gorseli-d8b508-1024.webp",
+    "samsun-montajli-nakliyat-gorseli-d8b508-320.webp",
+    "samsun-montajli-nakliyat-gorseli-d8b508-640.webp"
+   ]
+  },
+  {
+   "anahtar": "seyhan-esya-tasima-gorseli-cc5b38",
+   "sahipler": [
+    "seyhan (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "seyhan-esya-tasima-gorseli-cc5b38-1024.webp",
+    "seyhan-esya-tasima-gorseli-cc5b38-320.webp",
+    "seyhan-esya-tasima-gorseli-cc5b38-640.webp"
+   ]
+  },
+  {
+   "anahtar": "trabzon-beyaz-esya-nakliyat-gorseli-828435",
+   "sahipler": [
+    "trabzon (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "trabzon-beyaz-esya-nakliyat-gorseli-828435-1024.webp",
+    "trabzon-beyaz-esya-nakliyat-gorseli-828435-320.webp",
+    "trabzon-beyaz-esya-nakliyat-gorseli-828435-640.webp"
+   ]
+  },
+  {
+   "anahtar": "yenimahalle-parca-esya-nakliyat-gorseli-176f9f",
+   "sahipler": [
+    "yenimahalle (bölge görseli)"
+   ],
+   "toplam": 1,
+   "varyantlar": [
+    "yenimahalle-parca-esya-nakliyat-gorseli-176f9f-1024.webp",
+    "yenimahalle-parca-esya-nakliyat-gorseli-176f9f-320.webp",
+    "yenimahalle-parca-esya-nakliyat-gorseli-176f9f-640.webp"
+   ]
+  }
+ ],
+ "korunanGorsel": [],
+ "bagliMahalle": 0
+}

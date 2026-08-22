@@ -1925,7 +1925,7 @@ const updatePriceFactorsImageUrl = (url) => {
               class="w-full p-2 border rounded"
               rows="3"
               maxlength="165"
-              placeholder="İstanbul'dan Tokat'a evden eve nakliyat. Sigortalı taşıma, marangozlu montaj, yazılı sabit fiyat. Ücretsiz keşif."
+              placeholder="İstanbul'dan Tokat'a evden eve nakliyat. Güzergâh planı, marangozlu söküm ve kurulum, adres keşfi."
             ></textarea>
             <p class="text-xs mt-1" :class="(region.metaDescription || '').length > 155 ? 'text-amber-700' : 'text-gray-500'">
               {{ (region.metaDescription || '').length }} / 155 karakter —

@@ -70,7 +70,27 @@ export async function useSiteSettings() {
     () => data.value?.brandName || data.value?.siteName || configuredSiteName
   )
   const siteUrl = computed(() => configuredSiteUrl)
-  const ogImage = computed(() => data.value?.ogImage || `${siteUrl.value}${DEFAULT_OG_IMAGE}`)
+
+  /**
+   * Göreli bir görsel yolunu paylaşım için mutlak adrese çevirir.
+   *
+   * Buradan veriliyor çünkü site kökünün tek sahibi bu composable; her
+   * çağıran `siteUrl`i kendi eline alıp birleştirseydi biçim farkı
+   * (çift eğik çizgi, eksik protokol) sessizce farklı sayfalarda farklı
+   * sonuç üretirdi. Saf işlem `utils/mutlak-url.ts` içinde ve ayrı
+   * test ediliyor.
+   */
+  const mutlakGorsel = (yol: unknown) => mutlakUrl(yol, siteUrl.value)
+
+  /**
+   * Site geneli paylaşım görseli — HER ZAMAN MUTLAK.
+   *
+   * Önceden yalnız YEDEK dal mutlaktı (`${siteUrl}${DEFAULT_OG_IMAGE}`);
+   * panelden bir görsel yüklendiğinde değer `/yuklemeler/…` olarak, yani
+   * göreli, dışarı çıkıyordu. Yani alan doldurulduğu anda paylaşım
+   * önizlemesi bozuluyordu — boş bırakıldığında çalışıyordu.
+   */
+  const ogImage = computed(() => mutlakGorsel(data.value?.ogImage) || mutlakGorsel(DEFAULT_OG_IMAGE))
   const metaDescriptionDefault = computed(() => data.value?.metaDescription || data.value?.siteDescription || '')
 
   const socialLinks = computed(() =>
@@ -83,5 +103,5 @@ export async function useSiteSettings() {
     ].filter((url): url is string => !!url && url.trim() !== '')
   )
 
-  return { settings: data, brandName, siteUrl, ogImage, metaDescriptionDefault, socialLinks }
+  return { settings: data, brandName, siteUrl, ogImage, mutlakGorsel, metaDescriptionDefault, socialLinks }
 }

@@ -58,11 +58,17 @@ describe('yeni sahip Site Ayarları', () => {
     expect(kodu(finalCta)).toContain('settings.value?.ctaLink')
   })
 
-  it('yedek değerler DEĞİŞMEDİ — ayar boşsa eski metin basılıyor', () => {
-    // Devir sırasında yedeğin de değişmesi, boş bir ayarda sayfanın
-    // sessizce başka bir şey göstermesi olurdu.
-    expect(finalCta).toContain("'Ücretsiz Keşif Talep Et'")
-    expect(finalCta).toContain("'/iletisim'")
+  it('yedek metin İDDİA TAŞIMIYOR', () => {
+    // M6'da yedek bilerek değiştirilmemişti ("ayar boşsa sayfa sessizce
+    // başka bir şey göstermesin"). P1-3'te değişti: yedek 'Ücretsiz Keşif
+    // Talep Et' idi ve ayar satırı silindiğinde ekrana çıkan metin oydu.
+    // Yeni yedek, veri tabanındaki değerle aynı — yani ayar boşalsa bile
+    // ekranda bir değişiklik olmuyor, gerekçe korunuyor.
+    // `kodu()` yorumları ayıklıyor: kaldırılan metin bilerek yorumda
+    // anlatılıyor ve o tarih kaydı silinmemeli.
+    expect(kodu(finalCta)).toContain("'Keşif Talebi'")
+    expect(kodu(finalCta)).not.toMatch(/ücretsiz/i)
+    expect(kodu(finalCta)).toContain("'/iletisim'")
   })
 
   it('yazma sözleşmesi yeni alanları tanıyor', () => {

@@ -58,10 +58,15 @@ const teshisDurumu = computed(() => {
 })
 
 // Gerçek içerikten alınan giriş cümleleri (prototipte kısaltılmış hâl).
+//
+// İLK ADIMIN BAŞLIĞI DEĞİŞTİ. Eskiden "Ücretsiz Keşif ve Planlama"
+// diyordu. Bu sayfa `noindex` ve sitemap dışında ama adresi bilen herkese
+// açık; doğrulanmamış bir ücret taahhüdünün burada durmasının bir sebebi
+// yok. Sayfa bir HAREKET referansı, metin onun konusu değil.
 const adimlar = [
   {
     no: '01',
-    baslik: 'Ücretsiz Keşif ve Planlama',
+    baslik: 'Keşif ve Planlama',
     metin:
       'Süreç, telefonda veya WhatsApp üzerinden bize ulaşmanızla başlar. Kısa bir görüşmenin ardından taşınacağınız eve bir uzmanımız gelir; hacmi, kat durumunu ve özel taşıma gerektiren eşyaları yerinde inceler.',
   },

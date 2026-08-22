@@ -89,7 +89,7 @@ const [seo, anasayfaYanit] = await Promise.all([
   useFetch("/api/anasayfa", { key: "anasayfa" }),
 ]);
 
-const { settings, brandName, siteUrl, socialLinks, description } = seo;
+const { settings, brandName, siteUrl, socialLinks, description, image: paylasimGorseli } = seo;
 
 const icerik = computed(() => anasayfaYanit.data.value?.data ?? null);
 
@@ -155,8 +155,19 @@ useHead({
           "@type": "MovingCompany",
           name: brandName.value,
           url: siteUrl.value,
-          logo: settings.value?.logo || undefined,
-          image: settings.value?.ogImage || undefined,
+          // GÖRSEL ALANLARI MUTLAK.
+          //
+          // `image` önceden `settings.ogImage` ham hâliyle basılıyordu —
+          // yani `/yuklemeler/…` gibi göreli bir yol. Google yapısal
+          // veride mutlak adres bekliyor; göreli değer görselin hiç
+          // eşleşmemesine yol açıyor.
+          //
+          // Değer `usePageSeo`nun ürettiği `image` ile AYNI: sayfanın
+          // `og:image` etiketiyle şemadaki görsel tek bir yerden geliyor,
+          // ikisi ayrışamıyor. `logo` da aynı çözümleyiciden geçiyor;
+          // bugün boş, doldurulduğunda aynı hataya düşmesin diye.
+          logo: mutlakUrl(settings.value?.logo, siteUrl.value) || undefined,
+          image: paylasimGorseli.value || undefined,
           telephone: settings.value?.phone || undefined,
           email: settings.value?.email || undefined,
           address: settings.value?.address

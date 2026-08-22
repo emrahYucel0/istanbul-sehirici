@@ -39,7 +39,10 @@
     "sir-tara": "node scripts/sir-taramasi.mjs",
     "fiyat-notu": "node --env-file=.env prisma/fiyat-notu-tohum.mjs",
     "anasayfa-icerik": "node --env-file=.env prisma/anasayfa-icerik-tohum.mjs",
-    "ic-sayfa-icerik": "node --env-file=.env prisma/ic-sayfa-tohum.mjs"
+    "ic-sayfa-icerik": "node --env-file=.env prisma/ic-sayfa-tohum.mjs",
+    "legacy-emeklilik": "node --env-file=.env prisma/legacy-bolge-emeklilik.mjs",
+    "iddia-temizligi": "node --env-file=.env prisma/iddia-temizligi.mjs",
+    "legacy-temizlik": "node --env-file=.env prisma/legacy-bolge-temizligi.mjs"
   },
   "dependencies": {
     "@nuxt/image": "^2.1.0",

@@ -43,7 +43,7 @@ const markayiYerlestir = (metin: string, marka: string) =>
   metin.replace(MARKA_YER_TUTUCU, marka)
 
 export async function usePageSeo(pageKey: string, fallback: PageSeoFallback, options: PageSeoOptions = {}) {
-  const { settings, brandName, siteUrl, ogImage: siteOgImage, metaDescriptionDefault, socialLinks } =
+  const { settings, brandName, siteUrl, ogImage: siteOgImage, mutlakGorsel, metaDescriptionDefault, socialLinks } =
     await useSiteSettings()
 
   const { data: metaResponse } = await useAsyncData(`meta-${pageKey}`, async () => {
@@ -62,7 +62,14 @@ export async function usePageSeo(pageKey: string, fallback: PageSeoFallback, opt
       brandName.value
     )
   )
-  const image = computed(() => fallback.image || siteOgImage.value)
+  /**
+   * PAYLAŞIM GÖRSELİ — MUTLAK.
+   *
+   * `fallback.image` sayfa kütüğünden göreli gelebiliyor; `siteOgImage`
+   * zaten mutlak. İkisi de aynı çözümleyiciden geçiyor ki iki dal aynı
+   * biçimi üretsin. Öncelik sırası değişmedi.
+   */
+  const image = computed(() => mutlakGorsel(fallback.image) || siteOgImage.value)
 
   const route = useRoute()
   const canonicalUrl = computed(() => `${siteUrl.value}${route.path}`)

@@ -319,8 +319,25 @@ const imageAlt = computed(() => {
           </table>
         </div>
 
+        <!--
+          "ÜCRETSİZ" KALDIRILDI — DOĞRULANMAMIŞ TİCARİ İDDİA.
+
+          Cümle "Kesin fiyat, ücretsiz keşif sonrasında yazılı olarak
+          verilir" idi. Keşfin ücretsiz olduğunu gösteren bir iş kaydı
+          depoda yok; aynı gerekçeyle Site Ayarları'ndaki eylem düğmesi de
+          "Ücretsiz Keşif"ten "Keşif Talebi"ne çekildi.
+
+          Bu şablon bugün yalnız İstanbul DIŞI bölge kayıtlarını basıyor ve
+          onların hepsi yayından çekildi (yayında kalan tek kayıt
+          `/istanbul` ve o da `/`'a yönlendiriliyor). Yani cümle şu an
+          hiçbir ziyaretçiye görünmüyor. Yine de bırakılmadı: burası yeniden
+          kullanılabilir bir şablon ve bir kayıt yarın yayına dönerse iddia
+          onunla birlikte geri gelirdi.
+
+          Anlam korundu — çıkarılan tek şey ücret iddiası.
+        -->
         <p class="mt-4 text-sm text-ink-muted">
-          Tablodaki değerler tahminidir. Kesin fiyat, ücretsiz keşif sonrasında yazılı olarak verilir.
+          Tablodaki değerler tahminidir. Kesin fiyat, adres keşfinden sonra yazılı olarak verilir.
         </p>
 
       </section>

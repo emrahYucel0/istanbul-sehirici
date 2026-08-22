@@ -40,7 +40,7 @@ import { MAHALLE_EKI, mahalleBasligi } from '#shared/utils/mahalle'
 const route = useRoute()
 const slug = computed(() => route.params.slug)
 
-const { brandName, siteUrl, ogImage: siteOgImage, settings } = await useSiteSettings()
+const { brandName, siteUrl, ogImage: siteOgImage, mutlakGorsel, settings } = await useSiteSettings()
 
 /**
  * Hizmet/bölge şemalarındaki `provider` düğümü.
@@ -322,9 +322,30 @@ const content = computed(() => post.value || region.value || service.value)
 const canonical = computed(
   () => `${siteUrl.value}/${mahalle.value?.yol || content.value?.slug || ''}`
 )
-// Hizmet kaydında görsel alanı `image` değil `imagePath`.
+/**
+ * PAYLAŞIM GÖRSELİ — MUTLAK VE MAHALLEYİ DE KAPSIYOR.
+ *
+ * İki şey değişti:
+ *
+ * 1. Değer artık `mutlakGorsel`den geçiyor. Kayıtlardaki yollar göreli
+ *    (`/yuklemeler/…`) ve `og:image` göreli adres kabul etmiyor — paylaşım
+ *    önizlemesi görselsiz çıkıyordu.
+ *
+ * 2. `mahalle` dalı eklendi. Mahalle kabuğunun `content` kaydı yok, bu
+ *    yüzden görsel çözümü hiç çalışmıyordu ve on mahalle sayfası
+ *    `og:image` ETİKETİNİ HİÇ BASMIYORDU. Kendi görseli varsa o, yoksa
+ *    Site Ayarları'ndaki genel paylaşım görseli kullanılıyor.
+ *
+ * Hizmet kaydında alan adı `image` değil `imagePath`; ikisi de deneniyor.
+ */
 const shareImage = computed(
-  () => content.value?.image || content.value?.imagePath || siteOgImage.value
+  () =>
+    mutlakGorsel(
+      content.value?.image ||
+        content.value?.imagePath ||
+        mahalle.value?.imagePath ||
+        mahalle.value?.image
+    ) || siteOgImage.value
 )
 
 /**
@@ -458,11 +479,32 @@ useHead(() => {
       mahalle.value.excerpt?.trim() ||
       `${adTam}, ${mahalle.value.ilceAd}. İstanbul'da hizmet verdiğimiz bölgeler.`
 
+    /**
+     * PAYLAŞIM ETİKETLERİ — BU DALDA HİÇ YOKTU.
+     *
+     * Mahalle sayfaları `og:` ve `twitter:` etiketlerinin TAMAMINI
+     * atlıyordu; ölçüldü (M8): on mahalle sayfasının onunda da `og:image`
+     * boştu. Yalnız görseli eklemek yetmezdi — başlıksız bir kart
+     * paylaşımda yine bozuk görünürdü. Bu yüzden aşağıdaki küme,
+     * kardeş daldaki (bölge/hizmet/yazı) etiketlerle AYNI biçimde.
+     *
+     * `robots` durumu değişmiyor: pasif kabuk hâlâ `noindex, follow`.
+     * Paylaşım etiketi dizine girmeyi etkilemiyor; bir bağlantı
+     * WhatsApp'ta paylaşıldığında kartın boş çıkmamasını sağlıyor.
+     */
     return {
       title: aramaBasligi,
       meta: [
         { name: 'description', content: aciklama },
         { name: 'robots', content: mahalle.value.aktif ? 'index, follow' : 'noindex, follow' },
+        { property: 'og:title', content: h1 },
+        { property: 'og:description', content: aciklama },
+        { property: 'og:image', content: shareImage.value },
+        { property: 'og:type', content: 'article' },
+        { property: 'og:url', content: canonical.value },
+        { property: 'og:site_name', content: brandName.value },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:image', content: shareImage.value },
       ],
       link: [{ rel: 'canonical', href: canonical.value }],
     }
@@ -519,6 +561,11 @@ useHead(() => {
       { property: 'og:url', content: canonical.value },
       { property: 'og:site_name', content: brandName.value },
       { name: 'twitter:card', content: 'summary_large_image' },
+      // `twitter:image` EKSİKTİ. X, yoksa `og:image`e düşüyor — yani
+      // görünür bir hata değildi; ama `usePageSeo` ile basılan on sabit
+      // sayfa ikisini birden veriyor. İki emitter aynı etiket kümesini
+      // versin diye eklendi.
+      { name: 'twitter:image', content: shareImage.value },
     ],
     link: [{ rel: 'canonical', href: canonical.value }],
   }

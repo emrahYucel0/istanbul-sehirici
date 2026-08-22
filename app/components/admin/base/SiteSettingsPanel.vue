@@ -117,7 +117,7 @@ const updateOgImageUrl = (url) => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label for="ss-cta-label">Düğme metni</label>
-            <input id="ss-cta-label" v-model="form.ctaLabel" maxlength="60" class="w-full p-3 border rounded-lg" placeholder="Ücretsiz Keşif" />
+            <input id="ss-cta-label" v-model="form.ctaLabel" maxlength="60" class="w-full p-3 border rounded-lg" placeholder="Keşif Talebi" />
           </div>
           <div>
             <label for="ss-cta-link">Düğme adresi</label>

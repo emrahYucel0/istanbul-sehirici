@@ -34,7 +34,18 @@ import { computed } from 'vue'
 
 const { settings, brandName } = await useSiteSettings()
 
-const buttonText = computed(() => settings.value?.ctaLabel || 'Ücretsiz Keşif Talep Et')
+// YEDEK METİN DEĞİŞTİ — İDDİA TAŞIYORDU.
+//
+// Eskisi 'Ücretsiz Keşif Talep Et' idi. M6'da devir yapılırken yedeğin
+// bilerek DEĞİŞTİRİLMEDİĞİ not düşülmüştü: ayar boşalırsa sayfa sessizce
+// başka bir şey göstermesin diye. O gerekçe hâlâ doğru, ama yedek metnin
+// kendisi doğrulanmamış bir ücret taahhüdü taşıyordu — ve yedek, ayar
+// satırı silindiği anda gerçekten ekrana çıkan metin oluyor.
+//
+// Yeni yedek, Site Ayarları'ndaki yeni değerle AYNI: iki yol da aynı şeyi
+// söylüyor, yani ayar boşalsa bile ekranda bir değişiklik olmuyor. İkinci
+// bir metin kaynağı üretilmedi; bu hâlâ tek satırlık bir yedek.
+const buttonText = computed(() => settings.value?.ctaLabel || 'Keşif Talebi')
 const buttonLink = computed(() => settings.value?.ctaLink || '/iletisim')
 
 const phone = computed(() => settings.value?.phone || settings.value?.mobilePhone || '')
@@ -60,9 +71,27 @@ useReveal(sectionRef)
         Taşınma gününüzü bugünden planlayalım
       </h2>
 
+      <!--
+        ÜÇ İDDİA ÇIKARILDI. Eski metin şuydu:
+        "Ücretsiz keşifle eşyalarınızı yerinde görüyor, size yazılı ve kesin
+         bir fiyat veriyoruz. Teklif taşıma gününe kadar geçerli kalır."
+
+        · "Ücretsiz keşif"          — ücret taahhüdü
+        · "kesin bir fiyat"         — fiyat garantisi
+        · "taşıma gününe kadar geçerli" — fiyat kilidi
+
+        Üçünü de destekleyen bir iş kaydı depoda yok. Kalan cümle yalnız
+        yapılan işi anlatıyor: keşifte eşya yerinde görülüyor ve çıkan plan
+        yazıya dökülüyor.
+
+        Bu bölüm bugün YALNIZ İstanbul dışı bölge sayfalarında basılıyor
+        (bkz. pages/[...slug].vue) ve o sayfaların tamamı yayından çekildi.
+        Yani metin şu an kimseye görünmüyor — ama şablon yeniden
+        kullanılabilir olduğu için iddia burada bırakılmadı.
+      -->
       <p data-reveal class="mt-5 text-pretty text-lead text-white/75">
-        Ücretsiz keşifle eşyalarınızı yerinde görüyor, size yazılı ve kesin bir
-        fiyat veriyoruz. Teklif taşıma gününe kadar geçerli kalır.
+        Keşifte eşyalarınızı yerinde görüyor, taşıma planını ve fiyatı
+        yazılı olarak paylaşıyoruz.
       </p>
 
       <div data-reveal-group class="mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4">

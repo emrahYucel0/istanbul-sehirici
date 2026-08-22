@@ -50,14 +50,28 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // başlığın en değerli ilk 16 karakterini harcıyordu. İç sayfalarda
     // zaten doğru yapılıyor: anahtar kelime başta, marka sonda.
     //
-    // "Ucuz" da çıkarıldı: sitenin tüm konumlandırması (yazılı sabit fiyat,
-    // sigortalı taşıma, marangozlu söküm-montaj) bunun zıddı. Fiyat avcısı
-    // çeken, dönüşmeyen bir kelimeydi.
+    // "Ucuz" da çıkarıldı: fiyat avcısı çeken, dönüşmeyen bir kelimeydi.
     //
     // "İstanbul" eklendi: işletme adresi Pendik/İstanbul ve yerel sinyal
-    // ana sayfada karşılık buluyor. 80 il sayfası zaten kendi illerini
-    // hedefliyor, ana sayfanın onlarla yarışmasına gerek yok.
-    title: 'Evden Eve Nakliyat İstanbul | Sigortalı Taşıma, Yazılı Fiyat',
+    // ana sayfada karşılık buluyor. Başka illerin iniş sayfaları yayından
+    // çekildi (bkz. prisma/legacy-bolge-emeklilik.mjs); ana sayfanın
+    // yarışacağı bir iç sayfa kalmadı.
+    //
+    // ─────────────────────────────────────────────────────────────────
+    // "SİGORTALI TAŞIMA" ÇIKARILDI — DOĞRULANMAMIŞ TİCARİ İDDİA.
+    //
+    // Önceki başlık "Evden Eve Nakliyat İstanbul | Sigortalı Taşıma,
+    // Yazılı Fiyat" idi ve arama sonucunda görünen ilk satır buydu.
+    // Veri tabanında `Meta("home")` kaydı YOK, yani bu "sessiz yedek"
+    // değil, sayfanın gerçekten bastığı başlıktı.
+    //
+    // Sigorta iddiasını destekleyen bir iş kaydı depoda yok. Aynı
+    // gerekçeyle ana sayfadaki "Eşyalar sigortalı mı?" SSS maddesi de
+    // yayından çekildi. Yerine bir değer önermesi KONMADI: "en iyi",
+    // "garantili", "profesyonel", "lider" gibi ifadeler de aynı sınıfa
+    // girer. Kalan başlık yalnız ana anahtar kelimeyi ve sitenin
+    // gerçekten yaptığı şeyi söylüyor.
+    title: 'İstanbul Evden Eve Nakliyat | Planlı Taşıma',
     // AÇIKLAMA YENİLENDİ (ana sayfa yeni tasarıma geçtikten sonra):
     //   · "Ücretsiz keşif" ÇIKARILDI — doğrulanmış bir iş kuralı değil ve
     //     sayfadaki hiçbir bölüm bunu söylemiyor.
