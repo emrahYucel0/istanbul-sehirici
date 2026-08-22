@@ -32,6 +32,9 @@ export interface SiteSettingsData {
   metaTitle?: string | null
   metaDescription?: string | null
   metaKeywords?: string | null
+  /** Genel çağrı — M6'da HeroPage'den devralındı (bkz. base/FinalCta.vue). */
+  ctaLabel?: string | null
+  ctaLink?: string | null
 }
 
 // Marka adı BURAYA YAZILMIYOR. Yedek, nuxt.config'teki `site.name`
@@ -39,8 +42,12 @@ export interface SiteSettingsData {
 // Önceden burada `'EveNakliyatEvden'` sabiti duruyordu: panelden ad
 // değiştirilse bile ayar satırı okunamadığı anlarda eski ad geri geliyordu
 // ve marka adı fiilen İKİ kaynaktan besleniyordu.
-const DEFAULT_SITE_URL = 'https://evenakliyatevden.com'
-const DEFAULT_OG_IMAGE = '/img/ege-ozenle-tasima.jpg'
+const DEFAULT_SITE_URL = 'https://istanbulevenakliyat.com'
+// Eskiden `/img/ege-ozenle-tasima.jpg` idi: hem devralınan Ege markasının
+// dosya adını taşıyordu hem de `public/img/` klasörü artık yok — yani
+// paylaşım kartı yedeği 404 veriyordu. Yerine gerçekten var olan ve
+// derleme öncesi üretilen kahraman kare kullanılıyor.
+const DEFAULT_OG_IMAGE = '/images/hero-istanbul-1024.webp'
 
 export async function useSiteSettings() {
   const { data } = await useAsyncData<SiteSettingsData | null>(

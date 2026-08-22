@@ -1,6 +1,6 @@
 // Canlı site SEO + erişilebilirlik denetimi.
-//   node denetim.mjs https://evenakliyatevden.com
-const TEMEL = (process.argv[2] || 'https://evenakliyatevden.com').replace(/\/$/, '')
+//   node denetim.mjs https://istanbulevenakliyat.com
+const TEMEL = (process.argv[2] || 'https://istanbulevenakliyat.com').replace(/\/$/, '')
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 

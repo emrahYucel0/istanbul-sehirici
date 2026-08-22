@@ -13,7 +13,7 @@
  * olarak verilseydi süreç listesinde (`ps`, Görev Yöneticisi) açıkta görünürdü.
  */
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, statSync, readdirSync, unlinkSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, statSync, readdirSync, unlinkSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -111,9 +111,15 @@ if (boyut < 1024) {
 // Bu yüzden dump'taki tablo adları şemadaki kanonik yazımlarına çevriliyor.
 // Yalnızca ŞEMADA TANIMLI model adlarıyla eşleşen tanımlayıcılar değiştirilir;
 // veri içeriğine dokunulmaz.
+//
+// SUNUCUDA ŞEMA DOSYASI YOKTUR ve bu normaldir: dağıtım paketi yalnızca
+// `.output` ve `scripts/` taşıyor. Zaten bu düzeltme yalnızca Windows'ta
+// alınan bir dump'ı Linux'a taşırken gerekiyor; Linux'ta alınan dump'ta
+// tablo adları hâlihazırda doğru. O yüzden dosya yoksa SESSİZCE atlanıyor —
+// aksi hâlde günlük cron her gün anlamsız bir uyarı basardı.
 const semaYolu = join(KOK, 'prisma', 'schema.prisma')
 let duzeltilen = 0
-try {
+if (existsSync(semaYolu)) try {
   const sema = readFileSync(semaYolu, 'utf8')
   const modeller = [...sema.matchAll(/^model\s+([A-Za-z_]\w*)\s*\{/gm)].map((m) => m[1])
   const harita = new Map(modeller.map((m) => [m.toLowerCase(), m]))

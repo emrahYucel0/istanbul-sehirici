@@ -17,11 +17,20 @@ async function fetchPostUrls() {
   }
 }
 
+// `/istanbul` SİTEMAP'TEN ÇIKARILDI.
+// Sitenin İstanbul otorite sayfası artık ana sayfanın kendisi; `/istanbul`
+// kalıcı olarak `/` adresine yönlendiriliyor (nuxt.config.ts → routeRules).
+// Yönlendirilen bir adresi sitemap'te bildirmek Search Console'da
+// "Sitemap'te yönlendirme var" uyarısı üretir.
+const YONLENDIRILEN = new Set(['istanbul']);
+
 async function fetchRegionUrls() {
   try {
     const regionsResponse = await $fetch('/api/regions');
     return regionsResponse.success
-      ? regionsResponse.data.map((r: any) => ({ url: `/${r.slug}`, lastmod: r.createdAt }))
+      ? regionsResponse.data
+          .filter((r: any) => !YONLENDIRILEN.has(r.slug))
+          .map((r: any) => ({ url: `/${r.slug}`, lastmod: r.createdAt }))
       : [];
   } catch (error) {
     console.error('Sitemap: regions verisi çekilirken hata oluştu:', error);
@@ -46,11 +55,30 @@ async function fetchServiceUrls() {
   }
 }
 
+// MAHALLELER — YALNIZ YAYINDA OLANLAR.
+//
+// 473 mahalle rotasının hepsi çözülüyor ama çoğu henüz içeriksiz kabuk ve
+// `noindex` taşıyor. Sitemap'e yalnız yayın kapısından geçmiş (isActive)
+// kayıtlar giriyor: `noindex` bir sayfayı sitemap'te bildirmek Search
+// Console'da "Submitted URL marked noindex" uyarısı üretir.
+async function fetchNeighborhoodUrls() {
+  try {
+    const response = await $fetch('/api/mahalleler?aktif=true');
+    return response?.success
+      ? response.data.map((m: any) => ({ url: `/${m.canonicalPath}`, lastmod: m.updatedAt }))
+      : [];
+  } catch (error) {
+    console.error('Sitemap: mahalle verisi çekilirken hata oluştu:', error);
+    return [];
+  }
+}
+
 export default defineSitemapEventHandler(async () => {
-  const [posts, regions, services] = await Promise.all([
+  const [posts, regions, services, neighborhoods] = await Promise.all([
     fetchPostUrls(),
     fetchRegionUrls(),
     fetchServiceUrls(),
+    fetchNeighborhoodUrls(),
   ]);
-  return [...posts, ...regions, ...services];
+  return [...posts, ...regions, ...services, ...neighborhoods];
 });

@@ -1,77 +1,105 @@
 <script setup>
 /**
- * BÖLGELER DİZİNİ SAYFASI
+ * /bolgelerimiz — İSTANBUL COĞRAFİ HUB'I
  *
- * `skipCanonical` KALDIRILDI. Eskiden bu bayrak, listenin sayfalama
- * mantığının canonical'ı yönetmesi için vardı; sayfalama kalktığı için
- * (bkz. components/region/List.vue) artık tek bir canonical yeterli ve
- * onu usePageSeo yönetiyor.
+ * ESKİ BİLGİ MİMARİSİ (Ege Eşya devri):
+ *     Türkiye → 81 İl → İlçeler
+ * Sayfa 18 il kartı basıyor, coğrafi bölge süzgeci ve arama kutusu
+ * sunuyordu. Yapısal veride `areaServed` kayıtlı tüm illerden türetiliyordu.
  *
- * `areaServed` ARTIK VERİDEN GELİYOR. Yapısal veride hizmet verilen iller
- * "İstanbul, Bursa, İzmir" olarak SABİT yazılıydı; site 81 ilde hizmet
- * verdiğini söylerken şema yalnızca üç il bildiriyordu. Artık kayıtlı
- * bölgelerden türetiliyor.
+ * YENİ KANONİK YAPI:
+ *     İSTANBUL → 39 İLÇE → MAHALLELER
+ * Site İstanbul odaklı. Bu sayfa artık Türkiye dizini değil; tek bir ilin
+ * coğrafi hub'ı. Veri tabanındaki 335 İstanbul dışı kayıt SİLİNMEDİ,
+ * yalnızca bu sunumda gösterilmiyor (kendi rotalarından erişilebilir
+ * durumdalar).
+ *
+ * KALDIRILANLAR VE SEBEPLERİ
+ *   · `fixed-page-header`  — koyu yeşil zemin + noktalı desen; V2 dili
+ *                            yeşil hero kullanmıyor (region/BolgeGiris.vue)
+ *   · `region-list`        — 18 yuvarlak köşeli il kartı, arama kutusu,
+ *                            hap biçimli süzgeç şeridi. Bileşen duruyor,
+ *                            bu sayfa artık kullanmıyor.
+ *   · `base-post-carousel` — coğrafi dizinde blog kaydırağı; hem eski kart
+ *                            dili hem konu dışı
+ *   · `base-final-cta`     — eski CTA bloğu; kapanış artık cümle içinde
+ *                            (region/BolgeAciklama.vue)
+ *   · `?ara` / `?bolge`    — arama ve süzgeç kalktı, dolayısıyla arama
+ *                            adreslerine özel `noindex` kuralı da gereksiz;
+ *                            eski adresleri canonical zaten konsolide ediyor
+ *   · `Service` yapısal verisi — `areaServed` olarak kayıtlı TÜM iller
+ *                            bildiriliyordu (Türkiye geneli). Bir dizin
+ *                            sayfasının kendisi bir "Service" değil; yerini
+ *                            gerçekten sayfada duran listenin işaretlemesi
+ *                            (`ItemList`) aldı.
  */
-const { data: response } = await useFetch('/api/regions?light=true', { key: 'regions-light' })
+const { data: yanit } = await useFetch('/api/istanbul-ilceler', { key: 'istanbul-ilceler' })
 
-/** Kayıtlı bölgelerin bağlı olduğu benzersiz iller. */
-const servedCities = computed(() => {
-  const ids = new Set()
-  ;(response.value?.data || []).forEach((region) =>
-    parseCityIds(region.cities).forEach((id) => ids.add(id))
-  )
-  return [...ids]
-    .map((id) => turkishCities.find((city) => city.id === id)?.name)
-    .filter(Boolean)
-    .sort((a, b) => new Intl.Collator('tr-TR').compare(a, b))
-})
+const dizin = computed(() =>
+  yanit.value?.success
+    ? yanit.value.data
+    : { ilceler: [], toplam: 0, aktif: 0, mahalleKaydi: 0 }
+)
 
-const { brandName } = await usePageSeo('region', sayfaMetasi('region'))
+await usePageSeo('region', sayfaMetasi('region'))
+
+const { siteUrl } = await useSiteSettings()
 
 /**
- * ARAMA ADRESLERİ DİZİNE GİRMESİN.
+ * YAPISAL VERİ — yalnız `ItemList`.
  *
- * `?bolge=ege` gibi süzgeç adresleri sorun değil: usePageSeo canonical'ı
- * `route.path` üzerinden ürettiği için hepsi /bolgelerimiz'e konsolide
- * oluyor. `?ara=...` ise ziyaretçinin yazdığı her şeyle sonsuz sayıda adres
- * üretebilir ve bunlar birer ARAMA SONUCU sayfasıdır — Google'ın kalite
- * yönergeleri bu tür sayfaların dizine eklenmesini açıkça önermiyor.
+ * Yol izi `BolgeGiris.vue` içinde Microdata olarak, GÖRÜNEN listeyle aynı
+ * kaynaktan işaretleniyor; burada tekrarlanmıyor.
  *
- * `follow` korunuyor: sayfa dizine girmese de üzerindeki il bağlantıları
- * taranmaya devam etsin.
+ * Listede 39 ilçenin TAMAMI var çünkü ekranda da 39'u duruyor — işaretleme
+ * ile görünen içerik ayrışamaz. `url` yalnız sayfası yayında olan ilçelere
+ * yazılıyor; olmayan için uydurma adres üretmektense alan hiç konmuyor.
  */
-const route = useRoute()
-useSeoMeta({
-  robots: () => (route.query.ara ? 'noindex, follow' : 'index, follow'),
-})
-
 useHead({
-  link: [{ rel: 'apple-touch-icon', href: '/favicon.ico', sizes: '180x180' }],
   script: [
     {
       type: 'application/ld+json',
       innerHTML: () =>
         JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'Service',
-          serviceType: 'Evden eve nakliyat',
-          provider: { '@type': 'Organization', name: brandName.value },
-          areaServed: servedCities.value.map((name) => ({ '@type': 'City', name })),
+          '@type': 'ItemList',
+          name: "İstanbul'da hizmet bölgelerimiz",
+          numberOfItems: dizin.value.ilceler.length,
+          itemListOrder: 'https://schema.org/ItemListUnordered',
+          itemListElement: dizin.value.ilceler.map((ilce, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: ilce.ad,
+            ...(ilce.aktif ? { url: `${siteUrl.value}/${ilce.slug}` } : {}),
+          })),
         }),
     },
   ],
 })
+
+/**
+ * SAYFANIN EDİTORYAL ÇERÇEVESİ — TEK İSTEK.
+ *
+ * Bölümler ayrı ayrı istek atmıyor; içerik sayfa seviyesinde bir kez alınıp
+ * prop olarak geçiliyor (M4'teki ana sayfa deseni).
+ */
+const { data: icerikYanit } = await useFetch('/api/ic-sayfa?page=bolgeler', {
+  key: 'ic-bolgeler',
+})
+
+/** Bölüm anahtarına göre kontrollü içerik; kayıt yoksa boş nesne. */
+const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
+
 </script>
 
 <template>
-  <fixed-page-header
-    title="Bölgelerimiz"
-    subtitle="İstanbul ilçeleri ve Türkiye genelindeki iller. Bölgenizi seçin, orada nasıl çalıştığımızı okuyun."
-  />
-
   <main>
-    <region-list />
-    <base-post-carousel />
-    <base-final-cta />
+    <region-bolge-giris :ilce-sayisi="dizin.toplam" :bolum="bolum('giris')" />
+    <region-ilce-dizini
+      :ilceler="dizin.ilceler"
+      :mahalle-kaydi="dizin.mahalleKaydi"
+      :bolum="bolum('dizin')"
+    />
+    <region-bolge-aciklama :bolum="bolum('aciklama')" />
   </main>
 </template>

@@ -10,9 +10,9 @@
 // Artık mail patlasa bile talep panelde duruyor ve kayıtta "mail gitmedi"
 // bilgisi görünüyor.
 import * as yup from 'yup'
-import nodemailer from 'nodemailer'
 import { leadsService, type LeadInput } from '../domain/leads/leads.service'
 import { eventsService } from '../domain/events/events.service'
+import { talepBildirimiGonder } from '../mail/service'
 
 const leadSchema = yup.object({
   name: yup.string().trim().min(2, 'İsim çok kısa').max(120).required('İsim gerekli'),
@@ -26,37 +26,6 @@ const leadSchema = yup.object({
 
 interface LeadBody extends LeadInput {
   website?: string
-}
-
-/** Mail gönderimi — başarısızlık FIRLATMAZ, sonucu döner; talep zaten kayıtlı. */
-async function mailDene(veri: LeadInput, brandName: string): Promise<{ ok: boolean; hata?: string }> {
-  try {
-    const config = useRuntimeConfig()
-    const smtp = config.mail?.smtp as any
-    if (!smtp?.auth?.pass) {
-      return { ok: false, hata: 'SMTP parolası tanımlı değil (MAIL_PASSWORD)' }
-    }
-
-    const transporter = nodemailer.createTransport(smtp)
-    await transporter.sendMail({
-      from: (config.mail as any)?.message?.from,
-      to: (config.mail as any)?.message?.to,
-      replyTo: veri.email || undefined,
-      subject: `${brandName} — Yeni teklif talebi`,
-      text: [
-        `İsim   : ${veri.name}`,
-        `E-posta: ${veri.email || '-'}`,
-        `Telefon: ${veri.phone || '-'}`,
-        `Sayfa  : ${veri.sourcePage || '-'}`,
-        '',
-        'Mesaj:',
-        veri.message || '-',
-      ].join('\n'),
-    })
-    return { ok: true }
-  } catch (error: any) {
-    return { ok: false, hata: String(error?.message || error).slice(0, 500) }
-  }
 }
 
 export default defineEventHandler(async (event) => {
@@ -82,7 +51,7 @@ export default defineEventHandler(async (event) => {
     // değiştirildiğinde bildirim e-postasının konusu da onunla değişsin.
     // Okuma başarısız olursa mail yine gitsin diye sessizce yedeğe düşüyor —
     // bir ayar sorgusu yüzünden müşteri adayı bildirimi kaybedilmez.
-    const mailSonuc = await mailDene(veri, await markaAdiniOku())
+    const mailSonuc = await talepBildirimiGonder(veri, await markaAdiniOku())
     await leadsService.mailSonucunuIsle(kayit.data.id, mailSonuc.ok, mailSonuc.hata)
 
     // Form gönderimi bir dönüşüm olayı olarak da kaydediliyor ki panelde

@@ -1,42 +1,55 @@
 // server/domain/reviews/reviews.repository.ts
-import prisma from '../../utils/prisma'
+import prisma from '../../utils/prisma.ts'
 
-/**
- * Herkese açık uçlarda döndürülecek alanlar.
- *
- * `email` BİLEREK dışarıda: ziyaretçi doğrulama için bırakabiliyor, ama
- * yayınlanan yorumda görünmesi kişisel veri sızıntısı olurdu. Alan seçimi
- * beyaz liste olarak yapılıyor — modele yeni bir alan eklendiğinde kazara
- * dışarı açılmasın diye.
- */
-const HERKESE_ACIK_ALANLAR = {
-  id: true,
-  customerName: true,
-  customerImage: true,
-  rating: true,
-  comment: true,
-  date: true,
-  location: true,
-  serviceType: true,
-  serviceTypeIcon: true,
-  isFeatured: true,
-  order: true,
-} as const
+import {
+  HERKESE_ACIK_ALANLAR,
+  HERKESE_ACIK_KOSUL,
+  ANASAYFA_YORUM_SAYISI,
+} from './reviews.public-fields.ts'
+
+export { HERKESE_ACIK_ALANLAR, HERKESE_ACIK_KOSUL }
 
 export const reviewsRepository = {
   /** Sitede gösterilecek yorumlar: hem aktif hem ONAYLI olanlar. */
   findPublic: (take = 60) =>
     prisma.testimonial.findMany({
-      where: { isActive: true, isApproved: true },
+      where: HERKESE_ACIK_KOSUL,
       select: HERKESE_ACIK_ALANLAR,
       orderBy: [{ isFeatured: 'desc' }, { order: 'asc' }, { date: 'desc' }],
       take,
     }),
 
-  /** Ortalama puan ve adet — AggregateRating için (yalnızca onaylı yorumlar). */
+  /**
+   * ANA SAYFA LİSTESİ — en yeni onaylı yorumlar, sınırlı.
+   *
+   * `findPublic`ten iki farkı var ve ikisi de kasıtlı:
+   *   1. SIRA. Burada yalnız tarih: en yeni önce. `isFeatured`/`order`
+   *      yönetici sıralaması demek ve ana sayfada bir yorumu öne almak
+   *      "seçilmiş yorum" anlamına gelirdi.
+   *   2. SAYI. Bölüm altı satır taşıyor; tablonun tamamı ana sayfa
+   *      yanıtına konmuyor.
+   */
+  findForHome: (take = ANASAYFA_YORUM_SAYISI) =>
+    prisma.testimonial.findMany({
+      where: HERKESE_ACIK_KOSUL,
+      select: { id: true, customerName: true, rating: true, comment: true, date: true },
+      orderBy: [{ date: 'desc' }, { id: 'desc' }],
+      take,
+    }),
+
+  /**
+   * Ortalama puan ve adet — YALNIZ EKRAN İÇİN.
+   *
+   * Bu değerler hiçbir yapısal veriye (Review/AggregateRating) dönmüyor;
+   * gerekçesi app/pages/index.vue başlığında. Veri tabanına da ikinci kez
+   * yazılmıyorlar: her istekte public'e uygun kayıtlardan hesaplanıyorlar.
+   *
+   * `take` UYGULANMIYOR: sayaç GÖSTERİLEN listeyi değil, uygun kayıtların
+   * TAMAMINI sayıyor. İkisi ayrı anlam.
+   */
   publicStats: () =>
     prisma.testimonial.aggregate({
-      where: { isActive: true, isApproved: true },
+      where: HERKESE_ACIK_KOSUL,
       _avg: { rating: true },
       _count: { _all: true },
     }),
@@ -64,7 +77,12 @@ export const reviewsRepository = {
       },
     }),
 
-  /** Yönetim listesi — e-posta dahil TÜM alanlar. */
+  /**
+   * Yönetim listesi — e-posta dahil TÜM alanlar.
+   *
+   * `isActive` de dönüyor: panel "yayında" ile "onaylı ama pasif" durumunu
+   * ayırt edebilsin diye. Yalnız onaya bakan bir panel yanlış bilgi verir.
+   */
   findForAdmin: (onlyPending: boolean, take = 100) =>
     prisma.testimonial.findMany({
       where: onlyPending ? { isApproved: false } : {},
@@ -74,8 +92,15 @@ export const reviewsRepository = {
 
   countPending: () => prisma.testimonial.count({ where: { isApproved: false } }),
 
+  findById: (id: number) => prisma.testimonial.findUnique({ where: { id } }),
+
+  /** Moderasyon kararı — yorum yayınlanmaya uygun mu. */
   setApproved: (id: number, isApproved: boolean) =>
     prisma.testimonial.update({ where: { id }, data: { isApproved } }),
+
+  /** Yayın durumu — şu anda sitede görünüyor mu. Onaydan AYRI alan. */
+  setActive: (id: number, isActive: boolean) =>
+    prisma.testimonial.update({ where: { id }, data: { isActive } }),
 
   remove: (id: number) => prisma.testimonial.delete({ where: { id } }),
 

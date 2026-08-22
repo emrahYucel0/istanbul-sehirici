@@ -17,47 +17,71 @@
    ========================================================================== */
 
 :root {
-  /* ---------------------------------------------------------------------
-     1. RENK — marka paleti korundu, ölçeklendirildi
-     brand-600 = #3b5d50 (eski primary), accent-400 = #f9bf29 (eski secondary)
-     --------------------------------------------------------------------- */
-  --c-brand-50: 242 247 245;
-  --c-brand-100: 224 235 231;
-  --c-brand-200: 194 215 207;
-  --c-brand-300: 150 184 172;
-  --c-brand-400: 107 148 134;
-  --c-brand-500: 77 119 104;
-  --c-brand-600: 59 93 80;
-  --c-brand-700: 49 77 67;
-  --c-brand-800: 41 62 55;
-  --c-brand-900: 30 45 40;
-  --c-brand-950: 16 26 22;
+  /* =========================================================================
+     1. RENK — ESKİ İSİMLER, YENİ DEĞERLER
+     -------------------------------------------------------------------------
+     Aşağıdaki `brand` / `accent` / `surface` / `line` / `ink-*` ölçekleri
+     ESKİ tasarımın (yeşil + kehribar) isimleri. İsimler DURUYOR ama
+     değerleri artık V2 kimlik paletinden türüyor.
 
-  --c-accent-50: 254 250 236;
-  --c-accent-100: 253 241 200;
-  --c-accent-200: 251 226 141;
-  --c-accent-300: 250 205 82;
-  --c-accent-400: 249 191 41;
-  --c-accent-500: 248 184 16;
-  --c-accent-600: 220 150 10;
-  --c-accent-700: 182 112 12;
-  --c-accent-800: 148 87 17;
-  --c-accent-900: 122 72 18;
+     NEDEN İSİMLER SİLİNMEDİ
+     Bu token'lar 35 dosyada 131 kez, Tailwind sınıfları üzerinden
+     (`bg-brand-600`, `text-ink-muted`, `border-line` …) kullanılıyor.
+     Silmek o sayfaların hepsini aynı anda kırardı. Tailwind bu değerleri
+     `rgb(var(--c-brand-600) / <alpha>)` olarak okuduğu için, DEĞİŞKENİ
+     yeniden tanımlamak tek satır markup değiştirmeden bütün siteyi yeni
+     palete taşıyor. Sayfa sayfa V2'ye geçildikçe isimler kalkacak.
 
-  /* Metin — nötrler hafif yeşile çalar, marka ailesinden kopmasın diye */
-  --c-ink: 27 36 32;
-  --c-ink-muted: 92 107 100;
-  --c-ink-subtle: 138 151 145;
-  --c-ink-inverse: 255 255 255;
+     RAMPA NASIL SEÇİLDİ — göreli AÇIKLIK korundu, ton değişti.
+     Eski koyu yeşil zeminlerin üstünde beyaz metin vardı; yeni değerler de
+     aynı açıklık bandında kalıyor, yani o eşleşmeler kırılmıyor:
+       brand-600 beyaz üstünde  eski 7,14  →  yeni 6,95
+       brand-500 kâğıt üstünde  eski 4,86  →  yeni 5,30
+       accent-400 mürekkep üstü eski ~9,9  →  yeni 5,05  (ikisi de AA)
+     ====================================================================== */
 
-  /* Yüzeyler */
-  --c-surface: 255 255 255;
-  --c-surface-sunken: 247 250 249;
-  --c-surface-muted: 239 242 241;
+  /* Marka rampası → sıcak nötr: kâğıttan mürekkebe. */
+  --c-brand-50: 243 240 234;
+  --c-brand-100: 236 232 224;
+  --c-brand-200: 222 216 204;
+  --c-brand-300: 202 194 179;
+  --c-brand-400: 168 158 140;
+  --c-brand-500: 112 105 92;
+  --c-brand-600: var(--c-ink-soft);
+  --c-brand-700: 66 62 55;
+  --c-brand-800: 48 45 40;
+  --c-brand-900: 34 32 29;
+  --c-brand-950: var(--c-ink);
 
-  /* Kenarlıklar */
-  --c-line: 227 234 231;
-  --c-line-strong: 203 216 210;
+  /* Aksan rampası → oksitlenmiş bakır. Açık uç, koyu zeminde metin olarak
+     kullanılan basamakları (300–400) taşıyabilsin diye açık bırakıldı. */
+  --c-accent-50: 250 240 233;
+  --c-accent-100: 246 226 213;
+  --c-accent-200: 236 197 174;
+  --c-accent-300: 222 156 122;
+  --c-accent-400: 205 111 68;
+  --c-accent-500: 190 88 44;
+  --c-accent-600: var(--c-signal);
+  --c-accent-700: 158 58 23;
+  --c-accent-800: var(--c-signal-deep);
+  --c-accent-900: 112 42 16;
+
+  /* Metin, yüzey ve kenarlık: DEĞER DEĞİL REFERANS.
+     Bu altı token kimlik paletindeki bir token'ın birebir aynısıydı; sayı
+     tekrar edilirse ikisi zamanla ayrışır. `var()` ile bağlandılar —
+     hesaplanan değer aynı, ama artık tek yerden değişiyorlar. (Palet
+     karşılaştırma laboratuvarı da bunu kullanıyor: `--c-paper` değişince
+     `--c-surface` kendiliğinden değişiyor.) */
+  --c-ink-muted: var(--c-ink-soft);
+  --c-ink-subtle: var(--c-measure);
+  --c-ink-inverse: var(--c-paper);  /* koyu zeminde kâğıt; saf beyaz değil */
+
+  --c-surface: var(--c-paper);
+  --c-surface-sunken: var(--c-paper-sunken);
+  --c-surface-muted: var(--c-paper);
+
+  --c-line: var(--c-rule);
+  --c-line-strong: var(--c-measure);
 
   /* Durum renkleri — form hataları ve uyarılar için.
      `--c-danger` beyaz zeminde 5.9:1 veriyor (WCAG AA normal metin eşiği
@@ -67,8 +91,8 @@
   --c-danger: 178 38 38;
   --c-danger-strong: 142 28 28;
 
-  /* Gölgelerin taban rengi (siyah değil, markanın koyu tonu) */
-  --c-shadow: 27 43 37;
+  /* Gölgelerin taban rengi — mürekkep (eskiden yeşile çalan koyu ton). */
+  --c-shadow: var(--c-ink);
 
   /* ---------------------------------------------------------------------
      2. BOŞLUK / RİTİM — akışkan (fluid), ayrı breakpoint'e ihtiyaç duymaz
@@ -137,6 +161,39 @@
   --z-header: 40;
   --z-overlay: 50;
   --z-modal: 60;
+
+  /* =========================================================================
+     KİMLİK PALETİ — "Kat Planı" yönü (Direction A)
+     -------------------------------------------------------------------------
+     Yukarıdaki yeşil/kehribar ölçek ESKİ tasarımın paletidir ve
+     SİLİNMEMİŞTİR: sayfaların çoğu hâlâ onu kullanıyor. Bu blok yeni
+     kimliği ekliyor; iki palet, bölümler yeniden tasarlandıkça yer
+     değiştirecek.
+
+     Değerler WCAG 2.1 AA'ya karşı HESAPLANDI (tahmin değil):
+       ana metin / kâğıt        15,85
+       ikincil metin / kâğıt     6,54
+       sinyal metin / kâğıt      5,06
+       CTA yazısı / sinyal       5,06
+       ölçü çizgisi (UI 3:1)     3,51
+     `--c-rule` yalnızca dekoratif ayraçlar için; bilgi taşıyan her çizgi
+     (ölçü, ilerleme, aktif durum) `--c-measure` kullanır — ilk denemede
+     dekoratif tonla yazılmış ve 2,42 ile AA'da kalmıştı.
+     ====================================================================== */
+  --c-paper: 247 244 239;        /* ana zemin — sıcak kemik */
+  --c-paper-sunken: 237 232 223; /* ikinci zemin, boş hücre */
+  --c-ink: 27 26 24;             /* ana metin · nadir koyu zemin */
+  --c-ink-soft: 92 87 78;        /* ikincil metin */
+  --c-rule: 214 206 193;         /* ince ayraç — DEKORATİF */
+  --c-measure: 138 129 112;      /* ölçü çizgisi — BİLGİ TAŞIR */
+  --c-signal: 180 68 28;         /* aksan — oksitlenmiş bakır */
+  --c-signal-deep: 140 52 20;    /* hover / basılı */
+
+  /* TİPOGRAFİNİN TEK KAYNAĞI — düz CSS blokları buradan okur, Tailwind
+     `font-archivo` / `font-mono` sınıflarından. İki paralel sistem yok.
+     Bileşen içinde `font-family` yazılmaz; bu ikisinden biri kullanılır. */
+  --f-sans: "Archivo", "Inter Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 /* Yatay beliriş mesafesi yalnızca yan yana düzenin gerçekten var olduğu

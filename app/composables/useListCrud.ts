@@ -21,7 +21,19 @@ export function useListCrud<T extends Record<string, any>>(
   options: {
     keyField?: string
     idField?: string
-    listQuery?: string
+    /**
+     * Liste isteğine eklenen sorgu. DİZE ya da FONKSİYON olabilir.
+     *
+     * Fonksiyon biçimi M6'da eklendi: Bölgeler paneli aynı uçtan iki farklı
+     * kümeyi çekiyor (İstanbul ilçeleri / legacy bölgeler) ve seçim
+     * değiştiğinde listenin YENİDEN İSTENMESİ gerekiyor. Sabit dize bunu
+     * yapamazdı; `listUrl` hesaplaması fonksiyonu okuyunca reaktif oluyor ve
+     * `useFetch` kendi izleyicisiyle yeni listeyi getiriyor.
+     *
+     * SÜZGEÇ SUNUCUDA kalsın diye böyle: 375 kaydı çekip istemcide ayırmak
+     * her açılışta gereksiz veri taşımak olurdu.
+     */
+    listQuery?: string | (() => string)
     itemQuery?: string
     paginated?: boolean
     pageSize?: number
@@ -29,7 +41,12 @@ export function useListCrud<T extends Record<string, any>>(
 ) {
   const keyField = options.keyField || 'slug'
   const idField = options.idField || 'id'
-  const listQuery = options.listQuery || ''
+  const listQuerySecenegi = options.listQuery || ''
+  const listQueryDegeri = () =>
+    typeof listQuerySecenegi === 'function' ? listQuerySecenegi() : listQuerySecenegi
+  // Tekil kayıt sorgusu kapsamdan BAĞIMSIZ olmalı: kayıt hangi listede
+  // görünürse görünsün aynı yetkiyle açılıyor.
+  const listQuery = typeof listQuerySecenegi === 'function' ? '?admin=true' : listQuerySecenegi
   // Tekil kayıt çekilirken kullanılacak sorgu. Varsayılanı listQuery: panel
   // listeyi hangi yetkiyle görüyorsa (örn. `?admin=true` → pasif kayıtlar da
   // gelsin) tek kaydı da AYNI yetkiyle görmeli. Bu ayrım yapılmadığında pasif
@@ -59,9 +76,10 @@ export function useListCrud<T extends Record<string, any>>(
   const page = ref(1)
 
   const listUrl = computed(() => {
-    if (!paginated) return `/api/${apiPath}${listQuery}`
-    const sep = listQuery.includes('?') ? '&' : '?'
-    return `/api/${apiPath}${listQuery}${sep}page=${page.value}&pageSize=${pageSize}`
+    const sorgu = listQueryDegeri()
+    if (!paginated) return `/api/${apiPath}${sorgu}`
+    const sep = sorgu.includes('?') ? '&' : '?'
+    return `/api/${apiPath}${sorgu}${sep}page=${page.value}&pageSize=${pageSize}`
   })
 
   const { data, refresh } = useFetch(listUrl, { watch: [listUrl] })
@@ -146,7 +164,13 @@ export function useListCrud<T extends Record<string, any>>(
     try {
       const response: any = await $fetch(`/api/${apiPath}`, { method, body: form })
       if (!response?.success) {
-        message.value = method === 'POST' ? 'Oluşturma sırasında hata oluştu.' : 'Güncelleme sırasında hata oluştu.'
+        // Sunucunun cümlesi aynen gösteriliyor (bkz. useSectionCrud.ts'teki
+        // aynı gerekçe): adres çakışmasında hangi adresin hangi kayıtla
+        // çakıştığı yöneticiye ulaşmalı.
+        // "hata" öneki bilerek: panellerin renk kararı bu kelimeye bakıyor.
+        message.value = response?.error
+          ? `Kaydetme hatası: ${response.error}`
+          : method === 'POST' ? 'Oluşturma sırasında hata oluştu.' : 'Güncelleme sırasında hata oluştu.'
         return { success: false, error: response?.error }
       }
       if (paginated) {

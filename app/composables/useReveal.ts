@@ -130,6 +130,34 @@ export function useReveal(
       units.add(group && el.contains(group) ? group : target)
     })
 
+    /**
+     * EKRANDA ZATEN GÖRÜNEN ÖĞE GİZLENMEZ.
+     *
+     * Sunucudan gelen HTML'de her şey görünür. Eskiden bu gözlemci mount
+     * anında HEPSİNİ gizliyor, sonra kesişme raporuyla geri açıyordu —
+     * yani kullanıcının o an baktığı içerik önce kayboluyor, sonra
+     * animasyonla geri geliyordu.
+     *
+     * Ölçüldü (PageSpeed, bölge sayfası): LCP 2,4 sn iken Speed Index
+     * 8,2 sn. Aradaki fark, ana içerik boyandıktan sonra ekranın uzun süre
+     * değişmeye devam etmesi. Gecikmeli hidrasyonla birlikte bu gizle-göster
+     * döngüsü her bölüm için ayrı zamanda çalıştığı için etki büyümüştü.
+     *
+     * Artık ilk ekranda olan öğeler hiç gizlenmiyor: zaten görünürler,
+     * animasyonun onlara katacağı bir şey yok. Aşağıdakiler eskisi gibi
+     * belirmeye devam ediyor.
+     *
+     * Okuma ve yazma AYRI DÖNGÜLERDE: `getBoundingClientRect` düzen
+     * hesabını zorluyor; sınıf ekleme ile aynı döngüde yapılsaydı her öğede
+     * bir kez yeniden düzenleme tetiklenirdi (layout thrashing).
+     */
+    const ilkEkranda = new Set<HTMLElement>()
+    const pencereYuksekligi = window.innerHeight
+    units.forEach((unit) => {
+      const kutu = unit.getBoundingClientRect()
+      if (kutu.top < pencereYuksekligi && kutu.bottom > 0) ilkEkranda.add(unit)
+    })
+
     // Stagger sırası: her grup kendi içinde 0'dan başlar.
     units.forEach((unit) => {
       targetsOf(unit).forEach((target, index) => {
@@ -137,7 +165,7 @@ export function useReveal(
           target.style.setProperty('--reveal-i', String(index))
         }
       })
-      hide(unit)
+      if (!ilkEkranda.has(unit)) hide(unit)
     })
 
     observer = new IntersectionObserver(

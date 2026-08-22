@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Kök ad alanı yardımcısı mock'lanıyor: Prisma'yı modül yüklenirken içeri
+// alıyor ve bu dosya adres çakışmasını değil, sorgu/alan davranışını test
+// ediyor. Çakışma testleri regions.rootpath.test.ts ve root-paths.test.ts.
+vi.mock('../shared/root-paths.ts', () => ({
+  kokYolunuNormallestir: (v: unknown) => String(v ?? '').trim().replace(/^\/+/, ''),
+  kokYoluDenetle: vi.fn(async () => null),
+}))
+
 vi.mock('./regions.repository', () => ({
   regionsRepository: {
     findUnique: vi.fn(),
@@ -8,6 +16,9 @@ vi.mock('./regions.repository', () => ({
     create: vi.fn(),
     update: vi.fn(),
     remove: vi.fn(),
+    findForDistrictGate: vi.fn(),
+    countActiveNeighborhoods: vi.fn(),
+    setActive: vi.fn(),
   },
 }))
 
@@ -98,7 +109,23 @@ describe('regionsService.get — sayfalama', () => {
 // taşıyan kısmi bir PUT, istekte olmayan metin alanlarını null'lamış ve bir
 // bölgenin içeriğini silmişti. Kural: YOK ≠ BOŞ.
 describe('regionsService.update — kısmi istekte veri kaybı olmamalı', () => {
-  beforeEach(() => vi.clearAllMocks())
+  // `update` artık önce kaydı okuyor: İstanbul ilçesi mi, yayında mı?
+  // Bu blok İSTANBUL DIŞI (legacy) bir kayıt üzerinden çalışıyor, yani
+  // kalite kapısı devreye girmiyor ve buradaki davranış M2'den önceki
+  // hâliyle birebir aynı kalıyor.
+  beforeEach(() => {
+    vi.clearAllMocks()
+    ;(regionsRepository.findUnique as any).mockResolvedValue({
+      id: 500,
+      slug: 'esenler',
+      // `cities` İSTANBUL DIŞI (16 = Bursa): bu blok kısmi güncellemenin
+      // veri kaybı üretmemesini test ediyor, sınıflandırmayı değil.
+      // İstanbul ilçelerine özgü yayın davranışı ayrı dosyada
+      // (regions.publication.test.ts).
+      cities: [16],
+      isActive: false,
+    })
+  })
 
   const yazilanVeri = () => (regionsRepository.update as any).mock.calls[0][1]
 

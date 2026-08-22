@@ -12,6 +12,17 @@
     ],
     "onEk": "/images/3d-truck-"
   },
+  "/images/bleed-sabitleme.webp": {
+    "taban": "/images/bleed-sabitleme-1024.webp",
+    "genislikler": [
+      320,
+      640,
+      768,
+      1024,
+      1672
+    ],
+    "onEk": "/images/bleed-sabitleme-"
+  },
   "/images/couch.png": {
     "taban": "/images/couch.png",
     "genislikler": [
@@ -124,6 +135,17 @@
       2560
     ],
     "onEk": "/images/grey3-"
+  },
+  "/images/hero-istanbul.webp": {
+    "taban": "/images/hero-istanbul-1024.webp",
+    "genislikler": [
+      320,
+      640,
+      768,
+      1024,
+      1448
+    ],
+    "onEk": "/images/hero-istanbul-"
   },
   "/images/hex-pattern.jpg": {
     "taban": "/images/hex-pattern.jpg",
@@ -241,6 +263,50 @@
     ],
     "onEk": "/images/ofis-tasima-"
   },
+  "/images/sahne-erisim.webp": {
+    "taban": "/images/sahne-erisim-1024.webp",
+    "genislikler": [
+      320,
+      640,
+      768,
+      1024,
+      1448
+    ],
+    "onEk": "/images/sahne-erisim-"
+  },
+  "/images/sahne-kat.webp": {
+    "taban": "/images/sahne-kat-1024.webp",
+    "genislikler": [
+      320,
+      640,
+      768,
+      1024,
+      1448
+    ],
+    "onEk": "/images/sahne-kat-"
+  },
+  "/images/sahne-paketleme.webp": {
+    "taban": "/images/sahne-paketleme-1024.webp",
+    "genislikler": [
+      320,
+      640,
+      768,
+      1024,
+      1448
+    ],
+    "onEk": "/images/sahne-paketleme-"
+  },
+  "/images/sahne-sokum.webp": {
+    "taban": "/images/sahne-sokum-1024.webp",
+    "genislikler": [
+      320,
+      640,
+      768,
+      1024,
+      1448
+    ],
+    "onEk": "/images/sahne-sokum-"
+  },
   "/images/sofa.png": {
     "taban": "/images/sofa.png",
     "genislikler": [
@@ -249,6 +315,28 @@
       571
     ],
     "onEk": "/images/sofa-"
+  },
+  "/images/stage-a.webp": {
+    "taban": "/images/stage-a-1024.webp",
+    "genislikler": [
+      320,
+      640,
+      768,
+      1024,
+      1448
+    ],
+    "onEk": "/images/stage-a-"
+  },
+  "/images/stage-b.webp": {
+    "taban": "/images/stage-b-1024.webp",
+    "genislikler": [
+      320,
+      640,
+      768,
+      1024,
+      1448
+    ],
+    "onEk": "/images/stage-b-"
   },
   "/images/team.jpg": {
     "taban": "/images/team.jpg",

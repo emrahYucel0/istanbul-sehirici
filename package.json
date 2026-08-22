@@ -27,7 +27,19 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "dagitim-paketi": "node scripts/dagitim-paketi.mjs",
-    "font-altkume": "node scripts/font-altkume.mjs"
+    "font-altkume": "node scripts/font-altkume.mjs",
+    "hizmet-metinleri": "node --env-file=.env prisma/hizmet-metinleri-tohum.mjs",
+    "hizmet-detay": "node --env-file=.env prisma/hizmet-detay-tohum.mjs",
+    "ilce-metinleri": "node --env-file=.env prisma/ilce-metinleri-tohum.mjs",
+    "ilce-yayin": "node --env-file=.env prisma/ilce-yayina-al.mjs",
+    "mahalle-aktar": "node --env-file=.env prisma/mahalle-aktar.mjs",
+    "mahalle-yayin": "node --env-file=.env prisma/mahalle-yayina-al.mjs",
+    "mahalle-icerik": "node --env-file=.env prisma/mahalle-icerik-tohum.mjs",
+    "hakkimizda-metin": "node --env-file=.env prisma/hakkimizda-metinleri-tohum.mjs",
+    "sir-tara": "node scripts/sir-taramasi.mjs",
+    "fiyat-notu": "node --env-file=.env prisma/fiyat-notu-tohum.mjs",
+    "anasayfa-icerik": "node --env-file=.env prisma/anasayfa-icerik-tohum.mjs",
+    "ic-sayfa-icerik": "node --env-file=.env prisma/ic-sayfa-tohum.mjs"
   },
   "dependencies": {
     "@nuxt/image": "^2.1.0",

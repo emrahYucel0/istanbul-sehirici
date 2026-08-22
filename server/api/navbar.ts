@@ -1,22 +1,13 @@
 import * as yup from 'yup';
 import { navbarCrudService, type NavbarInput } from '../domain/sections/configs/navbar.config';
 
-const navbarSocialLinkSchema = yup.object({
-  name: yup.string().trim().notRequired(),
-  url: yup.string().trim().notRequired(),
-});
-
-const navbarContactsSchema = yup.object({
-  phone: yup.string().trim().notRequired(),
-  mail: yup.string().trim().notRequired(),
-  address: yup.string().trim().notRequired(),
-});
-
+// `contacts` ve `socialLinks` ŞEMADAN ÇIKARILDI (M6): ikisini de hiçbir
+// herkese açık bileşen okumuyor. Navbar bu kayıttan yalnız `logo` alıyor;
+// telefon, WhatsApp ve sosyal hesaplar Site Ayarları'ndan geliyor.
+// Tablolar ve kayıtlar duruyor.
 const navbarSchema = yup.object({
   sectionName: yup.string().trim().notRequired(),
   logo: yup.string().trim().notRequired(),
-  contacts: yup.array().of(navbarContactsSchema).notRequired(),
-  socialLinks: yup.array().of(navbarSocialLinkSchema).notRequired(),
 });
 
 const navbarDeleteSchema = yup.object({

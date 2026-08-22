@@ -1,5 +1,5 @@
 // server/domain/regions/regions.repository.ts
-import prisma from '../../utils/prisma'
+import prisma from '../../utils/prisma.ts'
 
 /**
  * `light` modunda ATILAN sütunlar.
@@ -31,6 +31,7 @@ const AGIR_SUTUNLAR = {
   content: true,
   // Yalnızca detay sayfasının <head>'inde kullanılıyor (o da findUnique ile
   // çekiliyor). Listeye konsaydı 120 × ~150 bayt boşuna taşınırdı.
+  metaTitle: true,
   metaDescription: true,
   faqs: true,
   facts: true,
@@ -57,6 +58,72 @@ export const regionsRepository = {
       ...(options.take !== undefined ? { take: options.take, skip: options.skip ?? 0 } : {}),
     }),
   count: (where: any) => prisma.region.count({ where }),
+
+  /**
+   * `/bolgelerimiz` coğrafi dizini için ham satırlar.
+   *
+   * NEDEN AYRI BİR OKUMA GEREKTİ — mevcut `findMany` yetmiyor: genel liste
+   * yalnız AKTİF kayıtları döndürüyor, dizin ise 39 İstanbul ilçesinin
+   * TAMAMINI göstermek zorunda (pasif olanlar bağlantısız).
+   *
+   * Tam kayıt yerine yalnız dizinin okuduğu altı sütun seçiliyor: 375 kaydın
+   * `content`/`faqs`/`facts`/`routes` alanları hiç okunmuyor.
+   *
+   * `neighborhoods` SÜTUNU ARTIK OKUNMUYOR. Mahalle sayısı ve önizleme
+   * adları `Neighborhood` tablosundan geliyor (bkz. istanbul.service.ts);
+   * iki kaynak, ekrandaki sayı ile listenin ayrışmasına yol açıyordu.
+   */
+  findForGeoIndex: () =>
+    prisma.region.findMany({
+      select: {
+        // `id` mahalle kayıtlarını ilçeye bağlamak için gerekiyor
+        // (Neighborhood.districtId → Region.id).
+        id: true,
+        slug: true,
+        title: true,
+        subtitle: true,
+        shortTitle: true,
+        isActive: true,
+        cities: true,
+      },
+      orderBy: { title: 'asc' },
+    }),
+
+  /**
+   * Kapının arama açıklaması benzersizlik denetimi için: İstanbul
+   * ilçelerinin açıklamaları.
+   *
+   * Betik bu kümeyi `slug IN (39 yaka slug'ı)` ile kuruyordu; burada
+   * `cities` üzerinden çekilip `istanbulIlcesiMi` ile süzülüyor. Ölçüldü:
+   * iki yol da aynı 39 kaydı veriyor. `istanbulIlcesiMi` tercih edildi
+   * çünkü sınıflandırmanın tek kaynağı o — yaka listesi yalnız hangi
+   * yakada olduğunu söylüyor.
+   */
+  findForDistrictGate: () =>
+    prisma.region.findMany({
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        subtitle: true,
+        excerpt: true,
+        content: true,
+        metaDescription: true,
+        imageAlt: true,
+        cities: true,
+        neighborhoods: true,
+        faqs: true,
+        isActive: true,
+      },
+    }),
+
+  /** Bu ilçeye bağlı YAYINDAKİ mahalle adedi — yayından kaldırma denetimi. */
+  countActiveNeighborhoods: (districtId: number) =>
+    prisma.neighborhood.count({ where: { districtId, isActive: true } }),
+
+  setActive: (slug: string, isActive: boolean) =>
+    prisma.region.update({ where: { slug }, data: { isActive } }),
+
   create: (data: any) => prisma.region.create({ data }),
   update: (slug: string, data: any) => prisma.region.update({ where: { slug }, data }),
   remove: (slug: string) => prisma.region.delete({ where: { slug } }),

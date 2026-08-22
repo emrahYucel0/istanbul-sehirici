@@ -2,6 +2,12 @@ import * as yup from 'yup'
 import { postsService, type PostInput } from '../domain/posts/posts.service'
 
 const postSchema = yup.object({
+  // KİMLİK — güncellemede adres değişebildiği için gerekli.
+  //
+  // Panel bu alanı zaten gönderiyordu ama şemada olmadığı için
+  // `stripUnknown` sessizce atıyordu. `nullable`: yeni kayıt formunda
+  // değeri `null` (bkz. PostPanel initialShape).
+  id: yup.number().integer().positive().nullable().notRequired(),
   title: yup.string().trim().required(),
   subtitle: yup.string().trim().notRequired(),
   shortTitle: yup.string().trim().notRequired(),
@@ -9,6 +15,7 @@ const postSchema = yup.object({
   slug: yup.string().trim().required(),
   content: yup.string().notRequired(),
   excerpt: yup.string().notRequired(),
+  metaTitle: yup.string().notRequired(),
   metaDescription: yup.string().notRequired(),
   image: yup.string().trim().notRequired(),
   imageAlt: yup.string().trim().notRequired(),
@@ -16,8 +23,17 @@ const postSchema = yup.object({
 
 export default defineEventHandler(async (event) => {
   const method = event.node.req.method
+  const { admin } = getQuery(event)
 
-  if (method !== 'GET') {
+  // TASLAKLARI GÖRMEK YETKİ İSTER.
+  //
+  // `?admin=true` yalnız yönetim panelinin kullandığı mod: taslak yazıları
+  // da döndürüyor. Bölge ucundaki (server/api/regions.ts) aynı desen —
+  // `requireAdmin` try/catch DIŞINDA çağrılıyor ki 401 gerçekten 401 olarak
+  // dönsün, servis katmanı tarafından 200 + success:false'a çevrilmesin.
+  const isAdminMode = admin === 'true' || admin === true
+
+  if (method !== 'GET' || isAdminMode) {
     requireAdmin(event)
   }
 
@@ -26,7 +42,8 @@ export default defineEventHandler(async (event) => {
     return postsService.get(
       slug ? String(slug) : undefined,
       light === 'true',
-      page ? { page: Number(page), pageSize: pageSize ? Number(pageSize) : undefined } : undefined
+      page ? { page: Number(page), pageSize: pageSize ? Number(pageSize) : undefined } : undefined,
+      { includeDrafts: isAdminMode }
     )
   }
 

@@ -1,0 +1,140 @@
+/* =============================================================================
+   SAHNE — ana sayfa V2'nin ORTAK EKSEN SİSTEMİ
+   -----------------------------------------------------------------------------
+   Bu dosya bir "utility" katmanı değil. Ana sayfanın bütün bölümlerinin
+   PAYLAŞTIĞI dört ekseni ve tek tekrar eden yapısal aracı tanımlar. Amaç,
+   kullanıcının her bölümde "yeni bir bölüm başladı" değil "aynı düzen başka
+   bir duruma geçti" hissetmesi.
+
+   DÖRT EKSEN (her bölüm bu ızgaranın farklı bir DURUMU)
+     A  karakter / künye ekseni   kol 1        küçük mono numaralar, etiketler
+     B  ana metin ekseni          kol 2–7      tipografi buradan başlar
+     C  menteşe ekseni            kol 8        kırılma noktası; solda metin,
+                                               sağda görsel alan buluşur
+     D  görsel alan               kol 8–13     fotoğraf; sağdan taşabilir
+
+   Asimetri buradan geliyor ve GEREKÇELİ: metin her zaman B'den başlar,
+   fotoğraf her zaman C'de devralır. Bir öğe sağdaysa D alanındadır, soldaysa
+   B'dedir. "Neden bu sağda?" sorusunun cevabı sayfa boyunca aynı.
+
+   TEK TEKRAR EDEN ARAÇ: OPERASYON ÇİZGİSİ (`.op-cizgi`)
+   Aynı ince çizgi bölümden bölüme GÖREV değiştirir, süs olarak kalmaz:
+     Bölüm 1  kadraj ölçüsü      fotoğrafın çerçevesini ölçer
+     Bölüm 2  mekânsal eksen     sokak/kat/erişim geometrisini taşır
+     Bölüm 3  süreç omurgası     operasyon adımlarını dizer
+     Bölüm 4  açıklama çizgisi   fiyat faktörünü değerine bağlar
+   İlerleme çubuğu değildir, yüzde göstermez, HUD değildir.
+   ========================================================================== */
+
+:root {
+  /* Sayfa boyunca DEĞİŞMEYEN yatay ölçüler. Bölümler kendi dolgusunu
+     uydurmuyor; hepsi bunları kullanıyor, eksenler bu yüzden hizalı kalıyor. */
+  --sahne-pad: clamp(1.25rem, 0.5rem + 3vw, 4rem);
+  --sahne-kolon-arasi: clamp(1rem, 0.5rem + 1.5vw, 2rem);
+
+  /* Bölüm içi dikey ritim — üç kademe. Bölümler kendi clamp'ini yazmıyor. */
+  --sahne-dikey: clamp(3.5rem, 2.25rem + 4vw, 6.5rem);
+  --sahne-dikey-genis: clamp(6rem, 2rem + 12vw, 13rem);
+  --sahne-dikey-dar: clamp(2rem, 1.5rem + 1.5vw, 3rem);
+
+  /* YAPIŞKAN BARIN YÜKSEKLİĞİ — TEK KAYNAK.
+     Hem Navbar'ın kendi yüksekliği hem mobil menü panelinin üst kenarı hem
+     de yapışkan sahnelerin ofseti bunu okuyor (bkz. HAREKET-SOZLESMESI
+     md. 11). Önceden değer üç yerde ayrı ayrı yazılıydı (Navbar'da 56/64,
+     burada 64); biri değişince diğerleri sessizce kayıyordu.
+     Sahne ofsetleri yalnız ≥1024px'te kullanılıyor, orada değer 64px —
+     yani üç signature'ın başlangıç konumu değişmiyor. */
+  --sahne-navbar: 56px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --sahne-navbar: 64px;
+  }
+}
+
+/* ---- Ortak kap ---------------------------------------------------------- */
+.sahne-alan {
+  max-width: var(--container-wide);
+  margin-inline: auto;
+  padding-inline: var(--sahne-pad);
+}
+
+/* ---- Ortak 12 kolon ızgarası -------------------------------------------- */
+@media (min-width: 1024px) {
+  .sahne-izgara {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--sahne-kolon-arasi);
+  }
+  /* Eksen kısayolları — bölümler kol numarası ezberlemesin diye. */
+  .eksen-a { grid-column: 1 / 2; }    /* künye */
+  .eksen-b { grid-column: 2 / 8; }    /* ana metin */
+  .eksen-b-genis { grid-column: 2 / 9; }
+  .eksen-d { grid-column: 8 / 13; }   /* görsel alan */
+  .eksen-tam { grid-column: 1 / 13; }
+}
+
+/* ---- Karakter katmanı: bölüm künyesi ------------------------------------
+   Mono YALNIZ burada ve gerçek sayısal/operasyonel etiketlerde. Gövde metni
+   asla mono değil. Renk `--c-ink-soft`: `--c-measure` kâğıt üzerinde 3,5:1
+   ve METİN için AA'yı geçmiyor (ölçüldü). */
+.op-kunye {
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  color: rgb(var(--c-ink-soft));
+  margin: 0;
+}
+
+/* ---- OPERASYON ÇİZGİSİ --------------------------------------------------
+   Tek araç, dört görev. Kalınlık ve renk her yerde aynı; değişen şey yönü,
+   uzunluğu ve neyi ölçtüğü. */
+.op-cizgi {
+  display: block;
+  background: rgb(var(--c-measure));
+}
+.op-cizgi--yatay { height: 1px; width: 100%; }
+.op-cizgi--dikey { width: 1px; height: 100%; }
+/* Dekoratif ayraç tonu — bilgi taşımayan ayrımlar için. */
+.op-cizgi--soluk { background: rgb(var(--c-rule)); }
+
+/* ---- Ortak tipografi kademeleri ----------------------------------------
+   BURADAN TAŞINDI → assets/css/tipografi.css
+   Kademeler artık site geneli; ana sayfaya özel değiller. Değerler birebir
+   aynı taşındı. Bu dosya yalnız ana sayfanın EKSEN sistemini tutuyor. */
+
+/* ---- Bağlantı dili — Hero'da onaylanan çerçevesiz/altı çizgili ---------- */
+.op-bag {
+  display: inline-flex;
+  align-items: center;
+  /* Flex/grid kabında alt çizgi metnin değil HÜCRENİN genişliğinde
+     çiziliyordu (ölçüldü: 540px). Alt çizgi metne ait. */
+  align-self: flex-start;
+  justify-self: start;
+  min-height: 44px;
+  font-size: 1rem;
+  font-weight: 550;
+  color: rgb(var(--c-signal));
+  text-decoration: none;
+  border-bottom: 1px solid rgb(var(--c-signal));
+  padding-bottom: 0.25rem;
+  transition: color 0.15s ease-out, border-color 0.15s ease-out;
+}
+.op-bag:hover {
+  color: rgb(var(--c-signal-deep));
+  border-bottom-color: rgb(var(--c-signal-deep));
+}
+.op-bag:focus-visible {
+  outline: 2px solid rgb(var(--c-ink));
+  outline-offset: 4px;
+}
+/* İkincil: bakır kıt kullanılacak, her bağlantı bakır olmayacak. */
+.op-bag--sakin {
+  color: rgb(var(--c-ink));
+  border-bottom-color: rgb(var(--c-measure));
+}
+.op-bag--sakin:hover {
+  color: rgb(var(--c-ink));
+  border-bottom-color: rgb(var(--c-ink));
+}

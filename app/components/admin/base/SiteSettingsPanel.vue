@@ -14,14 +14,15 @@ const { form, message, showDeleteModal, recordId, isSaving, isDeleting, save, re
   linkedinUrl: '',
   youtubeUrl: '',
   githubUrl: '',
-  googleAnalyticsId: '',
-  googleTagManagerId: '',
-  googleAdsenseId: '',
+  // ANALİTİK ALANLARI KALDIRILDI (M6) — gerekçe şablondaki nota yazılı.
+  // Formda bulunmadıkları için istek gövdesine de girmiyorlar; sunucu
+  // şeması da artık onları tanımıyor. Veri tabanı sütunları duruyor.
+  ctaLabel: '',
+  ctaLink: '',
   metaTitle: '',
   metaDescription: '',
   metaKeywords: '',
   footerText: '',
-  copyrightText: '',
   workingHours: '',
   latitude: null,
   longitude: null,
@@ -105,14 +106,60 @@ const updateOgImageUrl = (url) => {
         </div>
       </div>
 
-      <!-- 4. ANALİTİK & KODLAR -->
+      <!-- 4. GENEL ÇAĞRI (CTA) -->
       <div class="border rounded-lg p-4">
-        <h2 class="text-xl font-semibold text-primary mb-4">📊 Analitik & Takip Kodları</h2>
+        <h2 class="text-xl font-semibold text-primary mb-4">📣 Genel Çağrı Düğmesi</h2>
+        <p class="mb-4 text-sm text-gray-600">
+          İstanbul dışı bölge sayfalarının kapanış bandındaki düğme.
+          <strong>Ana sayfanın kapanış düğmesi burada değil</strong> —
+          o, Ana Sayfa ekranındaki “Kapanış” bölümünden yönetiliyor.
+        </p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><label>Google Analytics ID</label><input v-model="form.googleAnalyticsId" class="w-full p-3 border rounded-lg" placeholder="G-XXXXXXXXXX" /></div>
-          <div><label>Google Tag Manager ID</label><input v-model="form.googleTagManagerId" class="w-full p-3 border rounded-lg" placeholder="GTM-XXXXXX" /></div>
-          <div><label>Google Adsense ID</label><input v-model="form.googleAdsenseId" class="w-full p-3 border rounded-lg" placeholder="pub-xxxxxxxx" /></div>
+          <div>
+            <label for="ss-cta-label">Düğme metni</label>
+            <input id="ss-cta-label" v-model="form.ctaLabel" maxlength="60" class="w-full p-3 border rounded-lg" placeholder="Ücretsiz Keşif" />
+          </div>
+          <div>
+            <label for="ss-cta-link">Düğme adresi</label>
+            <input id="ss-cta-link" v-model="form.ctaLink" maxlength="191" class="w-full p-3 border rounded-lg" placeholder="/iletisim" />
+          </div>
         </div>
+      </div>
+
+      <!--
+        ANALİTİK & TAKİP KODLARI BÖLÜMÜ KALDIRILDI (M6).
+
+        Burada üç alan vardı: Google Analytics ID, Google Tag Manager ID ve
+        Google AdSense ID. Üçünün de herkese açık tüketicisi ölçüldü ve
+        SIFIR çıktı: projede gtag, GTM ya da dataLayer yükleyen tek bir
+        satır kod yok. Yani yönetici bu alanları dolduruyor, kaydediyor,
+        veri tabanına yazılıyor ve hiçbir şey olmuyordu.
+
+        Böyle bir alanı panelde tutmak yalnız işe yaramamakla kalmıyor,
+        aktif olarak yanlış bilgi veriyor: işletme ölçüm yaptığını sanıp
+        gerçekte hiçbir veri toplamıyor.
+
+        NEDEN "ÇALIŞIR HÂLE GETİRMEK" SEÇİLMEDİ: projede rıza (consent)
+        altyapısı yok. Üçüncü taraf analitik betiğini rızasız yüklemek bu
+        turun işi değil ve uydurma bir çerez onayı ürünü icat etmek de
+        değil. Alanlar geri geldiğinde önce rıza altyapısı gerekiyor.
+
+        Site içi ölçüm ETKİLENMEDİ: `SiteEvent` / `/api/events` akışı
+        (plugins/donusum-takibi.client.ts) aynen çalışıyor ve Talepler
+        ekranındaki istatistikleri o besliyor.
+
+        Veri tabanı sütunları SİLİNMEDİ.
+      -->
+      <div class="border border-gray-300 bg-gray-50 rounded-lg p-4">
+        <h2 class="text-lg font-semibold text-gray-700 mb-2">📊 Analitik</h2>
+        <p class="text-sm text-gray-600">
+          Google Analytics / Tag Manager / AdSense alanları bu ekrandan
+          <strong>kaldırıldı</strong>: sitede bu betikleri yükleyen bir kod ve
+          çerez onayı altyapısı yok, dolayısıyla girilen kimlikler hiçbir şey
+          yapmıyordu. Ziyaretçi ve dönüşüm sayıları
+          <NuxtLink to="/evdeneveyonetim/leads" class="font-semibold underline">Talepler &amp; İstatistik</NuxtLink>
+          ekranında, site içi ölçümden geliyor.
+        </p>
       </div>
 
       <!-- 5. SEO & META
@@ -155,17 +202,32 @@ const updateOgImageUrl = (url) => {
         </div>
       </div>
 
-      <!-- 6. FOOTER & COPYRIGHT -->
+      <!-- 6. ALT BİLGİ -->
       <div class="border rounded-lg p-4">
-        <h2 class="text-xl font-semibold text-primary mb-4">📄 Footer & Telif Hakkı</h2>
+        <h2 class="text-xl font-semibold text-primary mb-4">📄 Alt Bilgi</h2>
         <div>
-          <label>Footer Metni</label>
-          <textarea v-model="form.footerText" rows="2" class="w-full p-3 border rounded-lg"></textarea>
+          <label for="ss-footer-text">İşletme tanımı</label>
+          <textarea
+            id="ss-footer-text"
+            v-model="form.footerText"
+            rows="2"
+            class="w-full p-3 border rounded-lg"
+            placeholder="İstanbul'da evden eve nakliyat, ofis taşıma, parça eşya…"
+          ></textarea>
+          <p class="mt-1 text-sm text-gray-600">
+            Alt bilgide marka adının altında, <strong>her sayfada</strong> görünen
+            tek cümle. Boş bırakılırsa hiç basılmaz.
+          </p>
         </div>
-        <div class="mt-4">
-          <label>Copyright Metni</label>
-          <input v-model="form.copyrightText" class="w-full p-3 border rounded-lg" />
-        </div>
+
+        <!--
+          "COPYRIGHT METNİ" ALANI KALDIRILDI (M7).
+
+          Alt bilgi telif satırını `© {yıl} {marka adı}` olarak kendisi
+          üretiyor ve bu alanı HİÇ okumuyor — ölçüldü. Panelde durduğu
+          sürece "değiştirdim ama sitede bir şey olmadı" üretiyordu; M6'da
+          kapatılan hata sınıfının aynısı. Veri tabanı sütunu duruyor.
+        -->
       </div>
 
       <!-- 7. DİĞER BİLGİLER (Çalışma Saatleri, Harita) -->

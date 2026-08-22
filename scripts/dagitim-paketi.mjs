@@ -73,7 +73,10 @@ await cp(KAYNAK, path.join(HEDEF, '.output'), { recursive: true, dereference: tr
 
 // Sunucuda gereken betikler: yedekleme cron'u ve veritabanı teşhisi.
 await mkdir(path.join(HEDEF, 'scripts'), { recursive: true })
-for (const dosya of ['yedekle.mjs', 'db-baglanti-testi.mjs']) {
+// Liste BİLEREK açık yazılıyor: scripts/ klasörünün tamamı kopyalansaydı
+// yalnızca geliştirme makinesinde anlamlı olan araçlar (gorsel-hazirla,
+// font-altkume, duman-testi …) da sunucuya çıkardı.
+for (const dosya of ['yedekle.mjs', 'yedek-cron.sh', 'db-baglanti-testi.mjs']) {
   await cp(path.join(KOK, 'scripts', dosya), path.join(HEDEF, 'scripts', dosya))
 }
 

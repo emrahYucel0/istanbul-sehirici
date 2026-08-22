@@ -96,27 +96,6 @@
               width="16"
               height="16"
               fill="currentColor"
-              class="bi bi-file-break-fill text-primary w-8 h-8"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M4 0h8a2 2 0 0 1 2 2v7H2V2a2 2 0 0 1 2-2M2 12h12v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zM.5 10a.5.5 0 0 0 0 1h15a.5.5 0 0 0 0-1z"
-              />
-            </svg>
-          </span>
-          <NuxtLink
-            to="/evdeneveyonetim/trust-bar"
-            class="text-gray-700 hover:text-secondary"
-            >Güven Bandı</NuxtLink
-          >
-        </li>
-        <li class="mb-6 flex gap-3 align-middle">
-          <span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
               class="bi bi-star-fill text-primary w-8 h-8"
               viewBox="0 0 16 16"
             >
@@ -180,49 +159,6 @@
               width="16"
               height="16"
               fill="currentColor"
-              class="bi bi-award-fill text-primary w-8 h-8"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="m8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864z"
-              />
-              <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z" />
-            </svg>
-          </span>
-          <NuxtLink
-            to="/evdeneveyonetim/hero"
-            class="text-gray-700 hover:text-secondary"
-            >Anasayfa</NuxtLink
-          >
-        </li>
-        <li class="mb-6 flex gap-3 align-middle">
-          <span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-file-break-fill text-primary w-8 h-8"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M4 0h8a2 2 0 0 1 2 2v7H2V2a2 2 0 0 1 2-2M2 12h12v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zM.5 10a.5.5 0 0 0 0 1h15a.5.5 0 0 0 0-1z"
-              />
-            </svg>
-          </span>
-          <NuxtLink
-            to="/evdeneveyonetim/choose"
-            class="text-gray-700 hover:text-secondary"
-            >Neden Biz?</NuxtLink
-          >
-        </li>
-        <li class="mb-6 flex gap-3 align-middle">
-          <span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
               class="bi bi-list-ol text-primary w-8 h-8"
               viewBox="0 0 16 16"
             >
@@ -266,28 +202,6 @@
             width="16"
             height="16"
             fill="currentColor"
-            class="bi bi-card-heading text-primary w-8 h-8"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"
-            />
-            <path
-              d="M3 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5m0-5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z"
-            />
-          </svg>
-          <NuxtLink
-            to="/evdeneveyonetim/help"
-            class="text-gray-700 hover:text-secondary"
-            >We Help</NuxtLink
-          >
-        </li>
-        <li class="mb-6 flex gap-3 align-middle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
             class="bi bi-question-square-fill text-primary w-8 h-8"
             viewBox="0 0 16 16"
           >
@@ -301,75 +215,45 @@
             >Sorular</NuxtLink
           >
         </li>
-        <!-- "Özellikler" (/evdeneveyonetim/feature) bağlantısı KALDIRILDI.
+        <!--
+             M6'DA MENÜDEN ÇIKARILAN YEDİ EKRAN
+             ─────────────────────────────────────────────────────────────
+             Hepsinin herkese açık tüketicisi ölçüldü ve SIFIR çıktı; yani
+             yönetici bu ekranlarda düzenleme yapıp kaydediyor, veri
+             tabanına yazılıyor ve sitede hiçbir şey değişmiyordu.
+
+               Güven Bandı      TrustBar.vue        render edilmiyordu
+               Neden Biz?       Choose.vue          render edilmiyordu
+               We Help          Help.vue            render edilmiyordu
+               Fiyatlar         Pricing.vue         render edilmiyordu
+               Yorumlar (bölüm) Testimonial.vue     render edilmiyordu
+               İletişim Form    QuoteRequest        0 kayıt, 0 tüketici
+               Anasayfa (Hero)  HeroPage            12 alandan 2'si canlıydı
+               Footer           Footer              12 bağlantı kaydı ve
+                                                    telif metni hiç
+                                                    okunmuyordu; adres/
+                                                    telefon/e-posta ise
+                                                    Site Ayarları'nı ezen
+                                                    boş kopyalardı
+
+             M4'te bu ekranların üstüne "YAYINDA DEĞİL" şeridi konmuştu; o
+             geçici bir güvenlik önlemiydi. Ölü bir ekranı menüde sonsuza
+             kadar uyarıyla tutmak temizlik değil, ertelemedir.
+
+             SAYFA, PANEL ve UÇ NOKTA da silindi. Veri tabanı tabloları
+             DURUYOR (veri kaybı yok) — ayrıntı M6 raporunda.
+
+             Hero'nun iki canlı alanı (düğme metni + adresi) Site Ayarları'na
+             taşındı; İstanbul dışı bölge sayfalarının kapanış düğmesi aynen
+             çalışmaya devam ediyor.
+
+             Aynı gerekçeyle daha önce kaldırılmıştı:
+             "Özellikler" (/evdeneveyonetim/feature) bağlantısı KALDIRILDI.
              Arkasındaki bölüm sitede hiçbir sayfada render edilmiyordu;
              panel açılıyor, veri kaydediliyor ama görünmüyordu. Bileşen,
              panel, sayfa ve API uç noktası birlikte silindi. Aynı durumdaki
              "Kartlar" (/evdeneveyonetim/card) sayfasının zaten menüde
              bağlantısı yoktu, yalnızca doğrudan adresle açılıyordu. -->
-        <li class="mb-6 flex gap-3 align-middle">
-          <span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-tag-fill text-primary w-8 h-8"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M2 1a1 1 0 0 0-1 1v4.586a1 1 0 0 0 .293.707l7 7a1 1 0 0 0 1.414 0l4.586-4.586a1 1 0 0 0 0-1.414l-7-7A1 1 0 0 0 6.586 1zm4 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"
-              />
-            </svg>
-          </span>
-          <NuxtLink
-            to="/evdeneveyonetim/price"
-            class="text-gray-700 hover:text-secondary"
-            >Fiyatlar</NuxtLink
-          >
-        </li>
-        <li class="mb-6 flex gap-3 align-middle">
-          <span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-chat-left-dots-fill text-primary w-8 h-8"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793zm5 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0m4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"
-              />
-            </svg>
-          </span>
-          <NuxtLink
-            to="/evdeneveyonetim/testimonial"
-            class="text-gray-700 hover:text-secondary"
-            >Yorumlar</NuxtLink
-          >
-        </li>
-        <li class="mb-6 flex gap-3 align-middle">
-          <span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-share-fill text-primary w-8 h-8"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5"
-              />
-            </svg>
-          </span>
-          <NuxtLink
-            to="/evdeneveyonetim/footer"
-            class="text-gray-700 hover:text-secondary"
-            >Footer</NuxtLink
-          >
-        </li>
         <li class="mb-6 flex gap-3 align-middle">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -388,6 +272,52 @@
             class="text-gray-700 hover:text-secondary"
             >Hakkımızda</NuxtLink
           >
+        </li>
+        <!-- Ana Sayfa en üstte: sitenin en çok görüntülenen sayfası ve
+             bu ekran onun kontrollü içeriğini yönetiyor. -->
+        <li class="mb-6 flex gap-3 align-middle">
+          <span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-house-door-fill text-primary w-8 h-8"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"
+              />
+            </svg>
+          </span>
+          <NuxtLink
+            to="/evdeneveyonetim/anasayfa"
+            class="text-gray-700 hover:text-secondary"
+            >Ana Sayfa</NuxtLink
+          >
+        </li>
+        <!-- İç Sayfalar, Ana Sayfa'nın hemen altında: aynı işin devamı —
+             sitenin geri kalan sayfalarının editoryal içeriği. -->
+        <li class="mb-6 flex gap-3 align-middle">
+          <span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-layers-fill text-primary w-8 h-8" viewBox="0 0 16 16">
+              <path d="M7.765 1.559a.5.5 0 0 1 .47 0l7.5 4a.5.5 0 0 1 0 .882l-7.5 4a.5.5 0 0 1-.47 0l-7.5-4a.5.5 0 0 1 0-.882z"/>
+              <path d="m2.125 8.567-1.86.992a.5.5 0 0 0 0 .882l7.5 4a.5.5 0 0 0 .47 0l7.5-4a.5.5 0 0 0 0-.882l-1.86-.992-5.17 2.756a1.5 1.5 0 0 1-1.41 0z"/>
+            </svg>
+          </span>
+          <NuxtLink to="/evdeneveyonetim/ic-sayfa" class="text-gray-700 hover:text-secondary">İç Sayfalar</NuxtLink>
+        </li>
+
+        <!-- Medya Kütüphanesi: içerik ekranlarındaki görsel seçicinin
+             arkasındaki envanter. -->
+        <li class="mb-6 flex gap-3 align-middle">
+          <span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-images text-primary w-8 h-8" viewBox="0 0 16 16">
+              <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+              <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z"/>
+            </svg>
+          </span>
+          <NuxtLink to="/evdeneveyonetim/medya" class="text-gray-700 hover:text-secondary">Medya Kütüphanesi</NuxtLink>
         </li>
         <li class="mb-6 flex gap-3 align-middle">
           <span>
@@ -408,6 +338,30 @@
             to="/evdeneveyonetim/region"
             class="text-gray-700 hover:text-secondary"
             >Bölgeler</NuxtLink
+          >
+        </li>
+        <!-- Mahalleler, Bölgeler'in hemen altında: aynı coğrafi hiyerarşinin
+             bir alt katmanı (İstanbul → ilçe → mahalle) ve ilçe kaydı
+             seçilmeden mahalle oluşturulamıyor. -->
+        <li class="mb-6 flex gap-3 align-middle">
+          <span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-signpost-split-fill text-primary w-8 h-8"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M7 16h2V6h5a1 1 0 0 0 .8-.4l.975-1.3a.5.5 0 0 0 0-.6L14.8 2.4A1 1 0 0 0 14 2H9v-.586a1 1 0 0 0-2 0V3H2a1 1 0 0 0-.8.4L.225 4.7a.5.5 0 0 0 0 .6L1.2 6.6A1 1 0 0 0 2 7h5zm2-11V3h5l.75 1L14 5zM7 8v2H2l-.75-1L2 8z"
+              />
+            </svg>
+          </span>
+          <NuxtLink
+            to="/evdeneveyonetim/neighborhood"
+            class="text-gray-700 hover:text-secondary"
+            >Mahalleler</NuxtLink
           >
         </li>
         <li class="mb-6 flex gap-3 align-middle">
@@ -454,30 +408,6 @@
             to="/evdeneveyonetim/meta"
             class="text-gray-700 hover:text-secondary"
             >Meta Taglar</NuxtLink
-          >
-        </li>
-        <li class="mb-6 flex gap-3 align-middle">
-          <span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-envelope-arrow-up-fill text-primary w-8 h-8"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zm.192 8.159 6.57-4.027L8 9.586l1.239-.757.367.225A4.49 4.49 0 0 0 8 12.5c0 .526.09 1.03.256 1.5H2a2 2 0 0 1-1.808-1.144M16 4.697v4.974A4.5 4.5 0 0 0 12.5 8a4.5 4.5 0 0 0-1.965.45l-.338-.207z"
-              />
-              <path
-                d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.354-5.354 1.25 1.25a.5.5 0 0 1-.708.708L13 12.207V14a.5.5 0 0 1-1 0v-1.717l-.28.305a.5.5 0 0 1-.737-.676l1.149-1.25a.5.5 0 0 1 .722-.016"
-              />
-            </svg>
-          </span>
-          <NuxtLink
-            to="/evdeneveyonetim/quote"
-            class="text-gray-700 hover:text-secondary"
-            >İletişim Form</NuxtLink
           >
         </li>
       </ul>

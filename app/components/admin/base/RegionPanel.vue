@@ -10,12 +10,37 @@ import BulletList from '@tiptap/extension-bullet-list'
 import OrderedList from '@tiptap/extension-ordered-list'
 import ListItem from '@tiptap/extension-list-item'
 import Image from '@tiptap/extension-image'
+// Sınıflandırma TEK KAYNAKTAN: aynı işlevi sunucu (istanbul.service,
+// neighborhoods.service) ve public sayfa da okuyor. Panelde ikinci bir
+// "39 ilçe" listesi tutulmuyor.
+import { istanbulIlcesiMi } from '#shared/utils/istanbul'
 
 // Türkiye illeri listesi artık utils/turkishCities.ts'de tek bir yerde
 // tanımlı (önceden burada ve pages/[...slug].vue'da birbirinden bağımsız
 // iki kopya olarak duruyordu — üstelik pages/[...slug].vue'daki kopyada
 // id 47 yanlışlıkla "Karaman" olarak etiketlenmişti, doğrusu "Mardin"dir;
 // 70 zaten doğru şekilde "Karaman"dı).
+
+/**
+ * ÇALIŞMA KAPSAMI — AYNI TABLO, İKİ FARKLI İŞ.
+ *
+ * `Region` tablosunda 375 kayıt var ve ikisi yönetimde aynı iş değil:
+ *
+ *   İSTANBUL İLÇELERİ (39)  M2 kalite kapısı, açık yayınla/geri çek eylemi,
+ *                           aktif mahalle koruması, mahalle yönetimi bağı.
+ *   LEGACY BÖLGELER (336)   Eski markadan devralınan kayıtlar; eski yayın
+ *                           davranışı, İstanbul kapısı UYGULANMIYOR.
+ *
+ * Panel eskiden tek bir 375 satırlık karma liste basıyordu: İstanbul'un 39
+ * ilçesi, 336 eski kaydın arasında kayboluyordu — oysa günlük işin tamamı o
+ * 39 kayıtta.
+ *
+ * SÜZGEÇ SUNUCUDA. Kapsam değişince liste yeniden isteniyor; 375 kaydı
+ * çekip istemcide ayırmak her açılışta gereksiz veri taşımak olurdu.
+ * Varsayılan İSTANBUL: bu bir İstanbul projesi.
+ */
+const kapsam = ref('istanbul')
+const istanbulKapsami = computed(() => kapsam.value === 'istanbul')
 
 const { form: region, message, items: allRegions, isSaving, isDeleting, isLoadingItem, resetForm: resetFormBase, selectItem, save, remove, replaceItem } = useListCrud('regions', {
   id: null,
@@ -25,6 +50,7 @@ const { form: region, message, items: allRegions, isSaving, isDeleting, isLoadin
   slug: '',
   content: '',
   excerpt: '',
+  metaTitle: '',
   metaDescription: '',
   image: '',
   imageAlt: '',
@@ -43,7 +69,7 @@ const { form: region, message, items: allRegions, isSaving, isDeleting, isLoadin
   facts: [],
   faqs: [],
   routes: [],
-}, { listQuery: '?admin=true' })
+}, { listQuery: () => `?admin=true&kapsam=${kapsam.value}` })
 
 // --- Fiyat Faktörü Girişi (form dışı, panel-özel yardımcı state) ---
 const priceFactorInput = ref({
@@ -81,6 +107,64 @@ const removePriceFactor = (index) => {
   region.priceFactors.splice(index, 1)
 }
 
+/**
+ * Düzenlenen kayıt bir İSTANBUL İLÇESİ mi?
+ *
+ * Mahalle yönetimi ilçelerde artık bu panelde DEĞİL. Karar slug listesiyle
+ * değil `istanbulIlcesiMi` ile veriliyor; sunucu ve public sayfa da aynı
+ * işlevi okuyor.
+ */
+const istanbulIlcesiKaydi = computed(() => istanbulIlcesiMi(region))
+
+// --- İstanbul ilçesi yayın akışı ------------------------------------------
+//
+// NEDEN AYRI
+// Buradaki `isActive` onay kutusu doğrudan `PUT /api/regions`'a gidiyor ve
+// `regionsService.update` hiçbir kapı çalıştırmıyordu: on maddelik kalite
+// kapısı yalnız komut satırında anlamlıydı, panelden tek tıkla atlanıyordu.
+//
+// İstanbul ilçelerinde onay kutusu artık YOK — yerine durum rozeti, kapı
+// listesi ve iki eylem var. İstanbul DIŞI 336 legacy kayıtta onay kutusu
+// aynen duruyor: onların bir kapısı yok ve davranışları değişmedi.
+const ilceKapi = ref(null)
+const ilceYayinIsleniyor = ref(false)
+
+const ilceKapisiniGetir = async (slug) => {
+  ilceKapi.value = null
+  if (!slug) return
+  try {
+    const cevap = await $fetch(`/api/regions-kapi?slug=${encodeURIComponent(slug)}`)
+    if (cevap?.success) ilceKapi.value = cevap.data
+  } catch {
+    // Kapı raporu alınamazsa panel çalışmaya devam eder; liste basılmaz.
+    ilceKapi.value = null
+  }
+}
+
+const ilceYayinDegistir = async (yayinda) => {
+  if (!region.slug) return
+  ilceYayinIsleniyor.value = true
+  try {
+    const cevap = await $fetch('/api/regions-yayin', {
+      method: 'POST',
+      body: { slug: region.slug, yayinda },
+    })
+    if (cevap?.success === false) {
+      if (cevap.kapi) ilceKapi.value = cevap.kapi
+      throw new Error(cevap.error || 'İşlem tamamlanamadı')
+    }
+    // Yayın durumu KAYITTA yaşıyor; formdaki değeri de eşitliyoruz ki
+    // rozet anında doğru görünsün.
+    region.isActive = yayinda
+    message.value = cevap.message || 'Güncellendi.'
+    await ilceKapisiniGetir(region.slug)
+  } catch (e) {
+    message.value = e?.data?.message || e?.message || 'İşlem tamamlanamadı'
+  } finally {
+    ilceYayinIsleniyor.value = false
+  }
+}
+
 // --- Bölge Seçimi ---
 // selectItem artık listeden değil, doğrudan API'den (slug ile) tek kayıt
 // çekiyor (bkz. useListCrud.ts) — bu yüzden async. Not: bu panel bilinçli
@@ -90,6 +174,9 @@ const removePriceFactor = (index) => {
 // sayılar, sadece görünen sayfada arama) sessizce bozardı.
 const selectRegion = async (slug) => {
   const selected = await selectItem(slug)
+  // Kapı raporu yalnız İstanbul ilçelerinde anlamlı; legacy kayıtlarda
+  // istek hiç atılmıyor.
+  ilceKapi.value = null
   if (selected) {
     // Json? sütunları dizi de olabilir, dizi yazılmış metin de; çözümleme
     // utils/json.ts'te tek yerde (önceden burada elle yazılmıştı).
@@ -106,6 +193,10 @@ const selectRegion = async (slug) => {
       editor.value.commands.setContent(selected.content)
     }
     showEditModal.value = true
+
+    // Kapı raporu forma yüklendikten SONRA çekiliyor: `istanbulIlcesiKaydi`
+    // `region.cities`'e bakıyor ve o değer ancak burada dolu.
+    if (istanbulIlcesiKaydi.value) await ilceKapisiniGetir(selected.slug)
   }
 }
 
@@ -271,6 +362,43 @@ onBeforeUnmount(() => {
     editor.value.destroy()
   }
 })
+
+/**
+ * KAPSAM SAYILARI — GERÇEK VERİ TABANINDAN.
+ *
+ * Sekme rozetlerindeki sayılar sabit yazılmıyor: ikisi de tek bir hafif
+ * (`light=true`) sorguyla sunucudan sayılıyor. Sabit "39 / 336" yazmak,
+ * bir ilçe eklendiği gün sessizce yanlış olurdu.
+ */
+const kapsamSayilari = ref({ istanbul: 0, legacy: 0 })
+
+const kapsamSayilariniGetir = async () => {
+  try {
+    const [ist, leg] = await Promise.all([
+      $fetch('/api/regions?admin=true&light=true&kapsam=istanbul'),
+      $fetch('/api/regions?admin=true&light=true&kapsam=legacy'),
+    ])
+    kapsamSayilari.value = {
+      istanbul: Array.isArray(ist?.data) ? ist.data.length : 0,
+      legacy: Array.isArray(leg?.data) ? leg.data.length : 0,
+    }
+  } catch {
+    // Sayaç alınamazsa panel çalışmaya devam eder; rozet 0 kalır.
+  }
+}
+
+onMounted(kapsamSayilariniGetir)
+
+/** Sekme değişimi: liste sunucudan yeniden geliyor, form kapanıyor. */
+const kapsamDegistir = (yeni) => {
+  if (kapsam.value === yeni) return
+  kapsam.value = yeni
+  currentPage.value = 1
+  searchQuery.value = ''
+  // Açık bir düzenleme formu varsa kapat: seçili kayıt artık listede
+  // olmayabilir ve "hangi kaydı düzenliyorum" belirsizleşir.
+  showEditModal.value = false
+}
 
 // --- İstatistik Hesaplamaları ---
 const statistics = computed(() => {
@@ -529,7 +657,7 @@ const updatePriceFactorsImageUrl = (url) => {
 <template>
   <div class="max-w-7xl mx-auto p-6">
     <!-- Başlık ve Ekleme Butonu -->
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">Bölge Yönetim Paneli</h1>
       <button
         @click="openAddForm"
@@ -538,6 +666,61 @@ const updatePriceFactorsImageUrl = (url) => {
         Yeni Bölge Ekle
       </button>
     </div>
+
+    <!--
+      ÇALIŞMA KAPSAMI — iki ayrı iş, iki ayrı liste.
+
+      Aynı tabloda duruyorlar ama yönetimde aynı iş değiller: İstanbul
+      ilçelerinde kalite kapısı ve açık yayınla/geri çek eylemi var, legacy
+      kayıtlarda yok. Süzgeç sunucuda; sekme değişince liste yeniden
+      isteniyor.
+    -->
+    <div class="mb-6 border-b border-gray-200">
+      <div class="flex gap-1" role="tablist" aria-label="Bölge çalışma kapsamı">
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="istanbulKapsami"
+          class="px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition"
+          :class="istanbulKapsami ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700'"
+          @click="kapsamDegistir('istanbul')"
+        >
+          İstanbul İlçeleri
+          <span class="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-800">{{ kapsamSayilari.istanbul }}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="!istanbulKapsami"
+          class="px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition"
+          :class="!istanbulKapsami ? 'border-gray-700 text-gray-800' : 'border-transparent text-gray-500 hover:text-gray-700'"
+          @click="kapsamDegistir('legacy')"
+        >
+          Legacy Bölgeler
+          <span class="ml-2 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-700">{{ kapsamSayilari.legacy }}</span>
+        </button>
+      </div>
+    </div>
+
+    <p
+      v-if="istanbulKapsami"
+      class="mb-6 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900"
+    >
+      <strong>İstanbul ilçeleri.</strong> Yayına alma açık bir eylem ve kalite
+      kapısından geçiyor; yayındaki bir ilçenin altında aktif mahalle varsa
+      geri çekilemiyor. Mahalleler
+      <NuxtLink to="/evdeneveyonetim/neighborhood" class="font-semibold underline">Mahalleler</NuxtLink>
+      ekranından yönetiliyor.
+    </p>
+    <p
+      v-else
+      class="mb-6 rounded border border-gray-300 bg-gray-50 p-3 text-sm text-gray-700"
+    >
+      <strong>Legacy bölgeler.</strong> Eski markadan devralınan kayıtlar ve
+      İstanbul il sayfası. Bu kayıtlarda İstanbul kalite kapısı
+      <strong>çalışmıyor</strong>; yayın durumu doğrudan kaydın kendi
+      onay kutusundan yönetiliyor.
+    </p>
 
     <!-- İstatistik Kartları -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -1314,11 +1497,82 @@ const updatePriceFactorsImageUrl = (url) => {
             </p>
           </div>
 
-          <!-- Aktif/Pasif Switch -->
-          <div class="flex items-center space-x-2">
-            <input 
-              type="checkbox" 
-              v-model="region.isActive" 
+          <!--
+            YAYIN DURUMU — İKİ AYRI DAVRANIŞ.
+
+            İstanbul ilçesi: kalite kapısı var, yayın ayrı bir eylem.
+            İstanbul dışı legacy kayıt: kapı yok, mevcut onay kutusu duruyor.
+            Ayrım slug listesiyle değil `istanbulIlcesiMi` ile yapılıyor.
+          -->
+          <div v-if="istanbulIlcesiKaydi" class="rounded-lg border-2 border-gray-200 p-4">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-gray-700">Yayın durumu:</span>
+                <span
+                  v-if="region.isActive"
+                  class="rounded bg-green-100 px-2 py-0.5 text-sm font-medium text-green-800"
+                >YAYINDA</span>
+                <span v-else class="rounded bg-amber-100 px-2 py-0.5 text-sm font-medium text-amber-900">
+                  TASLAK
+                </span>
+              </div>
+
+              <div class="flex gap-2">
+                <button
+                  v-if="!region.isActive"
+                  type="button"
+                  @click="ilceYayinDegistir(true)"
+                  :disabled="ilceYayinIsleniyor || !region.id"
+                  class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  {{ ilceYayinIsleniyor ? 'İşleniyor…' : 'Yayına Al' }}
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  @click="ilceYayinDegistir(false)"
+                  :disabled="ilceYayinIsleniyor"
+                  class="px-4 py-2 border border-amber-500 text-amber-800 rounded hover:bg-amber-50 disabled:opacity-50"
+                >
+                  {{ ilceYayinIsleniyor ? 'İşleniyor…' : 'Yayından Kaldır' }}
+                </button>
+              </div>
+            </div>
+
+            <p class="mt-2 text-sm text-gray-600">
+              İlçe sayfaları kalite kapısından geçmeden yayına alınamaz.
+              “Kaydet” içeriği yazar, yayın durumuna dokunmaz.
+            </p>
+
+            <!-- Kapı listesi: "yayınlanamadı" değil, hangi madde kaldı. -->
+            <div v-if="ilceKapi" class="mt-4 rounded border bg-white p-3">
+              <div class="mb-2 flex items-center justify-between">
+                <h4 class="font-semibold text-gray-800">Yayına hazırlık</h4>
+                <span
+                  :class="ilceKapi.gecti ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-900'"
+                  class="rounded px-2 py-0.5 text-xs font-medium"
+                >{{ ilceKapi.gecti ? 'Kapıdan geçti' : 'Eksik var' }}</span>
+              </div>
+              <ul class="space-y-1 text-sm">
+                <li v-for="k in ilceKapi.kurallar" :key="k.anahtar" class="flex items-start gap-2">
+                  <span
+                    class="w-4 shrink-0 text-center font-bold"
+                    :class="k.gecti === true ? 'text-green-600' : k.gecti === false ? 'text-red-600' : 'text-gray-400'"
+                  >{{ k.gecti === true ? '✓' : k.gecti === false ? '✗' : '–' }}</span>
+                  <span :class="k.gecti === false ? 'text-gray-800' : 'text-gray-600'">
+                    {{ k.etiket }}
+                    <span v-if="k.ayrinti && k.gecti !== true" class="text-gray-500">— {{ k.ayrinti }}</span>
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Aktif/Pasif Switch — YALNIZ İstanbul dışı legacy kayıtlar -->
+          <div v-else class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              v-model="region.isActive"
               id="isActive"
               class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             >
@@ -1337,7 +1591,39 @@ const updatePriceFactorsImageUrl = (url) => {
         eklendi (bölge metinlerinin medyanı 135 kelimeydi). Hepsi opsiyonel:
         boş bırakılan bölüm sitede hiç görünmüyor.
       -->
+      <!--
+        MAHALLE YÖNETİMİ İSTANBUL İLÇELERİNDE BURADA DEĞİL.
+
+        Bu alan (`Region.neighborhoods`) bir ad listesiydi ve mahalle
+        sayfalarını üretmiyordu. Sayfalar `Neighborhood` tablosundan geliyor;
+        ikisi birlikte durduğu sürece panelde bir ad eklemek ekranda sayıyı
+        artırıyor ama hiçbir sayfa oluşturmuyordu — silmek ise yayındaki bir
+        sayfayı hiç etkilemiyordu. Yani bu editör ilçelerde YANLIŞ BİLGİ
+        veriyordu.
+
+        Alan veri tabanında silinmedi (aktarım geçmişi orada duruyor), ama
+        İstanbul ilçelerinde artık düzenlenmiyor ve public taraf onu hiç
+        okumuyor. İstanbul DIŞI 336 legacy kayıtta editör aynen kalıyor:
+        o sayfalarda mahalle adları hâlâ yalnız etiket olarak basılıyor ve
+        `Neighborhood` tablosunda karşılıkları yok.
+      -->
+      <div v-if="istanbulIlcesiKaydi" class="border rounded-lg p-4 mt-6 bg-gray-50">
+        <h3 class="text-lg font-semibold mb-1">Mahalleler</h3>
+        <p class="text-sm text-gray-600">
+          Bu bir İstanbul ilçesi. Mahalleler kendi sayfalarına ve yayın
+          durumuna sahip; buradan değil <strong>Mahalleler</strong> ekranından
+          yönetiliyorlar.
+        </p>
+        <NuxtLink
+          :to="`/evdeneveyonetim/neighborhood?ilce=${region.slug}`"
+          class="mt-3 inline-block rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          Mahalleleri Yönet →
+        </NuxtLink>
+      </div>
+
       <admin-base-list-editor
+        v-else
         v-model="region.neighborhoods"
         title="Mahalleler"
         hint="Bu bölgede hizmet verdiğiniz mahalleler. Sayfada etiket olarak listelenir; “Moda evden eve nakliyat” gibi mahalle aramalarında karşılık üretir."
@@ -1591,6 +1877,35 @@ const updatePriceFactorsImageUrl = (url) => {
               required
             ></textarea>
             <p class="text-xs text-gray-500 mt-1">Maksimum 160 karakter</p>
+          </div>
+
+          <!--
+            ARAMA BAŞLIĞI — sayfadaki H1'den AYRI ve BOŞ BIRAKILABİLİR.
+            Boşken uygulama `başlık | marka` biçimini üretiyor, yani hiçbir
+            sayfa başlıksız kalmıyor. Elle girmenin iki sebebi var: uzun
+            başlıklarda markayı eklemek Google'ın kesme noktasını cümlenin
+            ortasına düşürüyor, ve aramada öne çıkması gereken kelime
+            H1'dekiyle her zaman aynı sırada olmuyor.
+            Girildiğinde OLDUĞU GİBİ kullanılır — marka eklenip eklenmemesi
+            de buradaki yazıya bağlı.
+          -->
+          <div>
+            <label for="rg-metatitle" class="block mb-2 font-medium">
+              Google Arama Başlığı
+            </label>
+            <input
+              id="rg-metatitle"
+              v-model="region.metaTitle"
+              type="text"
+              class="w-full p-2 border rounded"
+              maxlength="70"
+              placeholder="Yenimahalle Evden Eve Nakliyat | Marka"
+            />
+            <p class="text-xs mt-1" :class="(region.metaTitle || '').length > 60 ? 'text-amber-700' : 'text-gray-500'">
+              {{ (region.metaTitle || '').length }} / 60 karakter —
+              60 üstü Google sonuçlarında kesilir.
+              Boş bırakılırsa otomatik üretilir: <strong>başlık | marka</strong>
+            </p>
           </div>
 
           <!--

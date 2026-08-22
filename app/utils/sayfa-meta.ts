@@ -58,8 +58,15 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // ana sayfada karşılık buluyor. 80 il sayfası zaten kendi illerini
     // hedefliyor, ana sayfanın onlarla yarışmasına gerek yok.
     title: 'Evden Eve Nakliyat İstanbul | Sigortalı Taşıma, Yazılı Fiyat',
+    // AÇIKLAMA YENİLENDİ (ana sayfa yeni tasarıma geçtikten sonra):
+    //   · "Ücretsiz keşif" ÇIKARILDI — doğrulanmış bir iş kuralı değil ve
+    //     sayfadaki hiçbir bölüm bunu söylemiyor.
+    //   · "İstanbul" ve "39 ilçe" eklendi: sayfanın Kapsam bölümünün
+    //     gerçekten söylediği şey bu.
+    //   · Sayılan hizmetler ana sayfadaki Hizmetler defteriyle eşleşiyor;
+    //     depolama gibi burada sunulmayan bir şey yazmıyor.
     description:
-      'Evden eve nakliyat, parça eşya taşıma ve şehirler arası taşımacılık. Sigortalı ambalaj, marangozlu söküm-montaj ve yazılı sabit fiyat. Ücretsiz keşif.',
+      "İstanbul'un 39 ilçesinde evden eve nakliyat. Erişim ve kat durumu keşifte yerinde ölçülür, fiyat yazılı verilir. Ambalajlama, marangozlu söküm ve kurulum dahil.",
   },
   {
     anahtar: 'about',
@@ -69,8 +76,12 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // (bkz. composables/usePageSeo.ts). Elle yazılmıyor — panelden ad
     // değişince bu sayfa eski adda kalırdı.
     title: 'Hakkımızda | {marka}',
+    // ESKİ METİN: "… Ücretsiz keşif, yazılı sabit fiyat ve sigortalı
+    // taşımacılık anlayışımız." Üç iddia da doğrulanmamıştı. Bu satır
+    // yalnız panelde Meta kaydı YOKKEN basılıyor — yani sessiz bir yedek.
+    // Sessiz olması, iddia taramasından kaçması anlamına gelmemeli.
     description:
-      'Evden eve nakliyat, şehirler arası taşıma, ofis taşıma ve depolama hizmetleri. Ücretsiz keşif, yazılı sabit fiyat ve sigortalı taşımacılık anlayışımız.',
+      "İstanbul'da evden eve, ofis ve parça eşya taşıması. Nasıl çalıştığımız, keşifte neyi ölçtüğümüz ve kapsamı nasıl belirlediğimiz.",
   },
   {
     anahtar: 'services',
@@ -81,40 +92,63 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // yerine "Hizmetleri" ve listeden "Parça Eşya" çıkarılarak 59'a indirildi;
     // asıl anahtar kelime "evden eve nakliyat" başta korundu.
     title: 'Evden Eve Nakliyat Hizmetleri | Asansörlü, Ofis, Parça Eşya',
+    // "Ücretsiz keşif." ÇIKARILDI — doğrulanmış bir iş kuralı değil ve
+    // sayfadaki hiçbir bölüm bunu söylemiyor.
+    //
+    // Bu satır BUGÜN EKRANA ÇIKMIYOR: panelde `Meta(services)` kaydı var ve
+    // öncelik sırası onu kullanıyor. Ama kayıt silinir ya da alan boşaltılırsa
+    // yedek devreye girer ve iddia doğrudan arama sonucuna döner. Görünmeyen
+    // metin, iddia taramasından muaf değil.
     description:
-      'Evden eve, asansörlü, parça eşya, ofis taşıma, depolama ve şehirler arası nakliyat. Her hizmetin kapsamı ve fiyatı etkileyen konular. Ücretsiz keşif.',
+      "İstanbul'da evden eve, asansörlü, parça eşya, ofis taşıma, depolama, paketleme ve şehirler arası nakliyat. Her hizmetin kapsamı ve planı ayrı ayrı.",
   },
   {
     anahtar: 'region',
     etiket: 'Bölgelerimiz',
     yol: '/bolgelerimiz',
-    title: 'Hizmet Bölgelerimiz | Evden Eve Nakliyat',
+    // DEVİR: eski başlık/açıklama sayfayı Türkiye dizini olarak tanıtıyordu
+    // ("Türkiye genelindeki illerde") ve doğrulanmamış bir iddia taşıyordu
+    // ("Ücretsiz keşif"). Sayfa artık İstanbul coğrafi hub'ı; meta da öyle.
+    title: 'İstanbul Nakliyat Bölgeleri | 39 İlçe ve Mahalleleri',
     description:
-      'İstanbul ilçeleri ve Türkiye genelindeki illerde evden eve nakliyat ve depolama. Bölgenizi seçin, orada nasıl çalıştığımızı okuyun. Ücretsiz keşif.',
+      "İstanbul'da hizmet verdiğimiz 39 ilçe ve ilçelerin mahalleleri. Taşıma planı ilçeye, sokağa ve bina erişimine göre değişiyor.",
   },
   {
     anahtar: 'blog',
     etiket: 'Blog',
     yol: '/blog',
     title: 'Blog | Nakliyat Rehberi ve Taşınma İpuçları',
+    // AÇIKLAMA KAYITLI YAZILARA GÖRE DÜZELTİLDİ. Eski metin "asansörlü
+    // nakliyat ve depolama" vaat ediyordu; on yazının hiçbiri bu iki konuda
+    // değil. Aşağıdakiler gerçekten var: fiyatın neye göre belirlendiği,
+    // hazırlık planı, paketleme, sigorta kapsamı, taşınma günü.
     description:
-      'Taşınma maliyeti, paketleme, sigorta, asansörlü nakliyat ve depolama hakkında pratik rehberler. Sahada edindiğimiz deneyimi yazıya döktük.',
+      'Taşınma hazırlığı, paketleme, fiyatı neyin belirlediği, sigortanın kapsamı ve taşınma günü üzerine sahadan çıkmış rehberler.',
   },
   {
     anahtar: 'contact',
     etiket: 'İletişim',
     yol: '/iletisim',
-    title: 'İletişim | Ücretsiz Keşif ve Teklif',
+    // ESKİ BAŞLIK: "İletişim | Ücretsiz Keşif ve Teklif" — iddia doğrudan
+    // arama sonucunda görünüyordu. ESKİ AÇIKLAMA: "… ücretsiz keşif talebi.
+    // … yazılı ve sabit fiyat teklifimizi sunalım." Panelde `Meta(contact)`
+    // kaydı YOK, yani bu satırlar sessiz bir yedek değil — sayfanın
+    // gerçekten bastığı metinlerdi.
+    title: 'İletişim | {marka}',
     description:
-      'Evden eve nakliyat, şehirler arası taşıma, ofis taşıma ve depolama için ücretsiz keşif talebi. Formu doldurun, yazılı ve sabit fiyat teklifimizi sunalım.',
+      "İstanbul'da evden eve, ofis ve parça eşya taşıması. Telefon, WhatsApp ve e-posta ile ulaşın ya da taşınmanızı formda anlatın.",
   },
   {
     anahtar: 'fiyat-hesaplama',
     etiket: 'Fiyat Hesaplama',
     yol: '/fiyat-hesaplama',
-    title: 'Evden Eve Nakliyat Fiyat Hesaplama | Tahmini Taşınma Maliyeti',
+    // ESKİ AÇIKLAMA: "… Kesin fiyat ücretsiz keşiften sonra netleşir."
+    // İki iddia da doğrulanmamıştı ve panelde `Meta(fiyat-hesaplama)` kaydı
+    // olmadığı için bu satırlar sessiz bir yedek değil, sayfanın gerçekten
+    // bastığı metinlerdi.
+    title: 'Nakliyat Fiyat Hesaplama | {marka}',
     description:
-      'Oda sayısı, kat, asansör durumu ve mesafeye göre taşınma maliyetinizi saniyeler içinde tahmin edin. Kesin fiyat ücretsiz keşiften sonra netleşir.',
+      'Ev büyüklüğü, mesafe, kat ve asansör durumuna göre tahmini bir aralık görün. Adres koşulları hesaba girmiyor; onlar keşifte ölçülüyor.',
   },
   {
     anahtar: 'gizlilik-politikasi',

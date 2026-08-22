@@ -1,290 +1,360 @@
 <script setup>
 /**
- * FOOTER
+ * FOOTER — yeni tasarım dilinin utility katmanı.
  *
- * DÜZELTİLEN HATALAR
+ * GLOBAL: `layouts/default.vue` üzerinden BÜTÜN sayfalarda görünüyor.
+ * Bu yüzden ana sayfaya özel hiçbir şey içermiyor.
  *
- * 1. MAVİ. Bu dosyanın scoped <style> bloğunda `.text-primary`,
- *    `.bg-primary` ve hover halleri MAVİ (#3b82f6) olarak tanımlanmıştı;
- *    footer'daki her ikon, her bağlantı hover'ı ve marka noktası mavi
- *    çıkıyordu. Help.vue'da düzelttiğim aynı hatanın ikinci kopyası —
- *    sitedeki son mavi öğeler buradaydı. Tamamen kaldırıldı.
+ * GÖREVİ SATIŞ DEĞİL
+ * Dönüşümü Kapanış yaptı. Burası kimlik, temel navigasyon, gerçek iletişim
+ * bilgisi ve yasal bağlantılar için sakin son katman. İkinci bir CTA
+ * bölümü değil; büyük başlık yok.
  *
- * 2. SAYFAYI GENİŞLETEN KOLTUK. Sağ üstteki dekoratif `sofa.png`,
- *    `absolute right-0 translate-x-8 lg:translate-x-16 -translate-y-16`
- *    ile kabın 64px SAĞINA ve 64px YUKARISINA taşıyordu. Ölçümde sayfanın
- *    tek yatay taşma kaynağı buydu (360-1280px arası her genişlikte
- *    +32/+64px) ve yukarı taşan kısmı bir üstteki bölümün — artık koyu
- *    kapanış bandının — içine 63px giriyordu. Ayrıca bir mobilya mağazası
- *    şablonundan kalmaydı; nakliyat sitesinde anlamı yok. Kaldırıldı;
- *    `overflow: visible !important` hack'i de onunla birlikte gitti.
+ * YÜZEY — Kapanış koyu, Footer KÂĞIT
+ * İkisi aynı koyu yüzeyde devam etseydi tek dev blok gibi okunurdu.
+ * Renk değişimi anlatının bittiğini, utility katmanının başladığını
+ * söylüyor. Üstteki tek ölçü çizgisi, Kapanış olmayan sayfalarda da
+ * (ör. /iletisim) ayrımı garanti ediyor.
  *
- * 3. MOBİLYA MAĞAZASI METNİ. Footer açıklamasının varsayılanı "Kaliteli
- *    mobilya ve dekorasyon ürünleriyle yaşam alanlarınızı
- *    güzelleştiriyoruz." idi. Footer kaydı veritabanında HİÇ olmadığı için
- *    canlıda görünen metin buydu.
+ * KOMPOZİSYON — jenerik dört kart değil
+ *   · kimlik ve fiziksel varlık (adres, saatler) SOL eksende
+ *   · iletişim kanalları AYRI bir baseline'da, sağda
+ *   · navigasyon TEK YATAY SATIR — dikey link kolonları yok
+ *   · yasal/meta bilgisi en altta ince bir katmanda
+ * Kutu, kart, panel yok. İki çizgi var, ikisi de gerçek ayırma yapıyor.
  *
- * 4. BOŞ SÜTUNLAR. Menü / Bölgelerimiz / Diğer Hizmetler başlıkları
- *    bağlantı olmasa da render ediliyordu; kayıt olmadığı için footer üç
- *    boş başlıktan ibaretti. Artık dolu olan sütun gösteriliyor.
+ * ESKİ FOOTER'DAN ÇIKARILANLAR (bkz. rapor) — hiçbiri doğrulanamadı:
+ *   "sigortalı, şeffaf fiyatlı ve zamanında teslimat esasına dayalı hizmet"
+ * Yerine doğrulanmamış YENİ slogan da yazılmadı; tanım cümlesi yalnız
+ * ne yapıldığını ve nerede yapıldığını söylüyor.
  *
- * 5. İLETİŞİM BİLGİSİ HİÇ GÖRÜNMÜYORDU. Adres/telefon/e-posta yalnızca
- *    Footer kaydından okunuyordu. O kayıt yoksa — ki yok — Site
- *    Ayarları'nda girili bilgiler olsa bile footer'da hiçbir iletişim
- *    bilgisi çıkmıyordu. Artık Footer kaydı > Site Ayarları sırası var.
- *
- * 6. TEPKİSİZ VERİ. `const footerData = ref(null)` bir kez doldurulup
- *    bırakılıyordu; istemci tarafı gezinmede veri sonradan gelirse
- *    güncellenmiyordu. computed'a çevrildi.
- *
- * 7. DAĞINIK İKONLAR. Saat/konum/telefon/zarf ikonları inline SVG olarak
- *    tutuluyordu; ortak <ui-icon> bileşenine taşındı.
+ * BAĞLANTI MİMARİSİ — sitemap değil
+ * Eski Footer üç CMS kolonu basıyordu: hizmet derin bağlantıları, blog
+ * yazıları ve ŞEHİR bağlantıları (/bursa, /izmir, /ankara) — sonuncular
+ * İstanbul konumlandırmasıyla doğrudan çelişiyordu. Artık yalnız sitenin
+ * gerçek birincil rotaları var; hepsi 200 döndüğü doğrulandı. CMS verisi
+ * SİLİNMEDİ, yalnız render edilmiyor (bkz. rapor).
  */
-import { computed } from 'vue'
-
-const { data: footerResponse, error: fetchError } = await useFetch('/api/footer')
-const footerData = computed(() => footerResponse.value?.data ?? null)
-
-if (fetchError.value) {
-  console.error('Footer verisi çekilirken hata oluştu:', fetchError.value)
-}
-
-const { brandName, settings } = await useSiteSettings()
-
-const description = computed(
-  () =>
-    settings.value?.footerText ||
-    `${brandName.value}, evden eve nakliyat ve şehirler arası taşımacılıkta sigortalı, şeffaf fiyatlı ve zamanında teslimat esasına dayalı hizmet verir.`
-)
-
-/** Footer kaydı > Site Ayarları. İkisi de boşsa satır hiç render edilmez. */
-const address = computed(() => footerData.value?.address || settings.value?.address || '')
-const phone = computed(
-  () => footerData.value?.phone || settings.value?.phone || settings.value?.mobilePhone || ''
-)
-const email = computed(() => footerData.value?.email || settings.value?.email || '')
-const workingHours = computed(() => settings.value?.workingHours || '')
-
-const telHref = computed(() => `tel:${phone.value.replace(/[^\d+]/g, '')}`)
+const { settings, brandName } = await useSiteSettings()
 
 /**
- * Sosyal bağlantılar: Footer kaydındakiler öncelikli, yoksa Site
- * Ayarları'ndaki tekil alanlardan kurulur. Admin bir satır ekleyip url'siz
- * bırakabildiği için url'si olmayan kayıt elenir (boş href üretiyordu).
+ * Footer kaydı iletişim alanlarını taşıyabiliyor ama şu an hepsi BOŞ;
+ * bu yüzden Site Ayarları'na düşülüyor. Sıra korunuyor: footer kaydı >
+ * site ayarları. Hiçbiri doluysa alan render EDİLMİYOR.
  */
-const SETTINGS_SOCIALS = [
-  ['facebookUrl', 'Facebook'],
-  ['instagramUrl', 'Instagram'],
-  ['twitterUrl', 'X'],
-  ['linkedinUrl', 'LinkedIn'],
-  ['youtubeUrl', 'YouTube'],
-]
+/*
+ * `/api/footer` İSTEĞİ KALDIRILDI (M6).
+ *
+ * Bu bileşen o kayıttan yalnız ÜÇ alanı okuyordu — adres, e-posta, telefon —
+ * ve üçü de Site Ayarları'nın ÜSTÜNE YAZMA alanıydı: `footer.address ||
+ * settings.address` biçiminde. Üçü de veri tabanında BOŞTU, yani görünen
+ * değer zaten Site Ayarları'ndan geliyordu.
+ *
+ * İki kaynaklı iletişim bilgisi gerçek bir tuzaktı: yönetici Footer
+ * ekranına telefon yazdığında Site Ayarları'ndaki numara sessizce
+ * ezilecek, ama Navbar'daki numara değişmeyecekti — aynı sitede iki farklı
+ * telefon. Tek sahip artık Site Ayarları.
+ *
+ * Kaydın geri kalanı (telif metni, sosyal bağlantılar, hızlı/blog/bölge
+ * bağlantı listeleri) zaten hiç okunmuyordu: alttaki gezinme listeleri bu
+ * dosyanın içinde sabit (`gezinme`, `yasal`) ve telif satırı
+ * `© {yıl} {marka}` olarak basılıyor.
+ *
+ * ÖLÇÜLDÜ: görünen adres, e-posta ve telefon DEĞİŞMEDİ. Sunucu tarafında
+ * bir istek eksildi.
+ */
 
-const socialLinks = computed(() => {
-  const fromFooter = (footerData.value?.socialLinks || []).filter((social) => social.url)
-  if (fromFooter.length) return fromFooter
-  return SETTINGS_SOCIALS.filter(([key]) => settings.value?.[key]).map(([key, name]) => ({
-    id: key,
-    name,
-    url: settings.value[key],
-  }))
+const isletmeTanimi = computed(() => settings.value?.footerText?.trim() || '')
+
+const adres = computed(() => settings.value?.address?.trim() || '')
+const eposta = computed(() => settings.value?.email?.trim() || '')
+const telefon = computed(
+  () => settings.value?.phone?.trim() || settings.value?.mobilePhone?.trim() || ''
+)
+const telHref = computed(() => `tel:${telefon.value.replace(/[^\d+]/g, '')}`)
+
+/** Panelde tam URL olarak tutuluyor; ham numara girilirse de çalışsın. */
+const whatsApp = computed(() => {
+  const ham = (settings.value?.whatsAppNumber || '').trim()
+  if (!ham) return ''
+  if (/^https?:\/\//i.test(ham)) return ham
+  const rakam = ham.replace(/\D/g, '')
+  return rakam ? `https://wa.me/${rakam}` : ''
 })
 
-/** Yalnızca dolu sütunlar render edilir. */
-const linkColumns = computed(() =>
-  [
-    { title: 'Hizmetlerimiz', links: footerData.value?.quickLinks || [] },
-    { title: 'Bölgelerimiz', links: footerData.value?.regionLinks || [] },
-    { title: 'Diğer Hizmetler', links: footerData.value?.blogLinks || [] },
-  ].filter((column) => column.links.length)
+/**
+ * Serbest metin çalışma saatleri "/" ile ayrılmış satırlar hâlinde
+ * giriliyor ve içinde uzun boşluk blokları var. Boş satır atılıyor.
+ */
+const saatler = computed(() =>
+  (settings.value?.workingHours || '')
+    .split('/')
+    .map((s) => s.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
 )
 
-const LEGAL_LINKS = [
-  { to: '/gizlilik-politikasi', label: 'Gizlilik Politikası' },
-  { to: '/kullanim-sartlari', label: 'Kullanım Şartları' },
-  { to: '/cerez-politikasi', label: 'Çerez Politikası' },
+/**
+ * Sitenin GERÇEK birincil rotaları. Her biri denendi, hepsi 200 döndü.
+ * Hizmet başına ayrı detay rotası olmadığı için tek `/hizmetlerimiz`
+ * kullanılıyor; sahte bağlantı üretilmedi.
+ */
+const gezinme = [
+  { ad: 'Hizmetler', yol: '/hizmetlerimiz' },
+  { ad: 'Bölgeler', yol: '/bolgelerimiz' },
+  { ad: 'Fiyat hesaplama', yol: '/fiyat-hesaplama' },
+  { ad: 'Hakkımızda', yol: '/hakkimizda' },
+  { ad: 'Blog', yol: '/blog' },
+  { ad: 'İletişim', yol: '/iletisim' },
 ]
 
-const copyright = computed(
-  () =>
-    footerData.value?.copyright ||
-    settings.value?.copyrightText ||
-    `© ${new Date().getFullYear()} ${brandName.value}. Tüm Hakları Saklıdır.`
+const yasal = [
+  { ad: 'Gizlilik Politikası', yol: '/gizlilik-politikasi' },
+  { ad: 'Kullanım Şartları', yol: '/kullanim-sartlari' },
+  { ad: 'Çerez Politikası', yol: '/cerez-politikasi' },
+]
+
+/**
+ * Sosyal hesaplar: yalnız DOLU olanlar. Boş/placeholder ikon basılmıyor.
+ * Yeni ikon kütüphanesi eklenmedi — yeni dilde metin bağlantısı zaten
+ * ikondan daha okunur ve erişilebilir ad sorunu yaratmıyor.
+ */
+const sosyal = computed(() =>
+  [
+    { ad: 'Instagram', url: settings.value?.instagramUrl },
+    { ad: 'Facebook', url: settings.value?.facebookUrl },
+    { ad: 'YouTube', url: settings.value?.youtubeUrl },
+    { ad: 'LinkedIn', url: settings.value?.linkedinUrl },
+  ].filter((s) => (s.url || '').trim())
 )
+
+const yil = new Date().getFullYear()
 </script>
 
 <template>
-  <footer class="footer">
-    <div class="container py-section-sm">
-      <div class="grid gap-10 lg:grid-cols-12 lg:gap-12">
-        <!-- ── Marka + iletişim ──────────────────────────────────────── -->
-        <div class="lg:col-span-5">
-          <NuxtLink to="/" class="footer__brand">
-            <base-logo :size="30" />
-            <span>{{ brandName }}<span class="footer__brand-dot">.</span></span>
-          </NuxtLink>
+  <footer class="ft">
+    <div class="ft-alan">
+      <!-- ── Kimlik ve fiziksel varlık ─────────────────────────────── -->
+      <div class="ft-kimlik">
+        <p class="ft-marka">{{ brandName }}</p>
+        <!--
+          İŞLETME TANIMI — SİTE AYARLARI'NDAN (M7).
 
-          <p class="mt-4 max-w-md text-pretty text-ink-muted">{{ description }}</p>
+          Bu cümle koda gömülüydü ve her sayfada basılıyordu; işletme
+          hizmet kapsamını değiştirdiğinde kod değişikliği gerekiyordu.
+          Doğal sahibi Site Ayarları: aynı ekranda telefon, adres ve marka
+          adı zaten duruyor ve alan (`footerText`) orada YILLARDIR VARDI —
+          yalnız hiçbir yer okumuyordu. M6'da "düzenlenebilir ama hiçbir şey
+          yapmıyor" alanları temizlerken bu, silinmek yerine BAĞLANMASI
+          gereken tek örnekti; M7'de bağlandı.
 
-          <ul class="mt-6 flex flex-col gap-2.5">
-            <li v-if="address" class="footer__contact">
-              <ui-icon name="map-pin" :size="18" class="footer__contact-icon" />
-              <span>{{ address }}</span>
-            </li>
-            <li v-if="phone" class="footer__contact">
-              <ui-icon name="phone" :size="18" class="footer__contact-icon" />
-              <a :href="telHref" class="footer__link">{{ phone }}</a>
-            </li>
-            <li v-if="email" class="footer__contact">
-              <ui-icon name="mail" :size="18" class="footer__contact-icon" />
-              <a :href="`mailto:${email}`" class="footer__link">{{ email }}</a>
-            </li>
-            <li v-if="workingHours" class="footer__contact">
-              <ui-icon name="clock" :size="18" class="footer__contact-icon" />
-              <span>{{ workingHours }}</span>
-            </li>
-          </ul>
-
-          <!--
-            FİYAT ARACI — sabit, veritabanına bağlı DEĞİL.
-            Bağlantı sütunları Footer kaydından geliyor ve o kayıt yoksa
-            (şu an yok) sütunların tamamı gizleniyor. Araca giden kalıcı
-            bir giriş noktasının admin'in bir satır girmesine bağlı olmaması
-            gerekiyordu; bu yüzden marka sütununda, koşulsuz duruyor.
-          -->
-          <p class="mt-6">
-            <base-price-link variant="plain" label="Fiyat hesaplama aracı" />
-          </p>
-
-          <ul v-if="socialLinks.length" class="mt-6 flex flex-wrap gap-2.5">
-            <li v-for="social in socialLinks" :key="social.id">
-              <a
-                :href="social.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="footer__social"
-                :aria-label="`Bizi ${social.name || 'sosyal medya'} üzerinden takip edin`"
-              >
-                <base-social-icon :name="social.name" class="h-[18px] w-[18px]" />
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <!-- ── Bağlantı sütunları ────────────────────────────────────── -->
-        <nav
-          v-if="linkColumns.length"
-          class="grid gap-8 sm:grid-cols-3 lg:col-span-7"
-          aria-label="Alt bilgi bağlantıları"
-        >
-          <div v-for="column in linkColumns" :key="column.title">
-            <h3 class="footer__heading">{{ column.title }}</h3>
-            <ul class="mt-4 flex flex-col gap-2.5">
-              <li v-for="link in column.links" :key="link.id">
-                <NuxtLink :to="link.url" class="footer__link">{{ link.name }}</NuxtLink>
-              </li>
-            </ul>
-          </div>
-        </nav>
+          Boşsa hiç basılmıyor: yedek metin bırakmak ikinci bir çalışma
+          zamanı kaynağı demek olurdu.
+        -->
+        <p v-if="isletmeTanimi" class="ft-tanim">{{ isletmeTanimi }}</p>
+        <address class="ft-adres">
+          <span v-if="adres">{{ adres }}</span>
+          <span v-for="s in saatler" :key="s" class="ft-saat">{{ s }}</span>
+        </address>
       </div>
 
-      <!-- ── Alt bant ────────────────────────────────────────────────── -->
-      <div class="footer__bottom">
-        <!-- ink-subtle burada KULLANILMIYOR: beyaz üzerinde 3.0:1 kontrast
-             veriyor, WCAG AA normal metin eşiği 4.5:1. -->
-        <p class="text-sm text-ink-muted">{{ copyright }}</p>
-        <ul class="flex flex-wrap justify-center gap-x-6 gap-y-2">
-          <li v-for="link in LEGAL_LINKS" :key="link.to">
-            <NuxtLink :to="link.to" class="footer__link text-sm">{{ link.label }}</NuxtLink>
-          </li>
-        </ul>
+      <!-- ── İletişim kanalları, ayrı baseline ─────────────────────── -->
+      <div class="ft-iletisim">
+        <a v-if="telefon" :href="telHref" class="ft-tel">{{ telefon }}</a>
+        <a v-if="whatsApp" :href="whatsApp" target="_blank" rel="noopener" class="ft-bag">
+          WhatsApp
+        </a>
+        <a v-if="eposta" :href="`mailto:${eposta}`" class="ft-bag">{{ eposta }}</a>
+      </div>
+
+      <!-- ── Navigasyon — tek yatay satır, dikey kolon yığını değil.
+           Grup etiketleri BAŞLIK YAPILMADI: eski Footer'da "Hizmetlerimiz /
+           Bölgelerimiz / Diğer Hizmetler" sahipsiz `h3`lerdi ve sayfanın
+           başlık ağacına üç düğüm ekliyorlardı. Ad işini `aria-label`
+           yapıyor. -->
+      <nav class="ft-gezinme" aria-label="Alt bilgi bağlantıları">
+        <NuxtLink v-for="g in gezinme" :key="g.yol" :to="g.yol" class="ft-bag">
+          {{ g.ad }}
+        </NuxtLink>
+      </nav>
+
+      <!-- ── Meta katmanı ──────────────────────────────────────────── -->
+      <div class="ft-meta">
+        <p class="ft-telif">© {{ yil }} {{ brandName }}</p>
+        <nav class="ft-yasal" aria-label="Yasal bilgiler">
+          <NuxtLink v-for="y in yasal" :key="y.yol" :to="y.yol" class="ft-bag ft-bag--kucuk">
+            {{ y.ad }}
+          </NuxtLink>
+        </nav>
+        <nav v-if="sosyal.length" class="ft-sosyal" aria-label="Sosyal medya">
+          <a
+            v-for="s in sosyal"
+            :key="s.ad"
+            :href="s.url"
+            target="_blank"
+            rel="noopener"
+            class="ft-bag ft-bag--kucuk"
+          >{{ s.ad }}</a>
+        </nav>
       </div>
     </div>
   </footer>
 </template>
 
 <style scoped>
-.footer {
-  background: rgb(var(--c-surface));
-  border-top: 1px solid rgb(var(--c-line));
-}
-
-.footer__brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.ft {
+  background: rgb(var(--c-paper));
   color: rgb(var(--c-ink));
+  /* Tek üst ayraç: Kapanış'ın koyu yüzeyi zaten ayırıyor ama Kapanış
+     olmayan sayfalarda (ör. /iletisim) ayrımı bu çizgi kuruyor. */
+  border-top: 1px solid rgb(var(--c-measure));
 }
 
-.footer__brand-dot {
-  color: rgb(var(--c-accent-400));
-}
-
-.footer__heading {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: rgb(var(--c-ink));
-}
-
-.footer__contact {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
-  color: rgb(var(--c-ink-muted));
-}
-
-.footer__contact-icon {
-  flex-shrink: 0;
-  margin-top: 0.1875rem;
-  color: rgb(var(--c-brand-600));
-}
-
-.footer__link {
-  color: rgb(var(--c-ink-muted));
-  transition: color var(--dur-fast) var(--ease-soft);
-}
-
-.footer__link:hover {
-  color: rgb(var(--c-brand-700));
-}
-
-.footer__social {
+.ft-alan {
+  max-width: var(--container-wide);
+  margin: 0 auto;
+  padding: clamp(3rem, 2rem + 3vw, 4.5rem) clamp(1.25rem, 0.5rem + 3vw, 4rem)
+    clamp(2rem, 1.5rem + 1.5vw, 3rem);
   display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--r-full);
-  background: rgb(var(--c-surface-muted));
-  color: rgb(var(--c-ink-muted));
-  transition:
-    background-color var(--dur-fast) var(--ease-soft),
-    color var(--dur-fast) var(--ease-soft);
+  gap: clamp(2rem, 1.5rem + 2vw, 3rem);
 }
 
-.footer__social:hover {
-  background: rgb(var(--c-brand-600));
-  color: rgb(var(--c-ink-inverse));
+/* ---- Kimlik ------------------------------------------------------------ */
+.ft-marka {
+  font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.ft-tanim {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgb(var(--c-ink-soft));
+  max-width: 44ch;
+  margin: 0.75rem 0 0;
+  text-wrap: pretty;
+}
+.ft-adres {
+  display: grid;
+  gap: 0.25rem;
+  font-style: normal;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: rgb(var(--c-ink-soft));
+  margin-top: 1.25rem;
+}
+.ft-saat {
+  font-variant-numeric: tabular-nums;
 }
 
-.footer__bottom {
+/* ---- İletişim ---------------------------------------------------------- */
+.ft-iletisim {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.ft-tel {
+  display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgb(var(--c-line));
-  text-align: center;
+  min-height: 44px;
+  /* Karakter katmanının doğal yeri: gerçek numara. Dekoratif etiket değil. */
+  font-family: var(--f-mono);
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  font-weight: 500;
+  color: rgb(var(--c-ink));
+  text-decoration: none;
+  border-bottom: 1px solid rgb(var(--c-measure));
+  padding-bottom: 0.125rem;
+}
+.ft-tel:hover {
+  border-bottom-color: rgb(var(--c-ink));
 }
 
-@media (min-width: 768px) {
-  .footer__bottom {
-    flex-direction: row;
-    justify-content: space-between;
-    text-align: left;
+/* ---- Ortak bağlantı dili ---------------------------------------------- */
+.ft-bag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.9375rem;
+  color: rgb(var(--c-ink));
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease-out, color 0.15s ease-out;
+}
+.ft-bag:hover {
+  border-bottom-color: rgb(var(--c-ink));
+}
+.ft-bag:focus-visible {
+  outline: 2px solid rgb(var(--c-ink));
+  outline-offset: 4px;
+}
+.ft-bag--kucuk {
+  font-size: 0.8125rem;
+  color: rgb(var(--c-ink-soft));
+}
+.ft-bag--kucuk:hover {
+  color: rgb(var(--c-ink));
+  border-bottom-color: rgb(var(--c-ink));
+}
+
+/* ---- Navigasyon — yatay satır ------------------------------------------ */
+.ft-gezinme {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 clamp(1.25rem, 0.75rem + 1.5vw, 2.25rem);
+}
+
+/* ---- Meta -------------------------------------------------------------- */
+.ft-meta {
+  border-top: 1px solid rgb(var(--c-rule));
+  padding-top: clamp(1rem, 0.75rem + 0.8vw, 1.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 clamp(1rem, 0.5rem + 1.5vw, 2rem);
+}
+.ft-telif {
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: rgb(var(--c-ink-soft));
+  margin: 0;
+  margin-right: auto;
+}
+.ft-yasal,
+.ft-sosyal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 clamp(0.875rem, 0.5rem + 1vw, 1.5rem);
+}
+
+/* ===========================================================================
+   MASAÜSTÜ — kimlik solda, iletişim sağda ve ayrı baseline'da
+   ======================================================================== */
+@media (min-width: 1024px) {
+  .ft-alan {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 0.5rem + 1.5vw, 2rem);
+    row-gap: clamp(2.5rem, 2rem + 2vw, 4rem);
+  }
+  .ft-kimlik {
+    grid-column: 1 / 7;
+    grid-row: 1;
+  }
+  .ft-iletisim {
+    grid-column: 9 / 13;
+    grid-row: 1;
+    /* Kimlikle aynı hizada başlamıyor: kendi ekseninde biraz aşağıda. */
+    margin-top: 0.375rem;
+  }
+  .ft-gezinme {
+    grid-column: 1 / 13;
+    grid-row: 2;
+  }
+  .ft-meta {
+    grid-column: 1 / 13;
+    grid-row: 3;
   }
 }
 </style>

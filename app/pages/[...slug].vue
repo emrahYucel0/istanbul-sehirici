@@ -1,4 +1,6 @@
 <script setup>
+import { istanbulIlcesiMi } from '#shared/utils/istanbul'
+import { MAHALLE_EKI, mahalleBasligi } from '#shared/utils/mahalle'
 /**
  * YAZI VE BÖLGE DETAY SAYFASI
  *
@@ -50,6 +52,9 @@ const { brandName, siteUrl, ogImage: siteOgImage, settings } = await useSiteSett
  *
  * Boş ayarlar `undefined` bırakılıyor — JSON.stringify onları atıyor.
  */
+// İstanbul ilçesi mi? Kural veri ilişkisinden (cities 34 + slug != istanbul)
+// ve TEK kaynaktan geliyor; sunucudaki /api/istanbul-ilceler de aynı
+// işlevi okuyor. Bkz. shared/utils/istanbul.ts.
 const saglayici = computed(() => ({
   '@type': 'MovingCompany',
   name: brandName.value,
@@ -62,13 +67,34 @@ const saglayici = computed(() => ({
   priceRange: settings.value?.priceRange || undefined,
 }))
 
-// Dördü birbirinden bağımsız olduğu için paralel çalıştırılıyor; sıralı
-// beklemek sunucu yanıt süresini (dolayısıyla LCP'yi) ~4 katına çıkarıyordu.
+/**
+ * MAHALLE ADAYI — HİÇBİR İSTEK ATMADAN BİLİNİYOR.
+ *
+ * Adres `-mahallesi` ile bitiyorsa bu bir mahalle kabuğu ADAYI. Karar
+ * yalnız slug'a baktığı için ağır liste isteklerinden ÖNCE verilebiliyor
+ * ve bu, kabuğun taşıdığı yükü doğrudan belirliyor (aşağıya bakın).
+ */
+const mahalleAdayi = computed(() => String(slug.value).endsWith(`-${MAHALLE_EKI}`))
+
+/**
+ * AĞIR LİSTELER MAHALLE KABUĞUNDA ÇEKİLMİYOR.
+ *
+ * `?light=true` bölge ve yazı listeleri "ilgili bölgeler" ve önceki/sonraki
+ * gezinmesi için var; mahalle kabuğunda ikisi de yok. Ölçüldü: birlikte
+ * 43 KB tutuyorlar ve kabuğun ham HTML'inin üçte birinden fazlasıydılar
+ * (116 KB → 73 KB). 473 kabuk sayfasının her birinde okunmayan veri.
+ *
+ * Diğer sayfa ailelerinde HİÇBİR ŞEY DEĞİŞMİYOR: istekler yine aynı
+ * paralel turda gidiyor, sıralı bekleme (waterfall) oluşmuyor.
+ *
+ * Ölçüldü: bugün `-mahallesi` ile biten hiçbir yazı/bölge/hizmet adresi
+ * yok. Yine de böyle bir kayıt eklenirse listeler aşağıda ikinci turda
+ * çekiliyor — o sayfa gezinme bloklarını kaybetmiyor.
+ */
 const [
   { data: postData, error: postError },
   { data: regionData, error: regionError },
-  { data: allRegionsData },
-  { data: allPostsData },
+  { data: ilkAllPosts },
   { data: servicesData },
 ] = await Promise.all([
   useFetch(`/api/posts?slug=${slug.value}`),
@@ -76,8 +102,9 @@ const [
   // "İlgili bölgeler" / gezinme listeleri için sadece slug/başlık/görsel
   // gibi hafif alanlar gerekiyor — ?light=true ağır `content` sütununu
   // sorgudan tamamen çıkarır.
-  useFetch('/api/regions?light=true'),
-  useFetch('/api/posts?light=true'),
+  useAsyncData('posts-light', () =>
+    mahalleAdayi.value ? Promise.resolve(null) : $fetch('/api/posts?light=true')
+  ),
   // Hizmetler tek bir bölüm kaydında toplu geliyor; slug ile ayrı bir uç
   // nokta yok. Kayıt sayısı tek haneli olduğu için tamamını çekip burada
   // eşleştirmek, yeni bir API rotası açmaktan daha sade.
@@ -110,17 +137,151 @@ const service = computed(() => {
   return list.find((item) => item.slug && item.slug === current) || null
 })
 
+/**
+ * MAHALLE ÇÖZÜMÜ — EN SON SIRADA.
+ *
+ * Öncelik: statik rota → yazı → bölge → hizmet → MAHALLE. Yayındaki hiçbir
+ * adres mahalle uğruna el değiştirmiyor; bir mahalle ancak diğer dördü
+ * eşleşmediyse çözülüyor.
+ *
+ * ÖN SÜZGEÇ: adres `-mahallesi` ile bitmiyorsa mahalle kaydı HİÇ çekilmiyor.
+ *
+ * 473'LÜK DİZİN ARTIK ÇEKİLMİYOR. Eskiden hem ilçe hem mahalle sayfası
+ * `/api/istanbul-ilceler?tam=true` ile bütün adres dizinini (~13 KB)
+ * taşıyordu; gerekçesi adreslerin çalışma zamanında hesaplanmasıydı.
+ * Adresler artık `Neighborhood.canonicalPath` sütununda duruyor, yani her
+ * sayfanın yalnız KENDİ ilçesinin kayıtlarına ihtiyacı var.
+ */
+const istanbulIlcesi = computed(() => istanbulIlcesiMi(region.value))
+
+/**
+ * BÖLGE LİSTESİ İKİNCİ DALGADA — YAZI SAYFASINDA HİÇ ÇEKİLMİYOR.
+ *
+ * `?light=true` bölge listesi (ölçüldü: 35 KB, 70 kayıt) yalnız bölge,
+ * ilçe ve mahalle dallarında okunuyor. Yazı sayfasında tek tüketicisi
+ * `postRegions` idi; o da bu turda kaldırıldı (şablondan üretilen bağlantı
+ * çiftliği). Yani her blog yazısı okunmayan 35 KB taşıyordu.
+ *
+ * ŞELALE DERİNLİĞİ ARTMIYOR: sayfada zaten bir ikinci dalga var (hemen
+ * aşağıdaki `istanbul-mahalle`), bu istek onunla AYNI turda ve paralel
+ * gidiyor. Bölge/ilçe sayfaları listeyi eskisi gibi alıyor.
+ */
+const { data: ilkAllRegions } = await useAsyncData('regions-light', () =>
+  mahalleAdayi.value || post.value ? Promise.resolve(null) : $fetch('/api/regions?light=true')
+)
+
+/**
+ * MAHALLE VERİSİ — DALA GÖRE TEK İSTEK.
+ *
+ *   ilçe sayfası     → o ilçenin YAYINDAKİ mahalleleri
+ *   mahalle sayfası  → kaydın kendisi (kardeşleri aynı yanıtta geliyor)
+ *
+ * İkisi aynı sayfada asla birlikte olmuyor, o yüzden tek istek yetiyor.
+ * Kardeşlerin kayıtla birlikte gelmesi ikinci bir gidiş-dönüşü (şelaleyi)
+ * önlüyor: kardeş listesini ayrı çekmek için önce kaydın hangi ilçeye ait
+ * olduğunu bilmek gerekirdi.
+ */
+const { data: mahalleVeri } = await useAsyncData('istanbul-mahalle', async () => {
+  const adaySayfa = mahalleAdayi.value && !post.value && !region.value && !service.value
+
+  if (adaySayfa) {
+    const kayit = await $fetch(`/api/mahalle?yol=${encodeURIComponent(String(slug.value))}`)
+    return { kayit, ilceListesi: null }
+  }
+
+  if (istanbulIlcesi.value && region.value) {
+    // Süzgeç SUNUCUDA: yanıt yalnız yayındaki mahalleleri taşıyor.
+    const ilceListesi = await $fetch(
+      `/api/mahalleler?ilce=${encodeURIComponent(region.value.slug)}`
+    )
+    return { kayit: null, ilceListesi }
+  }
+
+  return null
+})
+
+/** Açılan mahalle kaydı — içeriğiyle birlikte (pasifse içerik alanları boş). */
+const mahalle = computed(() => {
+  if (post.value || region.value || service.value) return null
+  return mahalleVeri.value?.kayit?.data || null
+})
+
+/**
+ * Aynı ilçedeki mahalleler — kardeş gezinme listesi.
+ *
+ * Pasif kabuklar DAHİL: bu liste mahalle sayfasında duruyor ve o sayfalar
+ * birbirine `noindex, follow` ile bağlanmaya devam ediyor. İlçe sayfasının
+ * listesi ise (aşağıda) yalnız yayındakileri gösteriyor.
+ */
+const mahalleKardesleri = computed(() =>
+  (mahalle.value?.kardesler || []).map((k) => ({ ...k, ilce: mahalle.value.ilce }))
+)
+
+/**
+ * İLÇE SAYFASININ MAHALLE BAĞLANTILARI — YALNIZ YAYINDAKİLER.
+ *
+ * Sayfası olmayan bir mahalleyi ilçe listesinde göstermek, olmayan bir
+ * kapsamı bildirmekti: ziyaretçi tıklanabilir bir ad bekliyor, kabuk
+ * sayfa ise içeriksiz. Sayı da aynı listeden geliyor (bkz.
+ * IstanbulDistrictView) — ikisinin ayrışması artık mümkün değil.
+ */
+const ilceMahalleleri = computed(() =>
+  istanbulIlcesi.value && region.value
+    ? mahalleVeri.value?.ilceListesi?.data?.mahalleler || []
+    : []
+)
+
 if (postError.value || regionError.value) {
   // Teknik ayrıntı ziyaretçiye GÖSTERİLMEZ.
   console.error('İçerik yüklenemedi:', postError.value || regionError.value)
 }
 
-if (!post.value && !region.value && !service.value) {
+if (!post.value && !region.value && !service.value && !mahalle.value) {
   throw createError({ statusCode: 404, statusMessage: 'Sayfa Bulunamadı', fatal: true })
 }
 
+/**
+ * İKİNCİ TUR — yalnız beklenmeyen durumda.
+ *
+ * `-mahallesi` ile biten bir adres GERÇEKTEN bir yazı ya da bölge kaydına
+ * denk gelirse (bugün böyle bir kayıt yok), yukarıda atlanan listeler
+ * burada çekiliyor. Normal akışta bu istek hiç yapılmıyor.
+ */
+const { data: gecListeler } = await useAsyncData('gec-listeler', async () => {
+  if (!mahalleAdayi.value || (!post.value && !region.value)) return null
+  const [bolgeler, yazilar] = await Promise.all([
+    $fetch('/api/regions?light=true'),
+    $fetch('/api/posts?light=true'),
+  ])
+  return { bolgeler, yazilar }
+})
+
+const allRegionsData = computed(() => ilkAllRegions.value || gecListeler.value?.bolgeler || null)
+const allPostsData = computed(() => ilkAllPosts.value || gecListeler.value?.yazilar || null)
+
 // ---- Bölge yardımcıları --------------------------------------------------
 const allRegions = computed(() => allRegionsData.value?.data || [])
+
+/**
+ * BÖLGE AİLESİ İKİYE AYRILDI.
+ *
+ * `article/IstanbulDistrictView.vue` yalnız İSTANBUL İLÇELERİNİ karşılıyor.
+ * Geri kalan 336 kayıt (il sayfaları, Ankara/İzmir ilçeleri, `/istanbul`'un
+ * kendisi) eski `article/RegionView.vue` ile render edilmeye devam ediyor —
+ * o sayfa ailesi bu turda denetlenmedi, düzeni sessizce değişmemeli.
+ * (`istanbulIlcesi` yukarıda, mahalle çözümünden önce tanımlı.)
+ *
+ * Ayrım slug listesiyle değil, `istanbulIlcesiMi` ile yapılıyor: kayıt
+ * `cities` içinde 34 taşıyor VE il sayfası değil.
+ */
+
+/** Yayındaki İstanbul ilçeleri — güzergâh, komşu ve dizin bağlantıları. */
+const istanbulIlceleri = computed(() =>
+  istanbulIlcesi.value ? allRegions.value.filter((x) => x.isActive && istanbulIlcesiMi(x)) : []
+)
+
+/** Yedi hizmet kaydı — ilçe sayfası ilgili hizmetleri buradan çözüyor. */
+const tumHizmetler = computed(() => servicesData.value?.data?.services || [])
 
 const relatedRegions = computed(() => {
   if (!region.value) return []
@@ -154,7 +315,13 @@ const regionNav = computed(() =>
 
 // ---- Meta ----------------------------------------------------------------
 const content = computed(() => post.value || region.value || service.value)
-const canonical = computed(() => `${siteUrl.value}/${content.value?.slug || ''}`)
+// Mahalle kabuğunun `content` kaydı YOK (veri tabanında ayrı bir kayıt
+// değil, ilçenin `neighborhoods` dizisinden çözülüyor). `content.slug`
+// boş kaldığı için canonical ana sayfayı gösteriyordu — sayfa kendi
+// adresini bildirmiyordu. Adres artık mahalle girdisinden alınıyor.
+const canonical = computed(
+  () => `${siteUrl.value}/${mahalle.value?.yol || content.value?.slug || ''}`
+)
 // Hizmet kaydında görsel alanı `image` değil `imagePath`.
 const shareImage = computed(
   () => content.value?.image || content.value?.imagePath || siteOgImage.value
@@ -193,75 +360,114 @@ const serviceNav = computed(() => {
   }
 })
 
-/**
- * Yazı sayfaları için ilgili hizmetler.
+/*
+ * KALDIRILDI — `postServices` ve `postRegions`.
  *
- * Ölçüldü: blog yazılarında 120 bölge ve 7 hizmet sayfasına TEK bağlantı
- * yoktu — yazılar konu otoritesi üretip hiçbir yere aktarmıyordu.
+ * Bu iki hesaplama, her blog yazısının altına ŞABLONDAN 3 hizmet ve 10
+ * bölge bağlantısı üretiyordu (`article/RelatedLinks.vue`). Gerekçesi
+ * "yazılar konu otoritesi üretip hiçbir yere aktarmıyordu" idi; ama sonuç
+ * ölçüldüğünde bağlantıların yazının konusuyla ilgisi yoktu:
  *
- * Eşleştirme yazının başlığı + gövdesinde hizmet adının geçip geçmediğine
- * bakıyor. Karşılaştırma slug'a indirgenerek yapılıyor: "Asansörlü" ile
- * "asansörlü" ve "asansorlu" aynı sayılsın diye (Türkçe büyük/küçük harf
- * dönüşümü `I/ı` yüzünden güvenilmez).
+ *     /kis-aylarinda-tasinmak → /seyhan · /marmaris · /nilufer · /silivri …
+ *
+ * Bölge listesi yazının slug'ından türetilen bir başlangıç noktasıyla
+ * kaydırılıyordu, yani "ilgili" değil yalnızca dağıtılmış bağlantılardı —
+ * üstelik İSTANBUL DIŞI ilçeler de dahil. Kış aylarında taşınmayı anlatan
+ * bir yazının altında Seyhan ve Marmaris bağlantısı bir bağlantı
+ * çiftliğidir.
+ *
+ * Yazı metninin KENDİ içindeki bağlantılar korunuyor (bugün on yazının
+ * hiçbirinde yok — ölçüldü). Yazıdan çıkış yolları artık yol izi
+ * (`/blog`), önceki/sonraki yazı ve kapanış cümlesi.
+ *
+ * `article/RelatedLinks.vue` bu değişiklikle yetim kaldı; SİLİNMEDİ.
  */
-const postServices = computed(() => {
-  if (!post.value) return []
-  const list = (servicesData.value?.data?.services || []).filter((s) => s.slug)
-  const metin = slugify(`${post.value.title || ''} ${post.value.content || ''}`)
-
-  const eslesen = list.filter((s) => {
-    const ad = slugify(s.title || '')
-    return ad.length > 3 && metin.includes(ad)
-  })
-
-  // Hiç eşleşme yoksa yazı yine de yalıtılmış kalmasın: sıradaki ilk üç hizmet.
-  const secilen = eslesen.length
-    ? eslesen
-    : [...list].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).slice(0, 3)
-
-  return secilen.slice(0, 4)
-})
 
 /**
- * Yazı sayfaları için bölge etiketleri.
+ * Hizmet sayfasındaki bölge bağlantıları — YALNIZ İSTANBUL İLÇELERİ.
  *
- * Liste her yazıda FARKLI bir yerden başlıyor. Alfabetik ilk 10 alınsaydı 10
- * yazının hepsi aynı bölgelere bağlanır, bağlantı değeri o birkaç sayfada
- * yığılır, kalan 110 bölge sayfası hiç bağlantı almazdı. Başlangıç noktası
- * yazının slug'ından türetiliyor: rastgele değil, aynı yazı her zaman aynı
- * bölgeleri gösteriyor (sunucu ve istemci aynı sonucu üretmek zorunda,
- * yoksa hidrasyon uyuşmazlığı olur).
+ * Önceden 12 ilçe + 12 İL basılıyordu (Ankara, İzmir, Bodrum, Bornova…) ve
+ * bölüm başlığı "Bu hizmeti Türkiye genelinde veriyoruz" diyordu. İkisi de
+ * sitenin İstanbul konumlandırmasıyla çelişiyordu; üstelik 24 rozet bir
+ * bağlantı çiftliğiydi. İl sayfaları silinmedi — `/bolgelerimiz` hub'ından
+ * erişilebilir kalıyorlar; hizmet detayından yalnız ilçelere bağlanıyoruz.
  */
-const postRegions = computed(() => {
-  if (!post.value) return []
-  const collator = new Intl.Collator('tr-TR')
-  const liste = allRegions.value
-    .filter((item) => item.isActive && !isProvincePage(item))
-    .sort((a, b) => collator.compare(a.subtitle || a.title || '', b.subtitle || b.title || ''))
-
-  if (liste.length === 0) return []
-
-  // Slug'dan deterministik bir sayı
-  const tohum = [...String(post.value.slug || '')].reduce((t, c) => t + c.charCodeAt(0), 0)
-  const bas = tohum % liste.length
-
-  return Array.from({ length: Math.min(10, liste.length) }, (_, i) => liste[(bas + i) % liste.length])
-})
-
 const serviceRegions = computed(() => {
   if (!service.value) return []
-  const all = allRegions.value.filter((item) => item.isActive)
   const collator = new Intl.Collator('tr-TR')
-  const provinces = all.filter((item) => isProvincePage(item))
-  const districts = all.filter((item) => !isProvincePage(item))
-  const pick = (list, n) =>
-    [...list]
-      .sort((a, b) => collator.compare(a.subtitle || a.title || '', b.subtitle || b.title || ''))
-      .slice(0, n)
-  return [...pick(districts, 12), ...pick(provinces, 12)]
+  return allRegions.value
+    .filter((item) => item.isActive && !isProvincePage(item))
+    .sort((a, b) => collator.compare(a.subtitle || a.title || '', b.subtitle || b.title || ''))
+    .slice(0, 12)
+})
+
+/**
+ * Sayfa sonundaki "birlikte sık gereken hizmetler".
+ *
+ * Rastgele ya da sıradaki iki hizmet DEĞİL: keşifte gerçekten birlikte
+ * çıkan eşleşmeler. Yedi hizmet olduğu için elle yazılmış eşleme, üretilmiş
+ * bir benzerlik puanından hem daha doğru hem daha okunur. Eşleşme
+ * bulunamazsa bölüm hiç basılmıyor (boş bölüm üretilmiyor).
+ */
+const ILGILI_HIZMET = {
+  'evden-eve-nakliyat': ['paketleme-hizmeti', 'asansorlu-nakliyat', 'esya-depolama'],
+  'asansorlu-nakliyat': ['evden-eve-nakliyat', 'parca-esya-tasima'],
+  'parca-esya-tasima': ['evden-eve-nakliyat', 'paketleme-hizmeti'],
+  'ofis-tasima': ['paketleme-hizmeti', 'esya-depolama'],
+  'esya-depolama': ['evden-eve-nakliyat', 'ofis-tasima'],
+  'sehirler-arasi-nakliyat': ['evden-eve-nakliyat', 'paketleme-hizmeti'],
+  'paketleme-hizmeti': ['evden-eve-nakliyat', 'ofis-tasima'],
+}
+
+const serviceRelated = computed(() => {
+  if (!service.value) return []
+  const hepsi = servicesData.value?.data?.services || []
+  return (ILGILI_HIZMET[service.value.slug] || [])
+    .map((slug) => hepsi.find((h) => h.slug === slug))
+    .filter(Boolean)
+    .map((h) => ({ slug: h.slug, title: h.title, subtitle: h.subtitle }))
 })
 
 useHead(() => {
+  /**
+   * MAHALLE — ROBOTS DURUMA BAĞLI.
+   *
+   *   pasif kabuk  → `noindex, follow`  (henüz özgün içerik yok; 473 ince
+   *                  sayfayı dizine sokmak sitenin tamamının kalite
+   *                  sinyalini düşürürdü. `follow` KORUNUYOR: sayfa
+   *                  taranmasa da ilçe/ana sayfa/kardeş bağlantıları
+   *                  izlenmeye devam ediyor.)
+   *   aktif        → `index, follow`  (yayın kapısından geçmiş, gerçek
+   *                  içerik taşıyan pilot sayfalar)
+   *
+   * Karar VERİDEN geliyor (`isActive`), kodda sayfa listesi tutulmuyor.
+   * Canonical iki durumda da kendi adresi — aktifleşince adres değişmiyor.
+   */
+  if (mahalle.value) {
+    const adTam = mahalleBasligi(mahalle.value.ad)
+    const h1 = mahalle.value.aktif
+      ? mahalle.value.title?.trim() || `${adTam} Evden Eve Nakliyat`
+      : adTam
+    const aramaBasligi =
+      mahalle.value.metaTitle?.trim() ||
+      (mahalle.value.aktif
+        ? `${h1} | ${brandName.value}`
+        : `${adTam} — ${mahalle.value.ilceAd} | ${brandName.value}`)
+    const aciklama =
+      mahalle.value.metaDescription?.trim() ||
+      mahalle.value.excerpt?.trim() ||
+      `${adTam}, ${mahalle.value.ilceAd}. İstanbul'da hizmet verdiğimiz bölgeler.`
+
+    return {
+      title: aramaBasligi,
+      meta: [
+        { name: 'description', content: aciklama },
+        { name: 'robots', content: mahalle.value.aktif ? 'index, follow' : 'noindex, follow' },
+      ],
+      link: [{ rel: 'canonical', href: canonical.value }],
+    }
+  }
+
   const data = content.value
   if (!data) return {}
 
@@ -279,9 +485,29 @@ useHead(() => {
    */
   const aramaAciklamasi = data.metaDescription || data.excerpt || undefined
 
+  /**
+   * ARAMA BAŞLIĞI — panelden girilebilir, girilmezse otomatik.
+   *
+   * Otomatik biçim `başlık | marka` üç tür için de makul bir varsayılan
+   * üretiyor ("Yenimahalle Evden Eve Nakliyat | Marka"), ama iki durumda
+   * yetmiyor:
+   *
+   *   1. Uzun yazı başlıkları. "Taşınırken Eşya Sadeleştirme: Neyi
+   *      Götürmeli, Neyi Bırakmalı?" zaten 60 karakteri aşıyor; markayı
+   *      eklemek Google'ın kesme noktasını başlığın ortasına düşürüyor.
+   *   2. Anahtar kelime sırası. Sayfadaki H1 doğal okunmak ister, arama
+   *      başlığı ise aranan ifadeyi başa almak ister; ikisi her zaman aynı
+   *      cümle olmuyor.
+   *
+   * `metaTitle` doldurulmuşsa OLDUĞU GİBİ kullanılıyor — markayı ekleyip
+   * eklememek de yöneticinin kararı. Yarı otomatik bir birleştirme
+   * (örneğin markayı yine sona eklemek) alanın varlık sebebini ortadan
+   * kaldırırdı: karakter bütçesinin tamamı panelde görünmeli.
+   */
+  const aramaBasligi = data.metaTitle?.trim() || `${data.title} | ${brandName.value}`
+
   return {
-    // Başlık ARTIK gerçek başlıktan geliyor (bkz. dosya başındaki 1. madde).
-    title: `${data.title} | ${brandName.value}`,
+    title: aramaBasligi,
     meta: [
       { name: 'description', content: aramaAciklamasi },
       { name: 'author', content: brandName.value },
@@ -345,6 +571,63 @@ useHead({
     {
       type: 'application/ld+json',
       innerHTML: () => {
+        /**
+         * MAHALLE ŞEMASI — YALNIZ AKTİF SAYFADA.
+         *
+         * Pasif kabukta hizmet açıklaması ya da soru yok; boş bir `Service`
+         * işaretlemek anlamsız olurdu. Aktif sayfada `Service` + varsa
+         * `FAQPage` üretiliyor. `BreadcrumbList` iki durumda da bileşen
+         * içinde Microdata olarak, GÖRÜNEN listeyle aynı kaynaktan.
+         *
+         * `LocalBusiness` HİÇBİR durumda yok: 473 mahalle 473 şube değil.
+         * Uydurma adres, koordinat, puan/yorum basılmıyor; `provider` tek
+         * ve gerçek işletme kaydı.
+         */
+        if (mahalle.value) {
+          if (!mahalle.value.aktif) return '{}'
+
+          const adTam = mahalleBasligi(mahalle.value.ad)
+          const grafik = [
+            {
+              '@type': 'Service',
+              '@id': `${canonical.value}#hizmet`,
+              name: mahalle.value.title?.trim() || `${adTam} Evden Eve Nakliyat`,
+              serviceType: 'Evden eve nakliyat',
+              description: mahalle.value.excerpt || undefined,
+              provider: saglayici.value,
+              // Kapsanan yer üç kademeli: mahalle → ilçe → şehir. Koordinat
+              // ya da mahalleye ait adres YAZILMIYOR; elimizde doğrulanmış
+              // böyle bir veri yok.
+              areaServed: {
+                '@type': 'AdministrativeArea',
+                name: adTam,
+                containedInPlace: {
+                  '@type': 'AdministrativeArea',
+                  name: mahalle.value.ilceAd,
+                  containedInPlace: { '@type': 'City', name: 'İstanbul' },
+                },
+              },
+            },
+          ]
+
+          const sorular = parseJsonArray(mahalle.value.faqs).filter(
+            (i) => i?.question && i?.answer
+          )
+          if (sorular.length) {
+            grafik.push({
+              '@type': 'FAQPage',
+              '@id': `${canonical.value}#sss`,
+              mainEntity: sorular.map((item) => ({
+                '@type': 'Question',
+                name: item.question,
+                acceptedAnswer: { '@type': 'Answer', text: item.answer },
+              })),
+            })
+          }
+
+          return JSON.stringify({ '@context': 'https://schema.org', '@graph': grafik })
+        }
+
         const data = content.value
         if (!data) return '{}'
 
@@ -361,7 +644,12 @@ useHead({
             '@context': 'https://schema.org',
             ...shared,
             '@type': 'BlogPosting',
-            author: { '@type': 'Organization', name: data.author || brandName.value },
+            // `author` BİLİNÇLİ OLARAK YOK. Öncesinde `data.author ||
+            // brandName` yazıyordu; on kaydın hiçbirinde `author` dolu
+            // olmadığı için pratikte HER YAZI markayı yazar olarak
+            // bildiriyordu. Doğrulayıcıyı memnun etmek için olmayan bir
+            // yazar üretmek, ekranda göstermekten daha kalıcı bir yanlış.
+            // Alan gerçekten doldurulursa buraya geri eklenebilir.
             datePublished: data.createdAt || undefined,
             dateModified: data.updatedAt || data.createdAt || undefined,
             mainEntityOfPage: { '@type': 'WebPage', '@id': canonical.value },
@@ -378,7 +666,9 @@ useHead({
               serviceType: data.title,
               description: data.excerpt || data.description || undefined,
               provider: saglayici.value,
-              areaServed: { '@type': 'Country', name: 'Türkiye' },
+              // 'Country: Türkiye' idi — ana sayfanın şeması ve sitenin
+              // konumlandırması İstanbul; hizmet şeması onunla çelişmemeli.
+              areaServed: { '@type': 'City', name: 'İstanbul' },
             },
             {
               '@type': 'BreadcrumbList',
@@ -422,9 +712,32 @@ useHead({
             serviceType: 'Evden eve nakliyat',
             description: data.excerpt || undefined,
             provider: saglayici.value,
-            areaServed: { '@type': 'Place', name: areaName },
+            // İstanbul ilçesinde kapsanan yer AÇIKÇA bildiriliyor: ilçe bir
+            // şehir değil, İstanbul'un idari bir parçası. Koordinat ya da
+            // ilçeye ait bir adres YAZILMIYOR — elimizde doğrulanmış böyle
+            // bir veri yok ve uydurulanı 39 şube izlenimi yaratırdı.
+            areaServed: istanbulIlcesi.value
+              ? {
+                  '@type': 'AdministrativeArea',
+                  name: areaName,
+                  containedInPlace: { '@type': 'City', name: 'İstanbul' },
+                }
+              : { '@type': 'Place', name: areaName },
           },
-          {
+        ]
+
+        /**
+         * YOL İZİ — İSTANBUL İLÇESİNDE BURADA ÜRETİLMİYOR.
+         *
+         * V2 ilçe görünümü kırılım yolunu EKRANDA gösteriyor ve aynı listeyi
+         * Microdata (`BreadcrumbList`) ile işaretliyor. Buraya bir de JSON-LD
+         * düğümü konsaydı sayfada AYNI yol iki kez bildirilirdi; iki kaynak
+         * zamanla ayrışır ve hangisinin doğru olduğu belirsizleşir.
+         * İstanbul dışı bölge sayfalarının görünen yolunda işaretleme yok,
+         * onlarda JSON-LD tek kaynak olarak kalıyor.
+         */
+        if (!istanbulIlcesi.value) {
+          graph.push({
             '@type': 'BreadcrumbList',
             '@id': `${canonical.value}#kirilim`,
             itemListElement: breadcrumbItems.value.map((item, index) => ({
@@ -433,8 +746,8 @@ useHead({
               name: item.name,
               item: item.url,
             })),
-          },
-        ]
+          })
+        }
 
         if (regionFaqs.value.length) {
           graph.push({
@@ -456,18 +769,49 @@ useHead({
 </script>
 
 <template>
+  <!--
+    ÜÇ GÖRÜNÜMÜN YALNIZ BİRİ KULLANILIYOR, ÜÇÜ BİRDEN İNİYORDU.
+
+    Bu dosya blog yazısı, bölge ve hizmet sayfalarının üçünü birden karşılıyor
+    ve `v-if` ile hangisinin basılacağına karar veriyor. Ama otomatik içe
+    aktarılan bileşenler STATİK olarak paketlendiği için istemci, hangi
+    sayfada olursa olsun üçünün de kodunu indiriyordu. Ölçüldü: /kadikoy,
+    /parca-esya-tasima ve bir blog yazısının üçünde de ön yüklenen JS
+    birebir aynıydı — 535 KB.
+
+    `Lazy` öneki bunu koşula bağlıyor: yalnız `v-if`i tutan dal indiriliyor.
+    Sunucu çıktısı değişmiyor, sayfa yine eksiksiz HTML olarak basılıyor.
+
+    Bu üçü sayfanın ANA İÇERİĞİ, o yüzden `hydrate-on-visible` VERİLMİYOR —
+    zaten ilk ekranda görünüyorlar. Yalnız kapanış çağrısı ekranın altında,
+    onda görünürlük ölçütü var (ana sayfadakiyle aynı 300px payı: `useReveal`
+    gizlemeyi eleman ekrana girmeden yapabilsin diye).
+  -->
   <main>
-    <article-post-view
+    <!-- YAZI → V2 okuma sayfası.
+         `author-fallback` KALDIRILDI: on Post kaydının hiçbirinde `author`
+         dolu değil, yani o yedek ad ekranda uydurma bir yazar üretiyordu.
+         `related-services` / `related-regions` de KALDIRILDI: şablondan
+         üretilen 3 hizmet + 10 bölge bağlantısı yazının konusuyla ilgili
+         değildi (İstanbul dışı ilçeler dahil). -->
+    <lazy-article-blog-post-view
       v-if="post"
       :post="post"
       :previous="postNav.previous"
       :next="postNav.next"
-      :author-fallback="`${brandName} Ekibi`"
-      :related-services="postServices"
-      :related-regions="postRegions"
     />
 
-    <article-region-view
+    <!-- İSTANBUL İLÇESİ → V2 yerel operasyon rehberi -->
+    <lazy-article-istanbul-district-view
+      v-else-if="region && istanbulIlcesi"
+      :district="region"
+      :districts="istanbulIlceleri"
+      :services="tumHizmetler"
+      :mahalleler="ilceMahalleleri"
+    />
+
+    <!-- İSTANBUL DIŞI (il sayfaları, diğer illerin ilçeleri) → eski görünüm -->
+    <lazy-article-region-view
       v-else-if="region"
       :region="region"
       :related="relatedRegions"
@@ -476,14 +820,28 @@ useHead({
       :next="regionNav.next"
     />
 
-    <article-service-view
+    <lazy-article-service-view
       v-else-if="service"
       :service="service"
       :regions="serviceRegions"
-      :previous="serviceNav.previous"
-      :next="serviceNav.next"
+      :related="serviceRelated"
     />
 
-    <base-final-cta />
+    <!-- MAHALLE → pasifse gezinme kabuğu, aktifse içerik sayfası -->
+    <lazy-article-istanbul-neighborhood-view
+      v-else-if="mahalle"
+      :mahalle="mahalle"
+      :kardesler="mahalleKardesleri"
+      :services="tumHizmetler"
+    />
+
+    <!-- Yalnız İSTANBUL DIŞI bölge sayfaları kullanıyor. Hizmet detayı,
+         İstanbul ilçesi, mahalle ve artık YAZI sayfaları kendi ölçülü
+         kapanışlarına geçti; eski blok onlarla üst üste biniyor ve yeni
+         dille çelişiyordu. Bileşen silinmedi. -->
+    <lazy-base-final-cta
+      v-if="!post && !service && !istanbulIlcesi && !mahalle"
+      :hydrate-on-visible="{ rootMargin: '300px' }"
+    />
   </main>
 </template>

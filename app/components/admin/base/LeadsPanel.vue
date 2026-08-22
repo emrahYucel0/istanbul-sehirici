@@ -89,6 +89,7 @@ const kartlar = computed(() => {
 /** SMTP bozuksa panelde görünsün — sessiz kalıp müşteri kaybetmeyelim. */
 const mailSorunlu = computed(() => talepler.value.filter((t) => t.mailStatus === 'basarisiz').length)
 
+
 onMounted(yenile)
 </script>
 
@@ -116,10 +117,21 @@ onMounted(yenile)
         <p class="font-semibold text-amber-900">
           {{ mailSorunlu }} talebin e-postası gönderilemedi.
         </p>
+        <!--
+          Metin iki sebeple değişti:
+
+          1. ".env içindeki MAIL_PASSWORD" YANLIŞ HALE GELDİ. Mail ayarı artık
+             derlemeye gömülü değil, sunucunun ORTAM DEĞİŞKENLERİNDEN okunuyor
+             (server/mail/config.ts). Üretimde `.env` yüklenmiyor; değerler
+             hosting panelinden geliyor.
+          2. Bu bileşen istemci paketine giriyor. Değişken ADI bir sır değil
+             ama yapılandırma ayrıntısının herkese açık pakette dolaşmasına
+             gerek yok; yönetici için "hangi ayar" bilgisi yeterli.
+        -->
         <p class="mt-1 text-sm text-amber-800">
           Talepler kaydedildi, aşağıdaki listede duruyorlar — kaybolmadılar. Ama e-posta
-          bildirimi çalışmıyor: <code>.env</code> içindeki <code>MAIL_PASSWORD</code> ve SMTP
-          ayarlarını kontrol edin.
+          bildirimi çalışmıyor: sunucudaki SMTP ayarlarını (adres, port, hesap, parola)
+          kontrol edin.
         </p>
       </div>
 
@@ -195,6 +207,32 @@ onMounted(yenile)
                 <a v-if="t.email" :href="`mailto:${t.email}`" class="text-blue-700 hover:underline">{{ t.email }}</a>
               </p>
               <p v-if="t.message" class="mt-2 whitespace-pre-line text-sm text-gray-700">{{ t.message }}</p>
+
+              <!--
+                MAİL HATASININ NEDENİ — M6'da görünür oldu.
+
+                `mailError` veri tabanına yazılıyordu ama panelde hiçbir
+                yerde basılmıyordu: yönetici "mail gitmedi" rozetini
+                görüyor, NEDEN gitmediğini öğrenemiyordu. Yanlış SMTP
+                parolası ile dolu gelen kutusu aynı görünüyordu.
+
+                KAPALI BAŞLIYOR (`<details>`): normal listede teknik metin
+                gürültü yapmasın, gerektiğinde açılsın.
+
+                DÜZ METİN. `v-html` YOK: bu dize bir dış kütüphaneden
+                geliyor, HTML değil. `break-all` + `whitespace-pre-wrap`
+                uzun SMTP satırlarını kutunun dışına taşırmadan sarıyor.
+              -->
+              <details v-if="t.mailError" class="mt-2">
+                <summary class="cursor-pointer text-xs font-semibold text-amber-800">
+                  Mail neden gitmedi?
+                </summary>
+                <pre class="mt-2 max-w-full overflow-x-auto whitespace-pre-wrap break-all rounded border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">{{ t.mailError }}</pre>
+                <p class="mt-1 text-xs text-gray-500">
+                  Bu metin e-posta sunucusundan geliyor. Talep kaydı güvende —
+                  yalnız bildirim e-postası gönderilemedi.
+                </p>
+              </details>
               <p class="mt-2 text-xs text-gray-500">
                 {{ tarihBicimle(t.createdAt) }}
                 <template v-if="t.sourcePage"> · geldiği sayfa: <code>{{ t.sourcePage }}</code></template>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Heading from '@tiptap/extension-heading'
@@ -22,6 +22,7 @@ const {
   total,
   totalPages,
   goToPage,
+  refresh,
   resetForm,
   selectItem,
   save,
@@ -37,12 +38,44 @@ const {
     slug: '',
     content: '',
     excerpt: '',
+    metaTitle: '',
     metaDescription: '',
     image: '',
     imageAlt: '',
   },
-  { paginated: true, pageSize: 12 }
+  {
+    paginated: true,
+    pageSize: 12,
+    // `?admin=true` OLMADAN bu panel yalnız YAYINDAKİ yazıları görürdü:
+    // taslaklar herkese açık okumadan süzülüyor (bkz. posts.service.ts).
+    // Panelin var olma sebebi tam olarak taslakları yönetmek.
+    listQuery: '?admin=true',
+  }
 )
+
+// --- Yayın durumu ---------------------------------------------------------
+//
+// "Kaydet" ile "Yayına Al" AYRI eylemler. Yayın durumu düzenleme gövdesinde
+// taşınmıyor (bkz. server/api/posts-yayin.post.ts): bir onay kutusu olsaydı
+// kaydetmek yayınlamak demeye devam ederdi.
+const yayinIsleniyor = ref('')
+
+const yayinDegistir = async (slug, yayinda) => {
+  yayinIsleniyor.value = slug
+  try {
+    const cevap = await $fetch('/api/posts-yayin', {
+      method: 'POST',
+      body: { slug, yayinda },
+    })
+    if (cevap?.success === false) throw new Error(cevap.error || 'İşlem tamamlanamadı')
+    message.value = cevap.message || 'Güncellendi.'
+    await refresh()
+  } catch (e) {
+    message.value = e?.data?.message || e?.message || 'İşlem tamamlanamadı'
+  } finally {
+    yayinIsleniyor.value = ''
+  }
+}
 
 // --- Karakter Dönüşüm Fonksiyonu ---
 // Bu fonksiyon, slug ve resim URL'si oluştururken Türkçe karakterleri dönüştürmek için kullanılır.
@@ -177,6 +210,12 @@ const submitForm = async () => {
 const updateImageUrl = (url) => {
   post.image = url
 }
+
+// Sayım GÖRÜNEN SAYFAYA ait: `total` sunucudan gelen genel toplam,
+// kırılım ise o sayfadaki kayıtlardan. Sunucudan ayrı bir sayım istemek
+// için ikinci bir uç gerekirdi; panelde bu ayrıntı o maliyete değmiyor.
+const yayindaSayisi = computed(() => posts.value.filter((x) => x.isActive).length)
+const taslakSayisi = computed(() => posts.value.filter((x) => !x.isActive).length)
 </script>
 
 <template>
@@ -185,7 +224,9 @@ const updateImageUrl = (url) => {
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-bold">
         Post Yönetim Paneli
-        <span class="text-base font-normal text-gray-500">({{ total }} yazı)</span>
+        <span class="text-base font-normal text-gray-500">
+          ({{ total }} yazı — {{ yayindaSayisi }} yayında, {{ taslakSayisi }} taslak)
+        </span>
       </h1>
       <button
         @click="openAddForm"
@@ -207,15 +248,43 @@ const updateImageUrl = (url) => {
           :alt="p.title"
           class="w-full h-48 object-cover mb-4 rounded"
         >
+        <div class="mb-2 flex items-center gap-2">
+          <span
+            v-if="p.isActive"
+            class="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+          >YAYINDA</span>
+          <span v-else class="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
+            TASLAK
+          </span>
+          <span v-if="p.publishedAt" class="text-xs text-gray-500">
+            {{ new Date(p.publishedAt).toLocaleDateString('tr-TR') }}
+          </span>
+        </div>
         <h3 class="text-xl font-semibold mb-2">{{ p.title }}</h3>
         <p class="text-gray-600 text-sm mb-4">{{ p.excerpt }}</p>
-        <div class="flex space-x-2">
+        <div class="flex flex-wrap gap-2">
           <button
             @click="selectPost(p.slug)"
             :disabled="isLoadingItem"
             class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Düzenle
+          </button>
+          <button
+            v-if="!p.isActive"
+            @click="yayinDegistir(p.slug, true)"
+            :disabled="yayinIsleniyor === p.slug"
+            class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+          >
+            {{ yayinIsleniyor === p.slug ? 'İşleniyor…' : 'Yayına Al' }}
+          </button>
+          <button
+            v-else
+            @click="yayinDegistir(p.slug, false)"
+            :disabled="yayinIsleniyor === p.slug"
+            class="px-3 py-1 border border-amber-500 text-amber-800 rounded hover:bg-amber-50 disabled:opacity-50"
+          >
+            {{ yayinIsleniyor === p.slug ? 'İşleniyor…' : 'Yayından Kaldır' }}
           </button>
           <button
             @click="selectedSlug = p.slug; showDeleteModal = true"
@@ -380,6 +449,31 @@ const updateImageUrl = (url) => {
               rows="3"
               maxlength="160"
             ></textarea>
+          </div>
+
+          <!--
+            ARAMA BAŞLIĞI — yazı başlığından AYRI ve boş bırakılabilir.
+            Blogda bu alan en çok işe yarayan yer: yazı başlıkları doğal
+            olarak uzun ("Taşınırken Eşya Sadeleştirme: Neyi Götürmeli,
+            Neyi Bırakmalı?") ve sonuna marka eklenince Google kesme
+            noktasını cümlenin ortasına düşürüyor. Buraya kısaltılmış hâli
+            yazılırsa aramada tam görünür.
+          -->
+          <div>
+            <label for="pst-metatitle" class="block mb-2 font-medium">Google Arama Başlığı</label>
+            <input
+              id="pst-metatitle"
+              v-model="post.metaTitle"
+              type="text"
+              class="w-full p-2 border rounded"
+              maxlength="70"
+              placeholder="Taşınırken Eşya Sadeleştirme Rehberi"
+            />
+            <p class="text-xs mt-1" :class="(post.metaTitle || '').length > 60 ? 'text-amber-700' : 'text-gray-500'">
+              {{ (post.metaTitle || '').length }} / 60 karakter —
+              60 üstü Google sonuçlarında kesilir.
+              Boş bırakılırsa otomatik üretilir: <strong>yazı başlığı | marka</strong>
+            </p>
           </div>
 
           <!--

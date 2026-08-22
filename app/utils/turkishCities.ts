@@ -187,67 +187,15 @@ export const cityIdToGeographicRegion: Record<number, GeographicRegion> =
   )
 
 // ---------------------------------------------------------------------------
-// İSTANBUL — YAKA AYRIMI
+// İSTANBUL — YAKA AYRIMI  →  TAŞINDI
 // ---------------------------------------------------------------------------
 //
-// 39 ilçeyi tek bir listede vermek, ziyaretçinin ilçesini aramasını
-// gerektiriyor. Yaka ayrımı hem coğrafi olarak akılda kalıcı hem de
-// nakliyatta gerçekten fark yaratan bir bilgi: yakalar arası taşımada
-// köprü güzergâhı, geçiş ücreti ve süre değişir.
+// `istanbulDistrictSides` buradan `shared/utils/istanbul.ts`e taşındı ve
+// `istanbulYakalari` adını aldı. Sebep: aynı eşlemeyi artık SUNUCU da
+// okuyor (`server/domain/regions/istanbul.service.ts`) ve bu dosya yalnız
+// istemci tarafında otomatik içe aktarılıyor. İki kopya tutulsaydı biri
+// değiştiğinde bir ilçe iki yerde farklı sınıflandırılırdı.
 //
-// Anahtar olarak slug kullanılıyor; ilçe adı serbest metin alanından
-// (`subtitle`) geliyor ve yazımı değişebilir, slug ise benzersiz ve sabit.
-
-export const istanbulDistrictSides: { key: string; name: string; slugs: string[] }[] = [
-  {
-    key: 'avrupa',
-    name: 'Avrupa Yakası',
-    slugs: [
-      'arnavutkoy',
-      'avcilar',
-      'bagcilar',
-      'bahcelievler',
-      'bakirkoy',
-      'basaksehir',
-      'bayrampasa',
-      'besiktas',
-      'beylikduzu',
-      'beyoglu',
-      'buyukcekmece',
-      'catalca',
-      'esenler',
-      'esenyurt',
-      'eyupsultan',
-      'fatih',
-      'gaziosmanpasa',
-      'gungoren',
-      'kagithane',
-      'kucukcekmece',
-      'sariyer',
-      'silivri',
-      'sultangazi',
-      'sisli',
-      'zeytinburnu',
-    ],
-  },
-  {
-    key: 'anadolu',
-    name: 'Anadolu Yakası',
-    slugs: [
-      'adalar',
-      'atasehir',
-      'beykoz',
-      'cekmekoy',
-      'kadikoy',
-      'kartal',
-      'maltepe',
-      'pendik',
-      'sancaktepe',
-      'sultanbeyli',
-      'sile',
-      'tuzla',
-      'umraniye',
-      'uskudar',
-    ],
-  },
-]
+// Aynı modülde İstanbul ilçesi olup olmadığını söyleyen `istanbulIlcesiMi`
+// de var; yukarıdaki `isProvincePage` ile aynı kuralın (il sayfasının
+// slug'ı = ilin adının slug'ı) İstanbul'a uygulanmış hâli.

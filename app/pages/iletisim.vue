@@ -1,22 +1,51 @@
 <script setup>
 /**
- * İLETİŞİM
+ * /ILETISIM — V2
  *
- * Sayfa eskiden tek bir `components/navbar/Quote.vue` dosyasından
- * oluşuyordu (klasör adı yanlıştı: navbar ile ilgisi yok). İki bölüme
- * ayrıldı: iletişim kanalları ve teklif formu.
+ * DÖNÜŞÜM UCU. Ana sayfa, hizmetler, yedi hizmet sayfası, /bolgelerimiz,
+ * 39 ilçe, mahalleler ve /hakkimizda — hepsinin kapanışı buraya işaret
+ * ediyor. Zincirin son halkası olarak en eski sayfa buydu.
  *
- * ÇALIŞMA SAATLERİ artık burada AYRICA basılmıyor. Eskiden hem bu sayfa
- * Site Ayarları'ndaki `workingHours` alanını en altta gösteriyor, hem de
- * Quote bileşeni içinde "Pazartesi-Cuma 08:00-19:00" gibi üç satır SABİT
- * yazılı duruyordu. İki kaynak birbirini tutmayabiliyordu; tek kaynak
- * Site Ayarları ve tek yer <contact-info>.
+ * ESKİ SAYFA (bu turda değiştirildi)
+ *   · `fixed-page-header`: koyu bant; <h1> `<main>` DIŞINDA kalıyordu
+ *     (ölçüldü: `main h1` = 0). Alt başlığı "Ücretsiz keşif talebi, yazılı
+ *     sabit fiyat teklifi…" diyordu.
+ *   · `ui-heading` "Teklif Alın, Sorularınızı Sorun" + açıklamasında
+ *     "yazılı ve taşıma gününe kadar sabit kalan bir fiyat".
+ *   · `contact-form`: yuvarlak köşeli kart, "Ücretsiz Keşif ve Teklif"
+ *     başlığı, `required` niteliği olmayan dört alan.
+ *   · `contact-info`: üç yuvarlak kart, üç ikon karesi.
+ *   · Harita bölümü: `googleMapsEmbed` alanı BOŞ olduğu için hiç
+ *     basılmıyordu — ölü dal.
+ *   · `base-final-cta`: iletişim sayfasında ikinci bir "bize ulaşın"
+ *     çağrısı.
+ *
+ * Eski `contact/Form.vue` ve `contact/Info.vue` SİLİNMEDİ, yalnız
+ * kullanılmıyor. `fixed/PageHeader.vue` ve `base/FinalCta.vue` da yerinde;
+ * /blog ve diğer sayfalar kullanmaya devam ediyor.
+ *
+ * KALDIRILAN İSTEK: `/api/quote`.
+ * Eski sayfa her istekte bu kaydı çekip telefonu önce oradan okuyordu.
+ * Ölçüldü — kayıt veri tabanında YOK (`data: null`), yani dal hiç
+ * çalışmıyordu ama sorgu her seferinde yapılıyordu. Telefonun tek kaynağı
+ * artık Site Ayarları; navbar ve alt bilgi de oradan okuyor.
  */
-const { data: quoteResponse } = await useFetch('/api/quote', { key: 'quote-section' })
-const quote = computed(() => quoteResponse.value?.data ?? null)
-
 const { brandName, settings } = await usePageSeo('contact', sayfaMetasi('contact'))
 
+/**
+ * YAPISAL VERİ — `ContactPage` + iletişim noktası.
+ *
+ * Yol izi `contact/Giris.vue` içinde Microdata olarak, ekranda görünen
+ * listeyle aynı kaynaktan işaretleniyor; burada tekrarlanmıyor (eski koyu
+ * bant onu kendisi basıyordu).
+ *
+ * `LocalBusiness` BURADA AÇILMIYOR: işletme kimliği ana sayfada bildiriliyor,
+ * ikinci bir işletme düğümü aynı işletmeyi iki kez tanımlar.
+ *
+ * `areaServed` ESKİDEN 'TR' İDİ. Site artık Türkiye dizini değil; kanonik
+ * yapı İSTANBUL → 39 İLÇE → MAHALLELER. Şehirler arası taşımada da çıkış ya
+ * da varış adresi İstanbul oluyor (bkz. /hakkimizda 05).
+ */
 useHead({
   script: [
     {
@@ -26,7 +55,7 @@ useHead({
           '@context': 'https://schema.org',
           '@type': 'ContactPage',
           name: 'İletişim',
-          description: `${brandName.value} ile iletişime geçmek için iletişim bilgileri ve teklif formu.`,
+          description: `${brandName.value} iletişim bilgileri ve taşıma talebi formu.`,
           publisher: {
             '@type': 'Organization',
             name: brandName.value,
@@ -35,7 +64,7 @@ useHead({
               telephone: settings.value?.phone || settings.value?.mobilePhone || undefined,
               contactType: 'customer service',
               email: settings.value?.email || undefined,
-              areaServed: 'TR',
+              areaServed: 'İstanbul',
               availableLanguage: 'Turkish',
             },
           },
@@ -43,64 +72,28 @@ useHead({
     },
   ],
 })
+
+/**
+ * SAYFANIN EDİTORYAL ÇERÇEVESİ — TEK İSTEK.
+ *
+ * TELEFON, WHATSAPP, E-POSTA VE ADRES BURADAN GELMİYOR: onların tek sahibi
+ * Site Ayarları ve bileşenler onu kendi paylaşılan isteğinden okuyor.
+ * Form alan etiketleri ve doğrulama metinleri de kodda — onlar arayüz
+ * metni, işletme içeriği değil.
+ */
+const { data: icerikYanit } = await useFetch('/api/ic-sayfa?page=iletisim', {
+  key: 'ic-iletisim',
+})
+
+const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
+
 </script>
 
 <template>
-  <fixed-page-header
-    title="İletişim"
-    subtitle="Ücretsiz keşif talebi, yazılı sabit fiyat teklifi ve iletişim bilgilerimiz."
-  />
-
   <main>
-    <ui-section tone="surface" labelledby="iletisim-baslik">
-      <ui-heading
-        id="iletisim-baslik"
-        eyebrow="Bize Ulaşın"
-        title="Teklif Alın, Sorularınızı Sorun"
-        description="Taşınma tarihinizi, mevcut ve yeni adresinizi yazın; eşyalarınızı yerinde görüp size yazılı ve taşıma gününe kadar sabit kalan bir fiyat sunalım."
-        align="split"
-      />
-
-      <!-- Form solda: sayfanın asıl işi bu. İletişim kanalları sağda,
-           masaüstünde yapışkan. -->
-      <div class="grid gap-8 lg:grid-cols-12 lg:gap-12">
-        <div class="lg:col-span-7">
-          <contact-form />
-        </div>
-
-        <aside class="lg:col-span-5">
-          <div class="lg:sticky lg:top-28">
-            <contact-info :quote="quote" />
-          </div>
-        </aside>
-      </div>
-    </ui-section>
-
-    <!-- Harita: Site Ayarları'ndan girilen Google Haritalar embed kodu.
-         Bu alan sadece admin panelinden (güvenilir rol) düzenlenebildiği
-         için doğrudan v-html ile basılıyor; genel kullanıcı girdisi
-         değildir. Girilmemişse bölüm hiç render edilmez. -->
-    <ui-section v-if="settings?.googleMapsEmbed" size="compact" label="Konumumuz">
-      <div class="contact-map" v-html="settings.googleMapsEmbed"></div>
-    </ui-section>
-
-    <base-final-cta />
+    <contact-giris :bolum="bolum('giris')" />
+    <contact-kanallar :bolum="bolum('kanallar')" />
+    <contact-talep-formu :bolum="bolum('form')" />
+    <contact-yollar />
   </main>
 </template>
-
-<style scoped>
-.contact-map {
-  overflow: hidden;
-  border-radius: var(--r-2xl);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Admin'in yapıştırdığı embed kodu genelde sabit width/height taşıyor;
-   kapsayıcıya oturtuluyor ki dar ekranda taşmasın. */
-.contact-map :deep(iframe) {
-  display: block;
-  width: 100%;
-  height: clamp(18rem, 45vh, 28rem);
-  border: 0;
-}
-</style>

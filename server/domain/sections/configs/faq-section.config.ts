@@ -1,60 +1,47 @@
 // server/domain/sections/configs/faq-section.config.ts
 import prisma from '../../../utils/prisma'
 import { createSectionCrudService } from '../section-crud.factory'
-import type { ChildListConfig } from '../../shared/types'
-
-export interface FaqDetailInput {
-  text?: string
-  order?: number
-}
 
 export interface FaqItemInput {
   question?: string
   answer?: string
   order?: number
   isActive?: boolean
-  details?: FaqDetailInput[]
-}
-
-export interface FaqStatsCardInput {
-  value?: string
-  label?: string
-  bgColor?: string
-  textColor?: string
-  position?: string
-  order?: number
-}
-
-export interface FaqImageInput {
-  imagePath?: string
-  altText?: string
-  position?: string
-  order?: number
 }
 
 export interface FaqSectionInput {
   sectionName?: string
   mainTitle?: string
-  description?: string
-  ctaTitle?: string
-  ctaButtonText?: string
-  ctaButtonLink?: string
   faqs?: FaqItemInput[]
-  statsCards?: FaqStatsCardInput[]
-  images?: FaqImageInput[]
 }
 
-const detailsChild: ChildListConfig<FaqDetailInput> = {
-  relation: 'details',
-  mapCreate: (d) => ({ text: d.text || '', order: d.order || 0 }),
-}
+/*
+ * `details`, `statsCards` ve `images` YAZMA YOLUNDAN ÇIKARILDI (M6).
+ *
+ * Üçünün de herkese açık tüketicisi ölçüldü: SIFIR. Ana sayfanın Sorular
+ * bölümü (`/api/anasayfa` → home.repository.findFaq) yalnız `mainTitle` ve
+ * AKTİF `faqs`in `question`/`answer` alanlarını okuyor. Eski `Faq.vue`
+ * bileşeni bu üçünü kullanıyordu ama o bileşen hiçbir sayfada render
+ * edilmiyordu ve M6'da silindi.
+ *
+ * Panelde durdukları sürece iki ayrı sorun üretiyorlardı:
+ *   1. Yönetici istatistik kartı ve görsel düzenliyor, hiçbir yerde
+ *      görünmüyordu.
+ *   2. Bölüm fabrikası her PUT'ta çocukları silip yeniden yarattığı için,
+ *      panelin bu alanları GÖNDERMEYİ BIRAKMASI kayıtları silerdi. Bu
+ *      yüzden panelde ölü alanları "veri korunsun diye" taşımak zorunda
+ *      kalınmıştı — ölü bir alanı ayakta tutmak için yazılmış bir kod.
+ *
+ * Çocuk listesinden çıkarılınca ikisi de çözülüyor: uç nokta bu kayıtlara
+ * artık DOKUNMUYOR, dolayısıyla panel de onları taşımak zorunda değil.
+ * Tablolar ve veriler DURUYOR.
+ */
 
 export const faqSectionCrudService = createSectionCrudService<any, FaqSectionInput>(prisma.faqSection, {
   defaultSectionName: 'faq-section',
+  // Yanıt yalnız canlı olanı taşıyor: bölüm başlığı + soru listesi.
   include: {
-    faqs: { orderBy: { order: 'asc' }, include: { details: { orderBy: { order: 'asc' } } } },
-    statsCards: { orderBy: { order: 'asc' } },
-    images: { orderBy: { order: 'asc' } },
+    faqs: { orderBy: { order: 'asc' } },
   },
   children: [
     {
@@ -65,42 +52,19 @@ export const faqSectionCrudService = createSectionCrudService<any, FaqSectionInp
         order: faq.order || 0,
         isActive: faq.isActive !== undefined ? faq.isActive : true,
       }),
-      nested: detailsChild,
-    },
-    {
-      relation: 'statsCards',
-      mapCreate: (card: FaqStatsCardInput) => ({
-        value: card.value || '',
-        label: card.label || '',
-        bgColor: card.bgColor || '#3b5d50',
-        textColor: card.textColor || '#ffffff',
-        position: card.position || '',
-        order: card.order || 0,
-      }),
-    },
-    {
-      relation: 'images',
-      mapCreate: (image: FaqImageInput) => ({
-        imagePath: image.imagePath || '',
-        altText: image.altText || '',
-        position: image.position || '',
-        order: image.order || 0,
-      }),
     },
   ],
+  // `description` / `ctaTitle` / `ctaButtonText` / `ctaButtonLink` da aynı
+  // gerekçeyle yazma yolundan çıktı: dördünü de yalnız silinen `Faq.vue`
+  // okuyordu. Sütunlar ve değerleri veri tabanında duruyor.
   mapParentCreate: (b) => ({
     mainTitle: b.mainTitle || '',
-    description: b.description,
-    ctaTitle: b.ctaTitle,
-    ctaButtonText: b.ctaButtonText,
-    ctaButtonLink: b.ctaButtonLink,
   }),
   mapParentUpdate: (b) => ({
     mainTitle: b.mainTitle,
-    description: b.description,
-    ctaTitle: b.ctaTitle,
-    ctaButtonText: b.ctaButtonText,
-    ctaButtonLink: b.ctaButtonLink,
   }),
+  // 'cascade' KALDI ama artık yalnız `faqs`i kapsıyor: bölüm kaydı
+  // silinirse sorular da gider. statsCards/images ilişkisi yazma yolunda
+  // olmadığı için bu işlemden ETKİLENMİYOR.
   deleteStrategy: 'cascade',
 })

@@ -17,70 +17,43 @@ import { ok, fail, type ServiceResult } from '../shared/response'
 
 const DEFAULT_SECTION_NAME = 'about-section'
 
-export interface AboutServiceItemInput {
-  iconPath?: string
-  iconAlt?: string
-  title?: string
-  description?: string
-  order?: number
-}
-
-export interface AboutStatInput {
-  value?: string
-  label?: string
-  order?: number
-}
-
 export interface AboutSectionInput {
   sectionName?: string
   mainTitle?: string
   description1?: string
   description2?: string
   description3?: string
-  teamImage?: string
-  teamImageAlt?: string
   historyTitle?: string
   historyText1?: string
   historyText2?: string
   historyText3?: string
-  seoTitle?: string
-  seoDescription?: string
-  services?: AboutServiceItemInput[]
-  stats?: AboutStatInput[]
 }
 
-const includeChildren = { services: true, stats: true }
-
-function mapServicesData(services: AboutSectionInput['services']) {
-  return Array.isArray(services)
-    ? services.map((s) => ({
-        iconPath: s.iconPath || '',
-        iconAlt: s.iconAlt || '',
-        title: s.title || '',
-        description: s.description || '',
-        order: s.order || 0,
-      }))
-    : []
-}
-
-function mapStatsData(stats: AboutSectionInput['stats']) {
-  return Array.isArray(stats)
-    ? stats.map((s) => ({
-        value: s.value || '',
-        label: s.label || '',
-        order: s.order || 0,
-      }))
-    : []
-}
+/*
+ * `services`, `stats`, `teamImage`, `teamImageAlt`, `seoTitle` ve
+ * `seoDescription` YAZMA YOLUNDAN ÇIKARILDI (M6).
+ *
+ * `hakkimizda.vue` okuduğu alanları açık bir beyaz listeyle seçiyor (sekiz
+ * alan) ve bu altısı listede değil — yani panelde düzenleniyor, kaydediliyor,
+ * hiçbir yerde görünmüyorlardı.
+ *
+ * `seoTitle`/`seoDescription` ayrıca İKİNCİ BİR SEO KAYNAĞIYDI: sayfanın
+ * gerçek SEO sahibi `Meta("about")`. İki panelden aynı sayfanın başlığını
+ * düzenleyebilmek, hangisinin kazandığını kimsenin bilmemesi demek.
+ *
+ * ÖNEMLİ YAN ETKİ — VERİ KAYBI DA KAPANDI: `update` her çağrıda
+ * `aboutService.deleteMany` + `aboutStat.deleteMany` çalıştırıp gövdeden
+ * yeniden yaratıyordu. Panel bu alanları göndermeyi bıraksa altı hizmet ve
+ * dört istatistik kaydı ilk kaydetmede SİLİNİRDİ. Artık uç nokta bu
+ * kayıtlara hiç dokunmuyor.
+ *
+ * Tablolar, sütunlar ve içindeki veriler DURUYOR.
+ */
 
 async function get(): Promise<ServiceResult<any>> {
   try {
     const row = await prisma.aboutSection.findFirst({
       where: { sectionName: DEFAULT_SECTION_NAME },
-      include: {
-        services: { orderBy: { order: 'asc' } },
-        stats: { orderBy: { order: 'asc' } },
-      },
     })
     return ok(
       row || {
@@ -89,16 +62,10 @@ async function get(): Promise<ServiceResult<any>> {
         description1: '',
         description2: '',
         description3: '',
-        teamImage: '',
-        teamImageAlt: '',
         historyTitle: '',
         historyText1: '',
         historyText2: '',
         historyText3: '',
-        seoTitle: '',
-        seoDescription: '',
-        services: [],
-        stats: [],
       }
     )
   } catch (error) {
@@ -115,18 +82,11 @@ async function create(body: AboutSectionInput): Promise<ServiceResult<any>> {
         description1: body.description1 || '',
         description2: body.description2 || '',
         description3: body.description3 || '',
-        teamImage: body.teamImage || '',
-        teamImageAlt: body.teamImageAlt || '',
         historyTitle: body.historyTitle || '',
         historyText1: body.historyText1 || '',
         historyText2: body.historyText2 || '',
         historyText3: body.historyText3 || '',
-        seoTitle: body.seoTitle || '',
-        seoDescription: body.seoDescription || '',
-        services: { create: mapServicesData(body.services) },
-        stats: { create: mapStatsData(body.stats) },
       },
-      include: includeChildren,
     })
     return ok(row)
   } catch (error) {
@@ -139,15 +99,8 @@ async function create(body: AboutSectionInput): Promise<ServiceResult<any>> {
 
 async function update(body: AboutSectionInput): Promise<ServiceResult<any>> {
   const targetSectionName = body.sectionName || DEFAULT_SECTION_NAME
-  const servicesData = mapServicesData(body.services)
-  const statsData = mapStatsData(body.stats)
 
   try {
-    await prisma.$transaction([
-      prisma.aboutService.deleteMany({ where: { aboutSection: { sectionName: targetSectionName } } }),
-      prisma.aboutStat.deleteMany({ where: { aboutSection: { sectionName: targetSectionName } } }),
-    ])
-
     const row = await prisma.aboutSection.update({
       where: { sectionName: targetSectionName },
       data: {
@@ -155,18 +108,11 @@ async function update(body: AboutSectionInput): Promise<ServiceResult<any>> {
         description1: body.description1,
         description2: body.description2,
         description3: body.description3,
-        teamImage: body.teamImage,
-        teamImageAlt: body.teamImageAlt,
         historyTitle: body.historyTitle,
         historyText1: body.historyText1,
         historyText2: body.historyText2,
         historyText3: body.historyText3,
-        seoTitle: body.seoTitle,
-        seoDescription: body.seoDescription,
-        services: { create: servicesData },
-        stats: { create: statsData },
       },
-      include: includeChildren,
     })
     return ok(row)
   } catch (error) {
@@ -180,18 +126,11 @@ async function update(body: AboutSectionInput): Promise<ServiceResult<any>> {
             description1: body.description1 || '',
             description2: body.description2 || '',
             description3: body.description3 || '',
-            teamImage: body.teamImage || '',
-            teamImageAlt: body.teamImageAlt || '',
             historyTitle: body.historyTitle || '',
             historyText1: body.historyText1 || '',
             historyText2: body.historyText2 || '',
             historyText3: body.historyText3 || '',
-            seoTitle: body.seoTitle || '',
-            seoDescription: body.seoDescription || '',
-            services: { create: servicesData },
-            stats: { create: statsData },
           },
-          include: includeChildren,
         })
         return ok(created, 'Kayıt bulunamadı, yeni kayıt oluşturuldu.')
       } catch {
@@ -209,20 +148,15 @@ async function partialUpdate(body: Partial<AboutSectionInput>): Promise<ServiceR
   if (body.description1 !== undefined) updateData.description1 = body.description1
   if (body.description2 !== undefined) updateData.description2 = body.description2
   if (body.description3 !== undefined) updateData.description3 = body.description3
-  if (body.teamImage !== undefined) updateData.teamImage = body.teamImage
-  if (body.teamImageAlt !== undefined) updateData.teamImageAlt = body.teamImageAlt
   if (body.historyTitle !== undefined) updateData.historyTitle = body.historyTitle
   if (body.historyText1 !== undefined) updateData.historyText1 = body.historyText1
   if (body.historyText2 !== undefined) updateData.historyText2 = body.historyText2
   if (body.historyText3 !== undefined) updateData.historyText3 = body.historyText3
-  if (body.seoTitle !== undefined) updateData.seoTitle = body.seoTitle
-  if (body.seoDescription !== undefined) updateData.seoDescription = body.seoDescription
 
   try {
     const row = await prisma.aboutSection.update({
       where: { sectionName: targetSectionName },
       data: updateData,
-      include: includeChildren,
     })
     return ok(row)
   } catch (error) {

@@ -45,6 +45,7 @@ const regionCreateSchema = yup.object({
   slug: yup.string().trim().required(),
   content: yup.string().notRequired(),
   excerpt: yup.string().notRequired(),
+  metaTitle: yup.string().notRequired(),
   metaDescription: yup.string().notRequired(),
   image: yup.string().trim().notRequired(),
   imageAlt: yup.string().trim().notRequired(),
@@ -57,12 +58,16 @@ const regionCreateSchema = yup.object({
 })
 
 const regionUpdateSchema = yup.object({
+  // KİMLİK — adres artık değişebildiği için gerekli; panel zaten
+  // gönderiyordu ama şemada olmadığı için `stripUnknown` atıyordu.
+  id: yup.number().integer().positive().nullable().notRequired(),
   title: yup.string().trim().notRequired(),
   subtitle: yup.string().trim().notRequired(),
   shortTitle: yup.string().trim().notRequired(),
   slug: yup.string().trim().required(),
   content: yup.string().notRequired(),
   excerpt: yup.string().notRequired(),
+  metaTitle: yup.string().notRequired(),
   metaDescription: yup.string().notRequired(),
   image: yup.string().trim().notRequired(),
   imageAlt: yup.string().trim().notRequired(),
@@ -88,7 +93,14 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === 'GET') {
-    const { slug, city, light, page, pageSize } = getQuery(event)
+    const { slug, city, light, page, pageSize, kapsam } = getQuery(event)
+
+    // KAPSAM yalnız yöneticiye açık ve kapalı küme. Herkese açık uçların
+    // böyle bir ayrımı yok: ziyaretçi tarafında bölge bölgedir.
+    const kapsamDegeri =
+      isAdminMode && (kapsam === 'istanbul' || kapsam === 'legacy')
+        ? (kapsam as 'istanbul' | 'legacy')
+        : undefined
     const isLight = light === 'true'
     const pageNum = page ? Number(page) : undefined
     const pageSizeNum = pageSize ? Number(pageSize) : undefined
@@ -98,7 +110,7 @@ export default defineEventHandler(async (event) => {
       if (isNaN(cityId)) {
         return { success: false, error: 'Geçersiz şehir ID' }
       }
-      return regionsService.get({ cityId, includeInactive: isAdminMode, light: isLight, page: pageNum, pageSize: pageSizeNum })
+      return regionsService.get({ cityId, includeInactive: isAdminMode, light: isLight, page: pageNum, pageSize: pageSizeNum, kapsam: kapsamDegeri })
     }
 
     return regionsService.get({
@@ -107,6 +119,7 @@ export default defineEventHandler(async (event) => {
       light: isLight,
       page: pageNum,
       pageSize: pageSizeNum,
+      kapsam: kapsamDegeri,
     })
   }
 

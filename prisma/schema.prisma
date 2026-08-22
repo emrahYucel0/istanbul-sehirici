@@ -43,9 +43,32 @@ model SiteSettings {
   youtubeUrl          String?
   githubUrl           String?
 
+  /// ÖLÜ ALANLAR — panelden KALDIRILDI (M6).
+  ///
+  /// Üçünün de herkese açık tüketicisi ölçüldü: SIFIR. Projede gtag, GTM
+  /// veya dataLayer yükleyen hiçbir kod yok ve rıza (consent) altyapısı da
+  /// yok. Panelde durdukları sürece "doldurdum, çalışıyor sanıyorum"
+  /// üretiyorlardı. Sütunlar veri kaybı olmasın diye şemada bırakıldı;
+  /// yönetim yüzeyinden çıkarıldılar. Rıza altyapısı kurulduğunda geri
+  /// bağlanabilirler (bkz. M6 raporu).
   googleAnalyticsId   String?
   googleTagManagerId  String?
   googleAdsenseId     String?
+
+  /// GENEL ÇAĞRI (CTA) — M6'da HeroPage'den DEVRALINDI.
+  ///
+  /// Eski sahibi `HeroPage` idi ve o modelin 12 alanından yalnız bu ikisi
+  /// canlıydı: İstanbul dışı legacy bölge sayfalarının kapanış bandı
+  /// (components/base/FinalCta.vue) onları okuyordu. İki alan için 12
+  /// alanlık bir "Hero" paneli canlıymış gibi durmak, yöneticiye ana
+  /// sayfayı oradan yönettiğini düşündürüyordu — oysa ana sayfa M4'ten beri
+  /// HeroPage'i hiç okumuyor.
+  ///
+  /// Buraya taşındı çünkü SiteSettings zaten genel eylem verisinin sahibi
+  /// (telefon, WhatsApp, adres). Değerler birebir kopyalandı; görünen
+  /// metin ve adres değişmedi.
+  ctaLabel            String?
+  ctaLink             String?
 
   footerText          String?   @db.Text
   copyrightText       String?
@@ -241,6 +264,15 @@ model Service {
   /// Google arama sonucunda görünen açıklama. `excerpt`ten ayrı tutuluyor:
   /// excerpt sayfanın giriş paragrafı ve kart metni (doğal okunmalı), bu ise
   /// aramada tıklanma üretmeli. Boşsa excerpt'e düşülür.
+  /// Google arama sonucunda görünen BAŞLIK. Boş bırakılırsa
+  /// `başlık | marka` biçimi otomatik üretilir — yani bu alan doldurulmadan
+  /// da hiçbir sayfa başlıksız kalmaz.
+  ///
+  /// Ayrı alan olmasının sebebi: sayfadaki H1 ile aramadaki başlığın aynı
+  /// olması gerekmiyor. H1 sayfa içinde, bağlamı belliyken okunur; arama
+  /// başlığı ise ~60 karakterlik bir vitrindir ve tek başına tıklanma
+  /// üretmek zorundadır. Uzun yazı başlıklarında ikisi belirgin ayrışıyor.
+  metaTitle       String?
   metaDescription String? @db.Text
 
   order       Int      @default(0) // Hizmetlerin sıralaması için
@@ -270,6 +302,25 @@ model Service {
   /** Hizmete özgü sık sorulanlar: [{question, answer}] — FAQPage besler. */
   faqs        Json?
 
+  // --- Yayın durumu -------------------------------------------------------
+  //
+  // NEDEN EKLENDİ
+  // `slug` verilen her hizmet anında canlıydı: kök adreste sayfa açılıyor,
+  // `/hizmetlerimiz` dizinine giriyor ve sitemap'e ekleniyordu. Yeni bir
+  // hizmet taslak hâlde hazırlanamıyordu.
+  //
+  // DİKKAT — BU ALAN PANEL GÖVDESİNDEN YAZILMIYOR.
+  // Bölüm kaydı her PUT'ta çocuk satırları silip yeniden yaratıyor
+  // (services.config.ts → deleteStrategy: 'manual'). Yayın durumu genel
+  // düzenleme gövdesinde taşınsaydı bir onay kutusu yayın kararını
+  // geçersiz kılardı; taşınmasaydı her kayıtta sıfırlanırdı. Çözüm ikisi de
+  // değil: durum güncelleme ÖNCESİ `slug` bazında okunup yeniden yazılıyor
+  // ve yayına alma ayrı bir eylem (POST /api/services-yayin).
+  //
+  // Varsayılan `false`: yeni hizmet TASLAK başlar. Mevcut yedi hizmet göç
+  // sırasında açıkça `true` yazıldı.
+  isActive    Boolean  @default(false)
+
   services    Services @relation(fields: [servicesId], references: [id])
   servicesId  Int
 }
@@ -296,6 +347,24 @@ model ProcessStep {
   description      String         @db.Text // Adımın detaylı anlatımı
   iconPath         String?        // İkon/görsel yolu
   order            Int            @default(0) // Adım sırası (1,2,3...)
+
+  /// ADIM ETİKETİ — "KEŞİF", "PAKETLEME".
+  ///
+  /// V2 Süreç bölümünde her adımın başlığının ÜSTÜNDE künye biçiminde bir
+  /// etiket duruyor ve başlıktan farklı bir iş yapıyor: başlık bir cümle
+  /// ("Önce hareketi değil, koşulları çıkarırız."), etiket ise adımın adı.
+  /// `title` alanına sıkıştırılamaz.
+  label            String?
+  /// Adımın fotoğrafı. `iconPath` ikon içindi (V1 kart düzeni); V2 tam
+  /// genişlikte fotoğraf kullanıyor. İkisi ayrı tutuluyor çünkü eski
+  /// değerler silinmiyor.
+  imagePath        String?
+  /// Görselin alt metni. Otomatik üretilmiyor — yönetici yazıyor.
+  imageAlt         String?
+  /// Adımın altındaki isteğe bağlı bağlantı. V2'de yalnız bir adımda var;
+  /// hangi adımda olduğunu koda gömmek yerine veriyle taşınıyor.
+  linkLabel        String?
+  linkHref         String?
 
   processSection   ProcessSection @relation(fields: [processSectionId], references: [id], onDelete: Cascade)
   processSectionId Int
@@ -615,14 +684,59 @@ model Post {
   /// Google arama sonucunda görünen açıklama. Bilgilendirici içerik olduğu
   /// için satış cümlesi DEĞİL, yazının cevapladığı soruyu vaat eder.
   /// Boşsa excerpt'e düşülür.
+  /// Google arama sonucunda görünen BAŞLIK. Boş bırakılırsa
+  /// `başlık | marka` biçimi otomatik üretilir — yani bu alan doldurulmadan
+  /// da hiçbir sayfa başlıksız kalmaz.
+  ///
+  /// Ayrı alan olmasının sebebi: sayfadaki H1 ile aramadaki başlığın aynı
+  /// olması gerekmiyor. H1 sayfa içinde, bağlamı belliyken okunur; arama
+  /// başlığı ise ~60 karakterlik bir vitrindir ve tek başına tıklanma
+  /// üretmek zorundadır. Uzun yazı başlıklarında ikisi belirgin ayrışıyor.
+  metaTitle       String?
   metaDescription String? @db.Text
 
   image      String?
   /// Kapak görselinin alt metni. Boşsa "<kısa başlık> konulu yazının kapak
   /// görseli" üretilir. Elle yazılması önerilir (bkz. Service.imageAlt).
   imageAlt   String?
+
+  // --- Yayın durumu -------------------------------------------------------
+  //
+  // NEDEN EKLENDİ
+  // Bu modelde yayın durumu diye bir kavram YOKTU. Panelde bir yazıya
+  // başlanıp yarım bırakıldığı anda o yazı canlıydı: kök adreste açılıyor,
+  // `/blog` listesinde görünüyor, sitemap'e giriyor ve `index, follow`
+  // etiketiyle dizine sunuluyordu. `Region`, `Neighborhood` ve `PolicyPage`
+  // yayın durumu taşırken bu ailenin tek istisnası buydu.
+  //
+  // Varsayılan `false`: yeni kayıt TASLAK başlar. Mevcut on yazı göç
+  // sırasında açıkça `true` yazıldı (bkz. migration) — hiçbiri yayından
+  // düşmedi.
+
+  /// Yayında mı. Herkese açık okumalar bunu süzüyor; `false` ise adres 404.
+  isActive    Boolean   @default(false)
+
+  /// İLK yayına alınma anı. Sonraki düzenlemeler ve yeniden yayınlar bu
+  /// değeri DEĞİŞTİRMEZ — "ne zaman yayımlandı" sorusunun cevabı ilk
+  /// yayındır, son dokunuş değil. Son düzenleme zaten `updatedAt`'ta.
+  ///
+  /// Yayından kaldırma bu alanı SİLMEZ: geçmiş korunuyor, aynı yazı geri
+  /// alındığında özgün yayın tarihini kaybetmiyor.
+  ///
+  /// Herkese açık listede sıralama kaynağı da burası (bkz.
+  /// posts.repository.ts). Önceden sıra veri tabanının doğal sırasıydı ve
+  /// yalnız tesadüfen ters kronolojikti: on yazı en yeniden eskiye doğru
+  /// eklendiği için `id` artışı tarih azalışıyla örtüşüyordu. Yeni bir
+  /// yazı en büyük id'yi alacağı için listenin SONUNA düşerdi.
+  publishedAt DateTime?
+
   createdAt  DateTime? @default(now())
   updatedAt  DateTime? @updatedAt
+
+  /// Herkese açık her okuma `isActive` süzüyor. Bugün on kayıtta ölçülebilir
+  /// bir kazanç yok; indeks yazı sayısı büyüdükçe anlam kazanıyor ve
+  /// `Neighborhood.isActive` ile aynı deseni koruyor.
+  @@index([isActive])
 }
 
 //--------------------- Region-----------------------
@@ -645,6 +759,15 @@ model Region {
   /// HİÇBİRİNDE "evden eve nakliyat" ifadesi geçmiyordu.
   ///
   /// Boş bırakılırsa `excerpt`e düşülür; hiçbir sayfa açıklamasız kalmaz.
+  /// Google arama sonucunda görünen BAŞLIK. Boş bırakılırsa
+  /// `başlık | marka` biçimi otomatik üretilir — yani bu alan doldurulmadan
+  /// da hiçbir sayfa başlıksız kalmaz.
+  ///
+  /// Ayrı alan olmasının sebebi: sayfadaki H1 ile aramadaki başlığın aynı
+  /// olması gerekmiyor. H1 sayfa içinde, bağlamı belliyken okunur; arama
+  /// başlığı ise ~60 karakterlik bir vitrindir ve tek başına tıklanma
+  /// üretmek zorundadır. Uzun yazı başlıklarında ikisi belirgin ayrışıyor.
+  metaTitle       String?
   metaDescription String? @db.Text
 
   image      String?
@@ -675,8 +798,19 @@ model Region {
   // Bu alanlar hem sayfa derinliğini (Google için ince içerik riskini
   // azaltmak) hem de yerel arama karşılıklarını besliyor.
 
-  /** Mahalle adları: ["Moda", "Yeldeğirmeni"] — yerel arama karşılığı. */
+  /**
+   * Mahalle adları: ["Moda", "Yeldeğirmeni"] — yerel arama karşılığı.
+   *
+   * GEÇİŞ HÂLİNDE. Mahalleler artık kendi tablosunda (`Neighborhood`) da
+   * duruyor ve sayfalar oradan okuyor. Bu alan SİLİNMEDİ: 473 adın tek
+   * kaynağı olarak yıllardır paneldeydi ve import betiği (idempotent)
+   * hâlâ buradan besleniyor. Hedef, `Neighborhood` tablosunun tek kaynak
+   * olması; o zamana kadar ikisi birlikte duruyor.
+   */
   neighborhoods Json?
+
+  /// Bu ilçeye bağlı mahalle kayıtları. YALNIZ İstanbul ilçelerinde dolu.
+  neighborhoodRecords Neighborhood[]
 
   /** Bölge künyesi: [{label: "Yapı dokusu", value: "1960-80 apartman"}] */
   facts Json?
@@ -694,6 +828,76 @@ model Region {
 
   createdAt  DateTime? @default(now())
   updatedAt  DateTime? @updatedAt
+}
+
+//--------------------- Neighborhood-----------------------
+
+/// MAHALLE KAYDI.
+///
+/// NEDEN AYRI TABLO
+/// Mahalleler `Region.neighborhoods` içinde yalnız AD olarak tutuluyordu.
+/// Ad listesi gezinme için yetiyordu ama içerik üretimi için yetmiyor:
+/// mahalle başına başlık, giriş, gövde, arama açıklaması, SSS ve yayın
+/// durumu gerekiyor. Bunları tek bir JSON dizisine sıkıştırmak alan
+/// bazında sorgu/süzme imkânını yok eder, kısmi güncelleme tüm diziyi
+/// yeniden yazar ve panelde 17 mahallenin içeriğini tek alanda düzenlemek
+/// pratikte kullanılamaz.
+///
+/// PARENT YALNIZ İSTANBUL İLÇESİ OLABİLİR
+/// İlişki `Region`e bağlı çünkü ilçeler orada duruyor; ama İstanbul dışı
+/// bir kayıt parent OLAMAZ. Bunu veri tabanı zorlayamıyor (aynı tabloda
+/// hem il hem ilçe var), kural import betiği ve yayın kapısı tarafından
+/// uygulanıyor — bkz. prisma/mahalle-aktar.mjs, prisma/mahalle-yayina-al.mjs.
+model Neighborhood {
+  id         Int      @id @default(autoincrement())
+
+  districtId Int
+  /// Bağlı olduğu İstanbul ilçesi. İlçe silinirse mahalleleri de gider —
+  /// başka bir ilçeye "yetim" bağlanmaları anlamsız olurdu.
+  district   Region   @relation(fields: [districtId], references: [id], onDelete: Cascade)
+
+  /// Görünen ad, ek YOK: "Kaynarca". Başlıktaki "Mahallesi" eki
+  /// shared/utils/mahalle.ts tarafından ekleniyor.
+  name       String
+
+  /// Adın slug'ı: "kaynarca". Bu bir ADRES DEĞİL, yalnız ilçe içi kimlik.
+  slug       String
+
+  /// YAYINDAKİ TAM ADRES: "kaynarca-mahallesi" ya da ad birden fazla
+  /// ilçede geçtiği için "pendik-fevzi-cakmak-mahallesi".
+  ///
+  /// Değer BURADA ÜRETİLMİYOR: tek kaynak shared/utils/mahalle.ts.
+  /// Sütun UNIQUE olduğu için çakışma politikası artık bir veri tabanı
+  /// kısıtı — iki mahalle aynı adresi asla alamaz.
+  canonicalPath String @unique
+
+  /// Yayında mı. Import edilen kayıtlar PASİF başlar; yayın kapısından
+  /// geçmeyen hiçbir kayıt aktifleşmiyor.
+  isActive   Boolean  @default(false)
+
+  title           String?
+  excerpt         String?  @db.Text
+  content         String?  @db.Text
+  metaTitle       String?
+  metaDescription String?  @db.Text
+
+  /// Sık sorulanlar: [{question, answer}] — FAQPage yapısal verisini besler.
+  faqs       Json?
+
+  /// Mahalle künyesi: [{label, value}]. YALNIZ doğrulanmış bilgi girilir;
+  /// "sokaklar dardır" gibi kaynaksız yerel iddia bu alana yazılmaz.
+  facts      Json?
+
+  imagePath  String?
+  imageAlt   String?
+
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  /// Aynı ilçede aynı ada iki kayıt olamaz.
+  @@unique([districtId, slug])
+  @@index([districtId])
+  @@index([isActive])
 }
 
 //--------------------- Image-----------------------
@@ -884,4 +1088,157 @@ model PolicyPage {
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+//--------------------- ANA SAYFA (V2) — KONTROLLÜ İÇERİK ---------------------
+//
+// NEDEN AYRI BİR MODEL
+//
+// Ana sayfa V2'nin işletme metinleri bileşen dosyalarının içindeydi. Mevcut
+// bölüm modelleri (HeroPage, WhyChooseUs, WeHelpSection…) eski markanın
+// kart düzenine ait; alan adları benziyor ama semantikleri tutmuyor —
+// örneğin V2 Hero'nun "ölçülen dört koşul"unun HeroPage'de karşılığı yok.
+// Zorla genişletmek iki tasarımın alanlarını tek tabloda karıştırırdı.
+//
+// BU BİR SAYFA OLUŞTURUCU (PAGE BUILDER) DEĞİL
+//
+//   · `sectionKey` KAPALI bir küme — kod tarafında sabit (bkz.
+//     server/domain/home/home.keys.ts). Yönetici yeni anahtar üretemiyor.
+//   · Bölüm sırası, yerleşim, koreografi, künye numaraları, ızgara ve
+//     erişilebilirlik yapısı KODDA kalıyor; her bölümün kendi bileşeni var.
+//   · Öğe sayısı bölüm başına sabit (hero 4, kapsam 3, üç-istanbul 3,
+//     fiyat 5). Yönetici öğe ekleyip düzeni bozamıyor.
+//   · Alanlar isimlendirilmiş ve sınırlı; serbest "blok" listesi yok.
+//
+// Yani model, tasarımın izin verdiği DELİKLERİ temsil ediyor — tasarımın
+// kendisini değil.
+
+model HomeSection {
+  id         Int      @id @default(autoincrement())
+
+  /// Kapalı küme: hero | kapsam | uc-istanbul | hizmetler | fiyat | kapanis
+  sectionKey String   @unique
+
+  /// Bölümün ana başlığı (Hero'da H1, diğerlerinde H2).
+  heading    String?  @db.Text
+  /// Başlığın altındaki giriş paragrafı.
+  lead       String?  @db.Text
+  /// Listelerin üstündeki ikinci paragraf ("Her adres … dört soruyla
+  /// ölçülür.", Kapsam'daki koşul notu).
+  note       String?  @db.Text
+  /// Bölümü kapatan vurgu cümlesi ("Aynı şehir. / Aynı taşıma değil.").
+  closing    String?  @db.Text
+  /// Vurgu cümlesinin altındaki açıklama paragrafı.
+  closingNote String? @db.Text
+  /// Bölümdeki eylem bağlantısının ETİKETİ. Hedef adres kodda: rota
+  /// yapısının parçası ve `/iletisim` gibi sabit sayfalara gidiyor.
+  ctaLabel   String?
+
+  /// Bölümün ana görseli (Hero). Yükleme akışı mevcut FileUploader.
+  imagePath  String?
+  imageAlt   String?  @db.Text
+
+  items      HomeSectionItem[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+/// Bölümün SIRALI editoryal öğeleri.
+///
+/// Alanlar isimlendirilmiş ve hepsi isteğe bağlı; her bölüm ihtiyacı olan
+/// alt kümeyi kullanıyor:
+///   hero        label + body                      (ölçülen koşullar)
+///   kapsam      label + body                      (örnek ilçe + koşulu)
+///   uc-istanbul label + subLabel + title + body + imagePath + imageAlt
+///   fiyat       label + body                      (fiyat faktörleri)
+model HomeSectionItem {
+  id        Int         @id @default(autoincrement())
+
+  /// Küçük künye etiketi: "ARAÇ ERİŞİMİ", "DAR SOKAK", "Beşiktaş".
+  label     String?
+  /// Etiketin yanındaki ikincil künye: "Beşiktaş tipi".
+  subLabel  String?
+  /// Öğe başlığı (yalnız üç-İstanbul sahnelerinde).
+  title     String?     @db.Text
+  /// Öğe gövdesi.
+  body      String?     @db.Text
+  imagePath String?
+  imageAlt  String?     @db.Text
+  order     Int         @default(0)
+
+  section   HomeSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId Int
+
+  @@index([sectionId, order])
+}
+
+
+//--------------------- INTERNAL PAGE / İÇ SAYFA İÇERİĞİ -----------------------
+
+/// İÇ SAYFA EDİTORYAL İÇERİĞİ — KONTROLLÜ CMS (M7).
+///
+/// Ana sayfa için M4'te `HomeSection` kuruldu; bu model onun iç sayfa
+/// karşılığı. Aynı gerekçe: sayfanın YAPISI ve TASARIMI kodda kalıyor,
+/// işletmenin normalde değiştirmesi gereken METİN ve GÖRSELLER veri
+/// tabanına geçiyor.
+///
+/// SAYFA OLUŞTURUCU DEĞİL. `pageKey` ve `sectionKey` kapalı kümeler
+/// (shared/utils/ic-sayfa.ts) ve sunucu bilinmeyen anahtarı reddediyor.
+/// Yönetici yeni sayfa açamaz, yeni bölüm ekleyemez, bölüm sırasını
+/// değiştiremez, öğe sayısını değiştiremez.
+///
+/// BURAYA YAZILMAYANLAR — her biri kendi sahibinde kalıyor:
+///   SEO başlık/açıklama        Meta(page)
+///   telefon/adres/saatler      SiteSettings
+///   hizmet envanteri           Service
+///   ilçe sayıları              Region'dan türetiliyor
+///   fiyat katsayıları          PriceEstimator
+///   yazı listesi               Post
+model InternalPageSection {
+  id         Int    @id @default(autoincrement())
+  /// Kapalı küme: hizmetler · bolgeler · hakkimizda · iletisim · fiyat · blog
+  pageKey    String
+  /// Sayfaya özgü kapalı küme (bkz. shared/utils/ic-sayfa.ts).
+  sectionKey String
+
+  heading   String? @db.Text
+  lead      String? @db.Text
+  note      String? @db.Text
+  closing   String? @db.Text
+
+  /// Sahne fotoğrafı. `/images/...` (kaynak koddaki statik varlık) ya da
+  /// `/yuklemeler/...` (yönetici yüklemesi) olabilir.
+  imagePath String?
+  /// ALT METİN SAYFA BAĞLAMINA AİTTİR, dosyaya değil: aynı fotoğraf başka
+  /// bir sayfada başka bir şey anlatabilir. Bu yüzden medya kütüphanesinde
+  /// değil, içeriğin yanında duruyor.
+  imageAlt  String? @db.Text
+
+  items     InternalPageItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([pageKey, sectionKey])
+}
+
+model InternalPageItem {
+  id        Int     @id @default(autoincrement())
+  label     String? @db.Text
+  title     String? @db.Text
+  body      String? @db.Text
+  /// Dördüncü metin yuvası. Ölçülmüş tek bir ihtiyaç için var: hizmet
+  /// dizinindeki örnek durumların altındaki "Evden Eve Nakliyat + Eşya
+  /// Depolama" rozeti. Mevcut alanlardan birine sıkıştırmak (ör. alt metne)
+  /// anlamı bozardı.
+  note      String? @db.Text
+  imagePath String?
+  imageAlt  String? @db.Text
+  order     Int     @default(0)
+
+  section   InternalPageSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId Int
+
+  @@index([sectionId, order])
 }

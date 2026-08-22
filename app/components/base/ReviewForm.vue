@@ -1,43 +1,69 @@
 <script setup>
 /**
- * MÜŞTERİ YORUM FORMU.
+ * YORUM FORMU — V2.
  *
- * Gönderilen yorum ANINDA YAYINLANMAZ; yönetici onayından geçer. Bu bilgi
- * kullanıcıya açıkça söyleniyor — yorumunu göremeyince "kayboldu" sanmasın.
+ * ─────────────────────────────────────────────────────────────────────────
+ * NE DEĞİŞTİ, NEDEN
  *
- * Onay şartı sadece spam önlemi değil: yorumlar ileride Review/AggregateRating
- * yapısal verisini besleyecek ve Google doğrulanmamış yorum işaretlemesini
- * ihlal sayıyor.
+ * Formun kendisi V1'den beri vardı ve API sözleşmesi sağlamdı; kaldırılan
+ * şey yalnız GÖRSEL DİL ve GEREKSİZ ALANLAR oldu. Eski hâli yuvarlak
+ * köşeli bir kart, hap biçimli düğmeler ve marka rengiyle dolu bir
+ * kutuydu — sayfanın kalan sekiz bölümünde böyle bir nesne yok. Yeni hâli
+ * bölümün kendi dilinde: kâğıt zemin, ince yapısal çizgiler, mono etiket.
+ *
+ * KART YOK. GÖLGE YOK. CAM YOK. Alanlar yalnız alt çizgiyle tanımlı;
+ * form sayfanın üstünde duran bir nesne değil, sayfanın devamı.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * ALANLAR — DÖRT, DAHA FAZLASI DEĞİL
+ *
+ *   Ad      zorunlu · yayınlanan tek kimlik
+ *   Puan    zorunlu · 1-5 tam sayı
+ *   Yorum   zorunlu · metnin kendisi
+ *   E-posta İSTEĞE BAĞLI · yayınlanmıyor, yalnız moderasyonda doğrulama
+ *
+ * KALDIRILAN İKİ ALAN — "İlçe" ve "Aldığınız hizmet".
+ * İkisi de ekranda hiç gösterilmiyordu ve hizmet türü boş bırakıldığında
+ * sunucu onu listedeki İLK değere ("Evden Eve Nakliyat") düşürüyordu:
+ * ziyaretçinin hiç söylemediği bir bilgi, onun yorumuna iliştirilip
+ * veri tabanına yazılıyordu. Sormadığımız şeyi varsaymıyoruz.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * PUAN GİRİŞİ GERÇEK BİR RADIO GRUBU
+ *
+ * Eskiden beş `<button aria-pressed>` vardı. `aria-pressed` bir aç/kapa
+ * düğmesini anlatır, "beşten birini seç"i değil; ok tuşlarıyla gezinme de
+ * yoktu. Şimdi `fieldset` + `input[type=radio]`: tarayıcı ok tuşu
+ * gezinmesini, grup semantiğini ve odak halkasını kendisi veriyor.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * GÖNDERİM SÖZLEŞMESİ
+ *
+ * Yorum ANINDA YAYINLANMIYOR; moderasyon kuyruğuna düşüyor. Bu, kullanıcıya
+ * gönderimden ÖNCE ve SONRA açıkça söyleniyor — "yayınlandı" demiyoruz,
+ * çünkü yayınlanmadı.
+ *
+ * ÇİFT GÖNDERİM: hem `gonderiliyor` bayrağı hem `disabled`. Ağ hatasında
+ * form ALANLARI KORUNUYOR (sıfırlama yalnız başarıda) — yazdığı yorumu
+ * kaybeden kullanıcı ikinci kez yazmaz.
  */
 import { ref } from 'vue'
 
-const HIZMETLER = [
-  'Evden Eve Nakliyat',
-  'Şehirler Arası Nakliyat',
-  'Ofis Taşıma',
-  'Parça Eşya Taşıma',
-  'Asansörlü Nakliyat',
-  'Eşya Depolama',
-  'Paketleme ve Ambalajlama',
-]
+defineProps({
+  /** Form kapalıyken görünen davet cümlesi — panelden (HomeSection) geliyor. */
+  davet: { type: String, default: 'Deneyiminizi yazın' },
+})
 
 const acik = ref(false)
 const gonderiliyor = ref(false)
 const durum = ref('')
 const hata = ref('')
 
-const form = ref({
-  customerName: '',
-  rating: 5,
-  comment: '',
-  location: '',
-  serviceType: HIZMETLER[0],
-  email: '',
-})
-/** Bal küpü — ekranda görünmez, botlar doldurur. */
-const website = ref('')
+const bos = () => ({ customerName: '', rating: 5, comment: '', email: '' })
+const form = ref(bos())
 
-const puanSec = (n) => (form.value.rating = n)
+/** Bal küpü — gerçek kullanıcı göremez, botlar doldurur. */
+const website = ref('')
 
 const gonder = async () => {
   if (gonderiliyor.value) return
@@ -52,12 +78,10 @@ const gonder = async () => {
     })
     if (cevap?.success === false) throw new Error(cevap.error || 'Gönderilemedi')
 
-    durum.value =
-      'Yorumunuz alındı, teşekkür ederiz. Kontrol edildikten sonra sitede yayınlanacak.'
-    form.value = {
-      customerName: '', rating: 5, comment: '', location: '',
-      serviceType: HIZMETLER[0], email: '',
-    }
+    // "Yayınlandı" DEĞİL. Kayıt onay bekliyor ve kullanıcı bunu bilmeli;
+    // yorumunu sayfada göremeyince kaybolduğunu sanmasın.
+    durum.value = 'Yorumunuz alındı ve yayınlanmadan önce incelenecek.'
+    form.value = bos()
     acik.value = false
   } catch (e) {
     hata.value = e?.data?.message || e?.message || 'Yorum gönderilemedi. Lütfen tekrar deneyin.'
@@ -68,227 +92,289 @@ const gonder = async () => {
 </script>
 
 <template>
-  <div class="yorum-formu">
-    <output v-if="durum" class="yorum-formu__durum">{{ durum }}</output>
+  <div class="yf">
+    <!--
+      CANLI BÖLGE HER ZAMAN DOM'DA — `v-if` DEĞİL.
 
-    <button v-if="!acik" type="button" class="yorum-formu__ac" @click="acik = true">
-      Siz de deneyiminizi paylaşın
+      Burada `v-if="durum"` vardı ve gerçek tarayıcıda ölçüldüğünde bölgenin
+      gönderim anında DOM'da hiç bulunmadığı görüldü. Ekran okuyucular canlı
+      bölgeyi İÇERİK DEĞİŞTİĞİNDE okur; bölge o an yeni yaratılıyorsa
+      değişimi kaçırabiliyorlar. Yani görsel kullanıcı "alındı" mesajını
+      görüyor, ekran okuyucu kullanıcısı hiçbir şey duymuyordu.
+
+      Bölge artık boş olarak baştan basılıyor; boşken `:empty` ile
+      gizleniyor, yani düzende yer kaplamıyor.
+    -->
+    <output class="yf-durum" aria-live="polite">{{ durum }}</output>
+
+    <button v-if="!acik" type="button" class="yf-ac" @click="acik = true">
+      {{ davet }}
     </button>
 
-    <form v-else class="yorum-formu__govde" @submit.prevent="gonder">
-      <h3 class="yorum-formu__baslik">Deneyiminizi paylaşın</h3>
-      <p class="yorum-formu__not">
+    <form v-else class="yf-govde" novalidate @submit.prevent="gonder">
+      <p class="yf-not">
         Yorumunuz kontrol edildikten sonra yayınlanır. E-posta adresiniz sitede görünmez.
       </p>
 
-      <p v-if="hata" class="yorum-formu__hata" role="alert">{{ hata }}</p>
+      <!-- Aynı gerekçe: `role="alert"` bölgesi de baştan var. -->
+      <p class="yf-hata" role="alert">{{ hata }}</p>
 
-      <!-- Puan -->
-      <fieldset class="yorum-formu__puan">
-        <legend>Puanınız</legend>
-        <div class="yorum-formu__yildizlar">
-          <button
-            v-for="n in 5"
-            :key="n"
-            type="button"
-            class="yorum-formu__yildiz"
-            :class="{ 'is-dolu': n <= form.rating }"
-            :aria-label="`${n} yıldız`"
-            :aria-pressed="n === form.rating"
-            @click="puanSec(n)"
-          >
-            <ui-icon name="star" :size="26" />
-          </button>
-          <span class="yorum-formu__puan-metin">{{ form.rating }} / 5</span>
+      <fieldset class="yf-puan">
+        <legend class="yf-etiket">Puanınız</legend>
+        <div class="yf-puan-satir">
+          <label v-for="n in 5" :key="n" class="yf-puan-secim" :class="{ 'is-secili': n === form.rating }">
+            <input v-model.number="form.rating" type="radio" name="yorum-puan" :value="n" class="yf-radyo" />
+            <span aria-hidden="true">{{ n }}</span>
+            <span class="sr-only">{{ n }} puan</span>
+          </label>
         </div>
       </fieldset>
 
-      <div class="yorum-formu__satir">
-        <div class="yorum-formu__alan">
-          <label for="yorum-ad">Adınız <span aria-hidden="true">*</span></label>
-          <input id="yorum-ad" v-model="form.customerName" type="text" required maxlength="60" autocomplete="name" />
-        </div>
-        <div class="yorum-formu__alan">
-          <label for="yorum-yer">Şehir / İlçe</label>
-          <input id="yorum-yer" v-model="form.location" type="text" maxlength="60" placeholder="Kartal" />
-        </div>
+      <div class="yf-alan">
+        <label class="yf-etiket" for="yf-ad">Adınız</label>
+        <input
+          id="yf-ad"
+          v-model="form.customerName"
+          type="text"
+          required
+          minlength="2"
+          maxlength="60"
+          autocomplete="name"
+          class="yf-girdi"
+        />
       </div>
 
-      <div class="yorum-formu__satir">
-        <div class="yorum-formu__alan">
-          <label for="yorum-hizmet">Aldığınız hizmet</label>
-          <select id="yorum-hizmet" v-model="form.serviceType">
-            <option v-for="h in HIZMETLER" :key="h" :value="h">{{ h }}</option>
-          </select>
-        </div>
-        <div class="yorum-formu__alan">
-          <label for="yorum-eposta">E-posta (yayınlanmaz)</label>
-          <input id="yorum-eposta" v-model="form.email" type="email" maxlength="120" autocomplete="email" />
-        </div>
+      <div class="yf-alan">
+        <label class="yf-etiket" for="yf-metin">Yorumunuz</label>
+        <textarea
+          id="yf-metin"
+          v-model="form.comment"
+          rows="5"
+          required
+          minlength="15"
+          maxlength="1000"
+          class="yf-girdi yf-metin"
+        />
+        <span class="yf-sayac">{{ form.comment.length }} / 1000</span>
       </div>
 
-      <div class="yorum-formu__alan">
-        <label for="yorum-metin">Yorumunuz <span aria-hidden="true">*</span></label>
-        <textarea id="yorum-metin" v-model="form.comment" rows="5" required minlength="15" maxlength="1000"></textarea>
-        <span class="yorum-formu__sayac">{{ form.comment.length }} / 1000</span>
+      <div class="yf-alan">
+        <label class="yf-etiket" for="yf-eposta">E-posta <span class="yf-ops">isteğe bağlı, yayınlanmaz</span></label>
+        <input
+          id="yf-eposta"
+          v-model="form.email"
+          type="email"
+          maxlength="120"
+          autocomplete="email"
+          class="yf-girdi"
+        />
       </div>
 
-      <!-- Bal küpü: ekran okuyuculardan ve klavyeden de gizli -->
-      <div class="yorum-formu__kupu" aria-hidden="true">
-        <label for="yorum-website">Bu alanı boş bırakın</label>
-        <input id="yorum-website" v-model="website" type="text" tabindex="-1" autocomplete="off" />
+      <!-- Bal küpü: `display:none` DEĞİL — bazı botlar onu atlıyor. -->
+      <div class="yf-kupu" aria-hidden="true">
+        <label for="yf-website">Bu alanı boş bırakın</label>
+        <input id="yf-website" v-model="website" type="text" tabindex="-1" autocomplete="off" />
       </div>
 
-      <div class="yorum-formu__dugmeler">
-        <button type="submit" class="yorum-formu__gonder" :disabled="gonderiliyor">
+      <div class="yf-dugmeler">
+        <button type="submit" class="yf-gonder" :disabled="gonderiliyor">
           {{ gonderiliyor ? 'Gönderiliyor…' : 'Yorumu gönder' }}
         </button>
-        <button type="button" class="yorum-formu__iptal" @click="acik = false">Vazgeç</button>
+        <button type="button" class="yf-vazgec" @click="acik = false">Vazgeç</button>
       </div>
     </form>
   </div>
 </template>
 
 <style scoped>
-.yorum-formu {
-  margin-top: var(--space-block);
+.yf {
+  margin-top: clamp(2.25rem, 1.75rem + 1.5vw, 3.25rem);
 }
 
-.yorum-formu__durum {
+/* Durum satırı: kutu değil, tek bakır çizgiyle işaretlenmiş bir cümle.
+   Boşken tamamen gizli — ama DOM'da duruyor (bkz. şablondaki gerekçe). */
+.yf-durum:empty,
+.yf-hata:empty {
+  display: none;
+}
+
+.yf-durum {
   display: block;
-  margin-bottom: 1rem;
-  padding: 0.875rem 1.125rem;
-  border-radius: var(--r-lg);
-  background: rgb(var(--c-brand-600) / 0.12);
-  color: rgb(var(--c-brand-800));
-  font-weight: 500;
+  padding: 0.875rem 0 0.875rem 1rem;
+  border-left: 2px solid rgb(var(--c-signal));
+  color: rgb(var(--c-ink));
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  max-width: 52ch;
 }
 
-.yorum-formu__ac {
+/* Açma eylemi: Kapanış'taki birincil eylemin sakin hâli — çerçeve yok,
+   altı çizgili. Hap düğme sayfanın hiçbir yerinde yok. */
+.yf-ac {
   display: inline-flex;
   align-items: center;
-  padding: 0.75rem 1.5rem;
-  border: 1px solid rgb(var(--c-line));
-  border-radius: var(--r-full);
-  background: rgb(var(--c-surface));
+  min-height: 44px;
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
   font-weight: 600;
-  color: rgb(var(--c-brand-700));
-  transition: border-color var(--dur-fast) var(--ease-soft);
+  letter-spacing: -0.012em;
+  color: rgb(var(--c-ink));
+  background: none;
+  border: 0;
+  border-bottom: 2px solid rgb(var(--c-signal));
+  padding: 0 0 0.375rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out;
+}
+.yf-ac:hover {
+  border-bottom-color: rgb(var(--c-ink));
+}
+.yf-ac:focus-visible {
+  outline: 2px solid rgb(var(--c-ink));
+  outline-offset: 6px;
 }
 
-.yorum-formu__ac:hover {
-  border-color: rgb(var(--c-brand-600) / 0.5);
+.yf-govde {
+  max-width: 40rem;
+  border-top: 1px solid rgb(var(--c-measure));
+  padding-top: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
 }
 
-.yorum-formu__govde {
-  padding: 1.5rem;
-  border: 1px solid rgb(var(--c-line));
-  border-radius: var(--r-2xl);
-  background: rgb(var(--c-surface));
+.yf-not {
+  margin: 0 0 1.75rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: rgb(var(--c-ink-soft));
+  max-width: 52ch;
 }
 
-.yorum-formu__baslik {
-  font-size: 1.125rem;
-  font-weight: 700;
+.yf-hata {
+  margin: 0 0 1.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid rgb(var(--c-signal-deep));
+  font-size: 0.9375rem;
+  line-height: 1.6;
   color: rgb(var(--c-ink));
 }
 
-.yorum-formu__not {
-  margin-top: 0.25rem;
-  margin-bottom: 1.25rem;
-  font-size: 0.875rem;
-  color: rgb(var(--c-ink-muted));
+/* Etiketler künye dilinde: mono, küçük, harf aralıklı. */
+.yf-etiket {
+  display: block;
+  margin-bottom: 0.5rem;
+  padding: 0;
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--c-ink-soft));
 }
 
-.yorum-formu__hata {
-  margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--r-lg);
-  background: rgb(190 30 30 / 0.1);
-  color: rgb(150 20 20);
-  font-size: 0.9375rem;
+.yf-ops {
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: rgb(var(--c-measure));
 }
 
-.yorum-formu__puan {
-  margin-bottom: 1.25rem;
+.yf-puan {
   border: 0;
   padding: 0;
+  margin: 0 0 1.75rem;
 }
 
-.yorum-formu__puan legend {
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgb(var(--c-ink-muted));
-}
-
-.yorum-formu__yildizlar {
+.yf-puan-satir {
   display: flex;
+  gap: 0;
+  border: 1px solid rgb(var(--c-rule));
+  width: fit-content;
+}
+
+/* Beş eşit hücre. Seçili olan mürekkep zeminde — yıldız ikonu yok,
+   sayının kendisi zaten okunur ve ekran okuyucuya da doğru geliyor. */
+.yf-puan-secim {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
+  min-width: 3rem;
+  min-height: 44px;
+  font-family: var(--f-mono);
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  color: rgb(var(--c-ink-soft));
+  cursor: pointer;
+  border-right: 1px solid rgb(var(--c-rule));
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+.yf-puan-secim:last-child {
+  border-right: 0;
+}
+.yf-puan-secim:hover {
+  background: rgb(var(--c-paper-sunken));
+}
+.yf-puan-secim.is-secili {
+  background: rgb(var(--c-ink));
+  color: rgb(var(--c-paper));
 }
 
-.yorum-formu__yildiz {
-  color: rgb(var(--c-line));
-  transition: color var(--dur-fast) var(--ease-soft);
+/* Radyo görünmez ama ODAKLANABİLİR: klavye erişimi tarayıcıdan geliyor. */
+.yf-radyo {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+.yf-puan-secim:has(.yf-radyo:focus-visible) {
+  outline: 2px solid rgb(var(--c-ink));
+  outline-offset: 2px;
 }
 
-.yorum-formu__yildiz.is-dolu {
-  color: rgb(var(--c-accent-400, 234 179 8));
-}
-
-.yorum-formu__puan-metin {
-  margin-left: 0.5rem;
-  font-size: 0.875rem;
-  color: rgb(var(--c-ink-muted));
-}
-
-.yorum-formu__satir {
-  display: grid;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-@media (min-width: 40rem) {
-  .yorum-formu__satir {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.yorum-formu__alan {
+.yf-alan {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
+  margin-bottom: 1.75rem;
 }
 
-.yorum-formu__alan label {
-  margin-bottom: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgb(var(--c-ink));
-}
-
-.yorum-formu__alan input,
-.yorum-formu__alan select,
-.yorum-formu__alan textarea {
-  padding: 0.625rem 0.75rem;
-  border: 1px solid rgb(var(--c-line));
-  border-radius: var(--r-lg);
-  background: rgb(var(--c-surface));
+/* Alanlar kutu değil: yalnız alt çizgi. Odakta çizgi bakıra dönüyor. */
+.yf-girdi {
+  width: 100%;
+  padding: 0.5rem 0;
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-measure));
+  border-radius: 0;
+  background: none;
   color: rgb(var(--c-ink));
   font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: border-color 0.15s ease-out;
+}
+.yf-girdi:focus {
+  outline: none;
+  border-bottom-color: rgb(var(--c-signal));
+  border-bottom-width: 2px;
+  padding-bottom: calc(0.5rem - 1px);
+}
+.yf-girdi:focus-visible {
+  outline: 2px solid rgb(var(--c-ink));
+  outline-offset: 4px;
 }
 
-.yorum-formu__sayac {
-  margin-top: 0.25rem;
+.yf-metin {
+  resize: vertical;
+  min-height: 8rem;
+}
+
+.yf-sayac {
+  margin-top: 0.375rem;
   align-self: flex-end;
-  font-size: 0.75rem;
-  color: rgb(var(--c-ink-subtle));
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: rgb(var(--c-measure));
 }
 
-/* Bal küpü: görünmez ama `display:none` DEĞİL — bazı botlar
-   display:none alanları atlıyor. */
-.yorum-formu__kupu {
+.yf-kupu {
   position: absolute;
   left: -9999px;
   width: 1px;
@@ -296,29 +382,57 @@ const gonder = async () => {
   overflow: hidden;
 }
 
-.yorum-formu__dugmeler {
+.yf-dugmeler {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  align-items: center;
+  gap: clamp(1.25rem, 1rem + 0.8vw, 2rem);
+  margin-top: 2rem;
 }
 
-.yorum-formu__gonder {
-  padding: 0.75rem 1.75rem;
-  border-radius: var(--r-full);
-  background: rgb(var(--c-brand-700));
-  color: #fff;
+.yf-gonder {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 1.0625rem;
   font-weight: 600;
+  letter-spacing: -0.012em;
+  color: rgb(var(--c-ink));
+  background: none;
+  border: 0;
+  border-bottom: 2px solid rgb(var(--c-signal));
+  padding: 0 0 0.375rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out, opacity 0.15s ease-out;
+}
+.yf-gonder:hover:not(:disabled) {
+  border-bottom-color: rgb(var(--c-ink));
+}
+.yf-gonder:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+.yf-gonder:focus-visible,
+.yf-vazgec:focus-visible {
+  outline: 2px solid rgb(var(--c-ink));
+  outline-offset: 6px;
 }
 
-.yorum-formu__gonder:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.yf-vazgec {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--c-ink-soft));
+  cursor: pointer;
+  transition: color 0.15s ease-out;
 }
-
-.yorum-formu__iptal {
-  padding: 0.75rem 1.25rem;
-  border-radius: var(--r-full);
-  color: rgb(var(--c-ink-muted));
-  font-weight: 500;
+.yf-vazgec:hover {
+  color: rgb(var(--c-ink));
 }
 </style>

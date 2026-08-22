@@ -1,7 +1,8 @@
 // server/domain/reviews/reviews.service.ts
-import { getSafeErrorMessage } from '../../utils/prismaError'
-import { ok, fail, type ServiceResult } from '../shared/response'
-import { reviewsRepository } from './reviews.repository'
+import { getSafeErrorMessage } from '../../utils/prismaError.ts'
+import { ok, fail, type ServiceResult } from '../shared/response.ts'
+import { reviewsRepository } from './reviews.repository.ts'
+import { ANASAYFA_YORUM_SAYISI } from './reviews.public-fields.ts'
 
 export interface ReviewInput {
   customerName: string
@@ -46,9 +47,16 @@ export const temizMetin = (deger: unknown, azamiUzunluk: number): string =>
 
 async function submit(input: ReviewInput): Promise<ServiceResult<{ id: number }>> {
   try {
-    const puan = Math.trunc(Number(input.rating))
-    if (!Number.isFinite(puan) || puan < 1 || puan > 5) {
-      return fail('Puan 1 ile 5 arasında olmalı')
+    // TAM SAYI KIRPILMIYOR, REDDEDİLİYOR.
+    //
+    // Burada `Math.trunc` vardı: 4,7 sessizce 4'e düşüyordu. HTTP katmanı
+    // (yup `.integer()`) böyle bir değeri zaten reddediyor, yani kırpma
+    // hiç çalışmayan bir yoldu — ama çalışsaydı ziyaretçinin vermediği bir
+    // puanı onun adına yazmış olurduk. Sessiz normalleştirme yerine açık
+    // ret: iki katman da aynı şeyi söylüyor.
+    const puan = Number(input.rating)
+    if (!Number.isInteger(puan) || puan < 1 || puan > 5) {
+      return fail('Puan 1 ile 5 arasında tam sayı olmalı')
     }
 
     const ad = temizMetin(input.customerName, 60)
@@ -57,10 +65,16 @@ async function submit(input: ReviewInput): Promise<ServiceResult<{ id: number }>
     const yorum = temizMetin(input.comment, 1000)
     if (yorum.length < 15) return fail('Yorumunuz çok kısa (en az 15 karakter)')
 
-    // Hizmet türü beyaz listeden; eşleşmezse ilk değere düşülüyor.
+    // HİZMET TÜRÜ BEYAZ LİSTEDEN — VE UYDURULMUYOR.
+    //
+    // Eskiden eşleşmeyen/boş değer sessizce `HIZMET_TURLERI[0]`e ("Evden Eve
+    // Nakliyat") düşüyordu. Yani ziyaretçinin hiç söylemediği bir hizmet
+    // türü onun yorumuna iliştirilip veri tabanına yazılıyordu. Form artık
+    // bu alanı sormuyor (bkz. components/base/ReviewForm.vue); sorulmayan
+    // bir şeyi varsaymak yerine boş bırakılıyor.
     const tur = (HIZMET_TURLERI as readonly string[]).includes(String(input.serviceType))
       ? String(input.serviceType)
-      : HIZMET_TURLERI[0]
+      : ''
 
     const bolumId = await reviewsRepository.defaultSectionId()
     if (!bolumId) return fail('Yorum bölümü bulunamadı')
@@ -98,6 +112,40 @@ async function listPublic(): Promise<ServiceResult<any>> {
   }
 }
 
+/**
+ * ANA SAYFA BÖLÜMÜ — liste + sayaç.
+ *
+ * `listPublic` ile aynı public'e uygunluk koşulunu kullanıyor (tek kaynak,
+ * bkz. reviews.public-fields). Fark yalnız sıralama ve sayıda.
+ *
+ * SAHTE YEDEK YOK: onaylı yorum yoksa `items` boş dizi, `ortalama` null ve
+ * `adet` 0 dönüyor. Bölüm bu durumda puan satırını hiç basmıyor.
+ */
+async function listForHome(): Promise<
+  ServiceResult<{
+    items: { id: number; customerName: string; rating: number; comment: string; date: Date }[]
+    ortalama: number | null
+    adet: number
+    gosterilen: number
+  }>
+> {
+  try {
+    const [items, stats] = await Promise.all([
+      reviewsRepository.findForHome(),
+      reviewsRepository.publicStats(),
+    ])
+    return ok({
+      items,
+      ortalama: stats._avg.rating ? Number(stats._avg.rating.toFixed(1)) : null,
+      // Uygun kayıtların TAMAMI — gösterilen liste değil.
+      adet: stats._count._all,
+      gosterilen: ANASAYFA_YORUM_SAYISI,
+    })
+  } catch (error) {
+    return fail(getSafeErrorMessage(error))
+  }
+}
+
 async function listForAdmin(onlyPending: boolean): Promise<ServiceResult<any>> {
   try {
     const [items, pending] = await Promise.all([
@@ -105,6 +153,57 @@ async function listForAdmin(onlyPending: boolean): Promise<ServiceResult<any>> {
       reviewsRepository.countPending(),
     ])
     return ok({ items, pending })
+  } catch (error) {
+    return fail(getSafeErrorMessage(error))
+  }
+}
+
+/**
+ * YAYIN DURUMU — ONAYDAN AYRI EYLEM (M6).
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * NEDEN İKİNCİ BİR EYLEM GEREKTİ
+ *
+ * M5 sonunda panelde tek eylem vardı: onayla / onayı kaldır. Ziyaretçi
+ * yorumu `isActive: true` doğduğu için onay tek başına yayınlamaya
+ * yetiyordu ve akış çalışıyordu.
+ *
+ * Ama `isActive: false` olan bir kaydı YAYINA ALMANIN hiçbir yolu yoktu.
+ * Yönetici bir yorumu geçici olarak yayından çıkarıp sonra geri getirmek
+ * isterse panelde karşılığı yoktu — kayıt "onaylı ama pasif" durumunda
+ * kilitleniyordu.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * NEDEN ONAYLA BİRLEŞTİRİLMEDİ
+ *
+ * İki alan iki ayrı soruyu cevaplıyor:
+ *   isApproved  bu yorum yayınlanmaya UYGUN mu (moderasyon kararı)
+ *   isActive    şu anda yayında mı (yayın durumu)
+ *
+ * Tek düğmede birleştirilseydi, "onayı kaldır"ın moderasyon kararını mı
+ * yoksa görünürlüğü mü değiştirdiği belirsizleşirdi.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * ÖRNEK/DEMO KAYITLARIN YAYINA ALINMASI KOLAYLAŞMIYOR
+ *
+ * Bu eylem yalnız ZİYARETÇİDEN GELEN yorumlarda (`source: 'site'`)
+ * çalışıyor. Yerel veri tabanındaki üç örnek kayıt `source: 'admin'` ve
+ * `isActive: false`; onları yayına almak hâlâ mümkün değil. Uydurma bir
+ * yorumun yayına gitmesini kolaylaştırmak M5'in tam tersi olurdu.
+ */
+async function setActive(id: number, isActive: boolean): Promise<ServiceResult<any>> {
+  try {
+    const kayit = await reviewsRepository.findById(id)
+    if (!kayit) return fail('Yorum bulunamadı')
+
+    if (kayit.source !== 'site') {
+      return fail(
+        'Bu yorum ziyaretçi formundan gelmemiş (panelden girilmiş eski bir kayıt). ' +
+          'Yayın durumu yalnız ziyaretçi yorumları için değiştirilebilir.'
+      )
+    }
+
+    return ok(await reviewsRepository.setActive(id, isActive))
   } catch (error) {
     return fail(getSafeErrorMessage(error))
   }
@@ -127,4 +226,12 @@ async function remove(id: number): Promise<ServiceResult<null>> {
   }
 }
 
-export const reviewsService = { submit, listPublic, listForAdmin, setApproved, remove }
+export const reviewsService = {
+  submit,
+  listPublic,
+  listForHome,
+  listForAdmin,
+  setApproved,
+  setActive,
+  remove,
+}

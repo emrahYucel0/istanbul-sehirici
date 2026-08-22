@@ -20,11 +20,16 @@ const siteSettingsSchema = yup.object({
   linkedinUrl: yup.string().trim().notRequired(),
   youtubeUrl: yup.string().trim().notRequired(),
   githubUrl: yup.string().trim().notRequired(),
-  googleAnalyticsId: yup.string().trim().notRequired(),
-  googleTagManagerId: yup.string().trim().notRequired(),
-  googleAdsenseId: yup.string().trim().notRequired(),
+  // Analitik kimlikleri şemadan ÇIKARILDI (M6). `stripUnknown: true`
+  // olduğu için gövdeye elle eklenseler bile düşerler — panelden
+  // yazılamayan bir alanın API'de kabul edilmesi, yeniden aynı yanılgıyı
+  // kurardı. Sütunlar veri tabanında duruyor.
+  ctaLabel: yup.string().trim().max(60).notRequired(),
+  ctaLink: yup.string().trim().max(191).notRequired(),
   footerText: yup.string().notRequired(),
-  copyrightText: yup.string().trim().notRequired(),
+  // `copyrightText` ŞEMADAN ÇIKARILDI (M7): alt bilgi telif satırını
+  // `© {yıl} {marka}` olarak kendisi üretiyor ve bu alanı hiç okumuyor.
+  // Sütun veri tabanında duruyor.
   workingHours: yup.string().trim().notRequired(),
   googleMapsEmbed: yup.string().notRequired(),
   // Yapısal veri (MovingCompany) alanları. Boş string geldiğinde null'a

@@ -14,6 +14,18 @@
 //
 // imageAlt bilinçli olarak ELLENMİYOR: bu 71 kaydın hepsinde zaten null
 // (kontrol edildi), dolayısıyla temizlenecek bir şey yok.
+//
+// ─────────────────────────────────────────────────────────────────────────
+// MEDYA KÜTÜPHANESİYLE İLİŞKİSİ — YOK (M7'de denetlendi)
+//
+// Bu betik DOSYA SİLMİYOR. Yalnız `Region.image` alanındaki KIRIK bir
+// referansı null'a çekiyor; ne `yuklemeler/` klasörüne ne de `StoredFile`
+// tablosuna dokunuyor.
+//
+// Yani "aynı dosyayı iki farklı güvenlik kuralıyla silebilen CLI ve panel"
+// durumu burada oluşmuyor: dosya silmenin TEK yolu medya kütüphanesi
+// (server/domain/files/media.service.ts) ve o da referans kontrolünden
+// geçiyor. Bu betik içerik alanı temizliği yapan ayrı bir araç.
 
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { PrismaClient } from './generated/client/client.ts'

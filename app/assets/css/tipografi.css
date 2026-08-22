@@ -1,0 +1,107 @@
+/* =============================================================================
+   TİPOGRAFİ — SİTE GENELİ ÖLÇEK
+   -----------------------------------------------------------------------------
+   Bu dosya ana sayfaya ait DEĞİL. Kademeler önce ana sayfa V2 için
+   `sahne.css` içinde tanımlanmıştı; sayfa sayfa V2'ye geçtikçe her sayfanın
+   kendi `clamp()` değerini uydurması riski doğduğu için buraya alındı.
+   Değerler AYNI — taşıma sırasında hiçbir sayı değişmedi, ana sayfa birebir
+   aynı görünüyor.
+
+   KURAL: bileşenler kendi punto ölçeğini icat etmez. Bir rol yoksa buraya
+   eklenir; bileşen içinde `font-size: clamp(...)` yazılmaz.
+
+   ROLLER
+     .tip-devasa   ekran ölçeği   yalnız ana sayfa kahramanı gibi tek anlarda
+     .tip-baslik   sayfa başlığı  iç sayfa H1'i (ana sayfa H1'inden küçük)
+     .tip-anlati   bölüm başlığı  H2
+     .tip-alt      alt başlık     H3
+     .tip-giris    giriş metni    H1'in altındaki 2–4 satır
+     .tip-govde    gövde          normal okuma metni
+     .tip-not      küçük          kenar notu / ikincil
+     .op-kunye     mono etiket    metadata (bkz. sahne.css)
+
+   FONT: Archivo taban gövde fontu (`body`), JetBrains Mono yalnız gerçek
+   metadata'da. İkisi de yerel `@font-face`; bu dosya yeni istek açmıyor.
+   ========================================================================== */
+
+/* ---- Ekran ölçeği ------------------------------------------------------ */
+.tip-devasa {
+  font-size: clamp(2.125rem, 1.4rem + 3.2vw, 4.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.032em;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* ---- İç sayfa başlığı --------------------------------------------------
+   Ana sayfanın H1'i (4,25rem) bir SAHNE açıyor; iç sayfa başlığı bir
+   BÖLÜM açıyor. Aynı puntoda olsalardı her iç sayfa ana sayfa kadar
+   bağırırdı. Üst sınır 3,5rem: `.tip-devasa`nın altında, `.tip-anlati`nın
+   üstünde kendi kademesi var. */
+.tip-baslik {
+  font-size: clamp(2rem, 1.35rem + 2.8vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* ---- Bölüm başlığı ---------------------------------------------------- */
+.tip-anlati {
+  font-size: clamp(1.75rem, 1.15rem + 2.4vw, 3.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* ---- Alt başlık ------------------------------------------------------- */
+.tip-alt {
+  font-size: clamp(1.125rem, 1.02rem + 0.45vw, 1.5rem);
+  line-height: 1.3;
+  letter-spacing: -0.014em;
+  font-weight: 600;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* ---- Giriş metni -------------------------------------------------------
+   Gövdeden bir kademe büyük, başlıktan belirgin küçük. Ölçü 46ch: giriş
+   metni taranarak okunuyor, satır kısa olmalı. */
+.tip-giris {
+  font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+  line-height: 1.55;
+  color: rgb(var(--c-ink-soft));
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+/* ---- Gövde ------------------------------------------------------------
+   `max-width` BURADA YOK: kademe punto/satır aralığı tanımlar, ölçü
+   yerleşimin işidir (ızgara hücresi kendi genişliğini bilir). Yine de
+   okuma ölçüsü 50–65ch bandında tutulmalı; `--olcu-govde` o bandın
+   ortasını veriyor, ihtiyaç duyan bileşen `max-width: var(--olcu-govde)`
+   yazar. */
+.tip-govde {
+  font-size: clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem);
+  line-height: 1.65;
+  color: rgb(var(--c-ink-soft));
+  text-wrap: pretty;
+}
+
+/* ---- Küçük / kenar notu ------------------------------------------------ */
+.tip-not {
+  font-size: clamp(0.875rem, 0.84rem + 0.16vw, 0.9375rem);
+  line-height: 1.6;
+  color: rgb(var(--c-ink-soft));
+  text-wrap: pretty;
+}
+
+:root {
+  /* Okuma ölçüsü — 50–65ch bandının ortası. */
+  --olcu-govde: 58ch;
+  --olcu-dar: 46ch;
+}

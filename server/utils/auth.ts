@@ -6,8 +6,23 @@ interface AuthCookiePayload {
   role: string
 }
 
+/**
+ * İMZALAMA ANAHTARI — İKİ KAYNAK, İKİSİ DE ÇALIŞMA ZAMANI.
+ *
+ * `runtimeConfig.authSecret` artık derlemede BOŞ (bkz. nuxt.config.ts).
+ * Değeri gömen `process.env.AUTH_SECRET` varsayılanı kaldırıldı, çünkü
+ * derleme çıktısında gerçek anahtarın düz metin durduğu ölçüldü.
+ *
+ * Sıra bilinçli:
+ *   1. `NUXT_AUTH_SECRET` → Nuxt bunu çalışma zamanında runtimeConfig'e
+ *      yazıyor. Dağıtım notunun kullandığı ad; kırılmadı.
+ *   2. `AUTH_SECRET`      → `.env` ile çalışan yerel geliştirme.
+ *
+ * İkisi de boşsa istek 500 ile düşüyor — sessizce boş anahtarla imzalamak,
+ * herkesin üretebileceği bir oturum çerezi demek olurdu.
+ */
 function getAuthSecret(event: H3Event): string {
-  const secret = useRuntimeConfig(event).authSecret
+  const secret = useRuntimeConfig(event).authSecret || process.env.AUTH_SECRET || ''
 
   if (!secret) {
     throw createError({ statusCode: 500, statusMessage: 'AUTH_SECRET tanımlı değil' })

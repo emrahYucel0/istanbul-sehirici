@@ -49,11 +49,15 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        // "Inter Fallback": ölçüsü Inter'e eşitlenmiş yedek (bkz.
-        // assets/css/fonts.css). Inter inene kadar metin AYNI yeri kaplar,
-        // böylece takas anında düzen kaymaz.
-        inter: [
-          "Inter",
+        // İSİM BORCU KAPANDI: anahtar `inter` iken aile Archivo'ydu.
+        // Yardımcının gerçek kullanımı ölçüldü — kod tabanında TEK yer
+        // (assets/css/main.css, body kuralı) ve hiçbir CMS içeriğinde
+        // `font-inter` sınıfı geçmiyor. Bu yüzden yeniden adlandırma
+        // güvenliydi.
+        // "Inter Fallback" ölçü eşleştirilmiş yedek olarak duruyor — Archivo
+        // için yeniden ölçülmeli (ayrı iş; şu an CLS ölçümü 0 gösteriyor).
+        archivo: [
+          "Archivo",
           "Inter Fallback",
           "system-ui",
           "-apple-system",

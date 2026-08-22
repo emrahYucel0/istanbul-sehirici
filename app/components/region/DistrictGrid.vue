@@ -34,19 +34,20 @@ const labelOf = (region) =>
 const sortByLabel = (items) => [...items].sort((a, b) => collator.compare(labelOf(a), labelOf(b)))
 
 const groups = computed(() => {
-  const sides = props.cityName === 'İstanbul' ? istanbulDistrictSides : null
+  // Yaka eşlemesi shared/utils/istanbul.ts'te (sunucu da aynı listeyi okuyor).
+  const sides = props.cityName === 'İstanbul' ? istanbulYakalari : null
   if (!sides) return [{ key: 'tumu', name: '', items: sortByLabel(props.districts) }]
 
   const result = sides
     .map((side) => ({
-      key: side.key,
-      name: side.name,
-      items: sortByLabel(props.districts.filter((region) => side.slugs.includes(region.slug))),
+      key: side.anahtar,
+      name: side.ad,
+      items: sortByLabel(props.districts.filter((region) => side.sluglar.includes(region.slug))),
     }))
     .filter((group) => group.items.length)
 
   // Haritada olmayan ilçeler (panelden yeni kayıt eklenirse) kaybolmasın.
-  const mapped = new Set(sides.flatMap((side) => side.slugs))
+  const mapped = new Set(sides.flatMap((side) => side.sluglar))
   const rest = sortByLabel(props.districts.filter((region) => !mapped.has(region.slug)))
   if (rest.length) result.push({ key: 'diger', name: 'Diğer İlçeler', items: rest })
 

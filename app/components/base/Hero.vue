@@ -1,366 +1,391 @@
 <script setup>
 /**
- * HERO — ana sayfanın ilk ekranı.
+ * BÖLÜM 01 — İSTANBUL'DA TAŞINMAK  ·  SIGNATURE #1: ŞEHRİ OKUMAK
  *
- * TASARIM KARARLARI
+ * FİKİR: fotoğraf ÖLÇÜLÜR.
+ * Sayfa açıldığında klasik bir hero var — solda tipografi, sağda büyük
+ * fotoğraf. Kaydırma başlayınca fotoğraf çıkıp gitmiyor: iki ölçü çizgisi
+ * kadrajın içine iniyor ve fotoğrafı bir ÖLÇÜM BANDINA indiriyor. Mimari
+ * çizimde bir cepheyi ölçmek gibi. Aynı anda metin rayı kayıyor ve ölçülen
+ * dört koşul (araç erişimi, bina girişi, kat, eşya hacmi) banda hizalanıyor.
  *
- * 1. Perde (scrim) yerine YÖNLÜ GRADIENT.
- *    Önceki sürüm arka plan fotoğrafını `bg-primary/50 backdrop-blur-sm` ile
- *    baştan sona örtüyordu: fotoğraf tanınmaz hale geliyor, buna rağmen
- *    metnin kontrastı fotoğrafın hangi bölgeye denk geldiğine göre
- *    değişiyordu. Artık gradient soldan (metnin olduğu yer) koyu başlayıp
- *    sağa doğru açılıyor — hem metin kontrastı GARANTİ (WCAG AA), hem
- *    fotoğraf sağ tarafta görünür kalıyor. Blur tamamen kalktı
- *    (backdrop-blur tam ekran alanda pahalı bir efekttir).
+ * Bölümün sonunda fotoğraf KAPANMIYOR — dar bir bant olarak kalıyor ve bir
+ * sonraki bölüme aynı geometriyle devrediyor. "Hero bitti" hissi yok.
  *
- * 2. Metin ve görsel ayrı katmanlarda.
- *    Görsel kabı iki iç içe elemandan oluşuyor: dıştaki fare parallax'ını
- *    (transform) taşır, içteki clip-reveal animasyonunu. Aynı elemana
- *    verilseydi CSS animasyonu transform'u ezerdi.
+ * SÖZLEŞME UYUMU
+ *   md.1  `animation` kısayolu yok, hepsi uzun yazım.
+ *   md.2  Şeffaflıkla hareket yok. Etiketler opacity ile BELİRMİYOR;
+ *         kendi yuvalarının dışından içeri kayıyorlar (`otur`).
+ *   md.3  Bütün sahne `@supports` + `prefers-reduced-motion` içinde.
+ *         Desteklemeyen tarayıcı ve hareket istemeyen kullanıcı üç durağın
+ *         ÜÇÜNÜ DE normal akışta okunur biçimde alıyor.
+ *   md.5  Metin rayı yuvası pencereden uzun (%160): geçiş ortasında iki
+ *         metin birden görünmüyor.
+ *   md.6  Kırpma düzen geometrisini değiştirmiyor; figür her durumda tam
+ *         kutu, metin sütunu hiç kaymıyor.
+ *   md.11 Yapışkan çerçeve navbar yüksekliği kadar aşağıdan başlıyor.
+ *   md.12 `kadraj` değerleri hesaplandı: iki nakliyeci ve ambalajlı koltuk
+ *         kaynak karede %38–%72 dikey bandında; bant daraldıkça ölçek
+ *         onları kadrajda tutuyor, aksi hâlde bant yalnız asfalt gösterirdi.
  *
- * 3. Giriş animasyonu saf CSS (.enter-*), scroll gözlemcisi YOK.
- *    Hero sayfa açılışında zaten ekranda; gözlemci beklemek gereksiz
- *    gecikme ve "önce görünüp sonra kaybolma" (flash) riski demek.
- *    Başlık .enter-rise kullanır: opaklığa dokunmaz, yalnızca kaydırır —
- *    başlık LCP adayı olduğu için opacity:0 ile başlayan bir animasyon
- *    LCP ölçümünü animasyonun bitişine kadar geciktirirdi.
- *
- * 4. Açıklama KIRPILMIYOR — çünkü artık kırpılacak kadar uzun değil.
- *    Veritabanındaki metin 695 karakterdi ve hero'da 8-11 satır tutuyordu.
- *    İkiye bölündü: kanca cümleleri (223 karakter) burada kaldı, detay
- *    cümleleri (471 karakter) Hero'nun hemen altındaki güven bandına
- *    taşındı (bkz. components/base/TrustBar.vue). Toplam metin birebir
- *    aynı; ana sayfadan tek kelime eksilmedi.
+ * LCP: fotoğraf ilk ekranda, `eager` + `fetchpriority=high` + preload.
+ * %0'da hiçbir dönüşüm uygulanmıyor — ilk render harekete bağımlı değil.
  */
-// Sabit `key`: aynı uç noktayı Navbar (menüdeki teklif butonu) ve FinalCta da
-// okuyor. Anahtar verilmezse Nuxt her çağrı için ayrı bir anahtar üretir ve
-// aynı veri tek sayfada ÜÇ kez çekilir; ortak anahtarla tek istek paylaşılır.
-const { data: heroResponse } = await useFetch("/api/hero", { key: "hero-section" });
-const { brandName } = await useSiteSettings();
+/**
+ * İÇERİK KAYNAĞI — `HomeSection('hero')`.
+ *
+ * Başlık, giriş cümlesi, ölçülen dört koşul, kapanış ve fotoğraf artık bu
+ * dosyada SABİT DEĞİL: ana sayfa tek istekle çekiyor (`/api/anasayfa`) ve
+ * prop olarak veriyor. Bileşende ikinci bir kopya BIRAKILMADI — yedek
+ * metin tutmak paneli yeniden sahte hâle getirirdi: yönetici metni
+ * değiştirir, sayfada eski metin görünmeye devam ederdi.
+ *
+ * KODDA KALAN: künye numarası, ölçüm koreografisi, kadraj değerleri,
+ * ızgara ve erişilebilirlik yapısı. Bunlar tasarım, içerik değil.
+ *
+ * TELEFON hâlâ Site Ayarları'ndan geliyor — ikinci kez saklanmıyor.
+ */
+const props = defineProps({
+  bolum: { type: Object, required: true },
+})
 
-const heroData = ref({
-  title: "",
-  subtitle: "",
-  description: "",
-  primaryButton: "",
-  primaryLink: "",
-  secondaryButton: "",
-  secondaryLink: "",
-  image: "",
-  backgroundImage: "",
-  imageAlt: "",
-  backgroundImageAlt: "",
-  ...heroResponse.value?.data,
-});
+const { settings } = await useSiteSettings()
 
-// API'den kayıt gelmezse varsayılanlar
-if (!heroResponse.value?.data) {
-  heroData.value = {
-    title: `${brandName.value} İle`,
-    subtitle: "Güvenli ve Profesyonel Nakliyat",
-    description:
-      "Evden eve taşınma süreci gözünüzde büyümesin. Eşyalarınızı sigortalı, ambalajlı ve uzman ekibimizle yeni adresinize güvenle taşıyoruz.",
-    primaryButton: "Ücretsiz Teklif Al",
-    primaryLink: "/iletisim",
-    secondaryButton: "Hizmetlerimizi Keşfet",
-    secondaryLink: "/blog",
-    image: "/images/nakliye3.png",
-    backgroundImage: "/images/nakliye2.jpg",
-    imageAlt: "",
-    backgroundImageAlt: "",
-  };
-}
+const phone = computed(() => settings.value?.phone || settings.value?.mobilePhone || '')
+const telHref = computed(() => `tel:${String(phone.value).replace(/[^\d+]/g, '')}`)
+
+/** Ölçülen koşullar — sıra veriden geliyor (keşifte bakılan sırayla). */
+const kosullar = computed(() => props.bolum.items || [])
 
 /**
- * ÖN PLAN GÖRSELİ — anlamlı içerik, alt metni boş kalmamalı.
- * Metin panelden geliyor; boşsa marka adıyla genel ama doğru bir cümle
- * üretiliyor. Önceden koda gömülüydü ("...koltuk taşıyor"): görsel
- * panelden değiştirilebildiği için resim değişince metin yanlış kalıyordu.
+ * Kapanış vurgusu iki satır. Metin `\n` ile saklanıyor ve burada satırlara
+ * bölünüyor; `v-html` KULLANILMIYOR — panelden gelen metnin HTML olarak
+ * yorumlanması gereken hiçbir alan yok.
  */
-// Varsayılana MARKA ADI KONMUYOR: hem alt metnine marka adı doldurmak
-// (Google'ın "keyword stuffing" saydığı desen) gereksiz, hem de Site
-// Ayarları'ndaki ad okunaklı olmayabiliyor — "EveNakliyatEvden nakliyat
-// ekibi..." gibi bozuk cümleler çıkıyordu.
-const gorselAlt = computed(
-  () => heroData.value.imageAlt?.trim() || "Nakliyat ekibimiz taşıma sırasında"
-);
-
-/**
- * ARKA PLAN GÖRSELİ — varsayılan olarak DEKORATİF.
- * Metnin arkasında, üzerinde koyu perde olan bir atmosfer görseli; anlattığı
- * hiçbir şey sayfa metninde eksik değil. Dekoratif görselin doğru alt'ı
- * boş string'tir ve `alt=""` olan bir <img> zaten erişilebilirlik ağacından
- * çıkar — bu yüzden ayrıca `aria-hidden` verilmiyordu, gereksizdi.
- *
- * Panelden metin girilirse görsel bilinçli olarak "anlamlı" sayılır ve
- * okunur. Varsayılanı dolu bırakmıyoruz: her sayfada ekran okuyucuya
- * okunacak, hiçbir bilgi katmayan bir cümle üretmek zarar verir.
- */
-const arkaPlanAlt = computed(() => heroData.value.backgroundImageAlt?.trim() || "");
-
-/**
- * Açıklama metni. Panelden girilen metinde marka adı `{marka}` yer
- * tutucusuyla yazılıyor, canlı ad burada konuyor — ad Site Ayarları'ndan
- * değiştiğinde bu cümle de onunla değişsin. (bkz. utils/marka-metni.ts)
- */
-const aciklama = computed(() =>
-  markaMetni(
-    heroData.value.description ||
-      "Evden eve taşınma süreci gözünüzde büyümesin. Eşyalarınızı sigortalı, ambalajlı ve uzman ekibimizle yeni adresinize güvenle taşıyoruz.",
-    brandName.value
-  )
-);
-
-/**
- * Güven rozetleri — ilk ekranda "bu firmaya neden güveneyim?" sorusuna
- * verilen en kısa cevap. Şu an sabit; hizmet vaadi bildirdikleri için
- * (istatistik/puan DEĞİL) uydurma bir iddia içermezler. İleride admin
- * panelinden yönetilmeleri gerekirse Hero modeline bir alt liste eklenir —
- * kod tabanındaki `defaultServices` / `defaultFaqs` deseniyle aynı mantık.
- */
-const trustBadges = [
-  { icon: "shield-check", label: "Sigortalı taşıma" },
-  { icon: "check-circle", label: "Yazılı sözleşme" },
-  { icon: "truck", label: "Kendi araç filomuz" },
-];
-
-// Fare parallax'ı: görsel, imleç HERO BOYUNCA gezinirken en fazla 10px
-// kayar. Composable dokunmatik cihazlarda ve reduced-motion'da hiç
-// devreye girmez.
-const heroRef = ref(null);
-const imageRef = ref(null);
-useMagnetic(imageRef, { strength: 10, area: heroRef });
-
-// Birincil CTA'nın imleci hafifçe çekmesi.
-const ctaRef = ref(null);
-useMagnetic(ctaRef, { strength: 6 });
+const kapanisSatirlari = computed(() => String(props.bolum.closing || '').split('\n'))
 </script>
 
 <template>
-  <!-- aria-labelledby: sayfadaki 10 bölümden yalnızca bu isimsizdi; ekran
-       okuyucunun bölge listesinde "section" olarak görünüyordu. -->
-  <section
-    ref="heroRef"
-    aria-labelledby="hero-baslik"
-    class="on-dark hero relative isolate flex items-center overflow-hidden"
-  >
-    <!-- Arka plan görseli -->
-    <div class="absolute inset-0 -z-10">
-      <NuxtImg
-        v-if="heroData.backgroundImage"
-        :src="heroData.backgroundImage"
-        :alt="arkaPlanAlt"
-        class="h-full w-full object-cover object-center"
-        format="webp"
-        loading="eager"
-        sizes="xs:100vw md:1280px xl:1920px"
-        decoding="async"
-        fetchpriority="high"
-      />
-      <div v-else class="h-full w-full bg-brand-800"></div>
+  <section class="hr-kap" aria-labelledby="hero-baslik">
+    <div class="hr sahne-alan">
+      <p class="hr-kunye op-kunye">01 / İSTANBUL'DA TAŞINMAK</p>
 
-      <!-- Yönlü perde: metin tarafı koyu, fotoğraf tarafı açık.
-           Mobilde metin ortalandığı için perde dikey ve daha yoğun. -->
-      <div class="hero-scrim absolute inset-0"></div>
-    </div>
-
-    <div class="container relative py-16 md:py-20 lg:py-24">
-      <div
-        class="grid items-center gap-12 lg:grid-cols-12 lg:gap-8 xl:gap-12"
-      >
-        <!-- ── Metin ─────────────────────────────────────────────── -->
-        <div class="text-center lg:col-span-7 lg:text-left xl:col-span-6">
-          <p class="enter-fade hero-eyebrow">
-            <ui-icon name="map-pin" :size="14" />
-            <span>Şehir içi ve şehirler arası evden eve nakliyat</span>
-          </p>
-
-          <!-- Başlık `text-display` DEĞİL `text-h1` ölçeğinde: veritabanındaki
-               gerçek başlık+alt başlık ~90 karakter ve display ölçeğinde
-               (72px) sol sütunda 12 satıra çıkıyordu. Alt başlık da H1'in
-               içinde kalıyor (anahtar kelime değeri korunsun diye) ama
-               tipografik olarak destekleyici satır seviyesine indirildi. -->
-          <h1 id="hero-baslik" class="enter-rise mt-6 text-h1 text-white" style="--reveal-i: 1">
-            {{ heroData.title || "Evden Eve Nakliyat:" }}
-            <span
-              class="mt-3 block text-lead font-semibold leading-snug tracking-normal text-accent-300 sm:text-xl"
-            >
-              {{
-                heroData.subtitle ||
-                "Hızlı, Güvenilir ve Profesyonel Taşımacılık"
-              }}
-            </span>
-          </h1>
-
-          <p
-            class="enter-up mx-auto mt-6 max-w-xl text-lead text-white/85 lg:mx-0"
-            style="--reveal-i: 2"
-          >
-            {{ aciklama }}
-          </p>
-
-          <div
-            class="enter-up mt-9 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start"
-            style="--reveal-i: 3"
-          >
-            <ui-button
-              v-if="heroData.primaryLink && heroData.primaryButton"
-              ref="ctaRef"
-              :to="heroData.primaryLink"
-              variant="secondary"
-              size="lg"
-              trailing-icon="arrow-right"
-            >
-              {{ heroData.primaryButton }}
-            </ui-button>
-            <ui-button
-              v-if="heroData.secondaryLink && heroData.secondaryButton"
-              :to="heroData.secondaryLink"
-              variant="white-outline"
-              size="lg"
-            >
-              {{ heroData.secondaryButton }}
-            </ui-button>
+      <!-- ── METİN RAYI — üç durak, üçü de ilk HTML'de ────────────────
+           Hareketsiz düzende üçü alt alta normal akışta okunuyor; sahne
+           modunda kolon kayıyor. -->
+      <div class="hr-metin">
+        <div class="hr-ray">
+          <div class="hr-durak">
+            <h1 id="hero-baslik" class="hr-h1">{{ bolum.heading }}</h1>
+            <p class="hr-satir tip-govde">{{ bolum.lead }}</p>
+            <div class="hr-eylem">
+              <a :href="telHref" class="op-bag hr-bag--tel">{{ phone || 'Telefonla ara' }}</a>
+              <NuxtLink to="/iletisim" class="op-bag op-bag--sakin">{{ bolum.ctaLabel }}</NuxtLink>
+            </div>
           </div>
 
-          <!-- Güven rozetleri -->
-          <!-- Dar ekranda alt alta: 3 rozeti 375px'e sığdırmaya çalışmak
-               hem sıkışık görünüyor hem taşma riski taşıyor. -->
-          <ul
-            class="enter-up mt-10 flex flex-col items-center gap-3 border-t border-white/15 pt-6 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-6 lg:justify-start"
-            style="--reveal-i: 4"
-          >
-            <li
-              v-for="badge in trustBadges"
-              :key="badge.label"
-              class="flex items-center gap-2 text-sm font-medium text-white/80"
-            >
-              <ui-icon :name="badge.icon" :size="18" class="text-accent-300" />
-              {{ badge.label }}
-            </li>
-          </ul>
-        </div>
+          <div class="hr-durak">
+            <p class="hr-alt tip-alt">{{ bolum.note }}</p>
+            <!-- Terim/karşılık ilişkisi olduğu için `dl`; görsel düzen için
+                 değil. "ARAÇ ERİŞİMİ" gerçekten bir terim. -->
+            <dl class="hr-kosul">
+              <div v-for="k in kosullar" :key="k.label" class="hr-kosul-oge">
+                <dt class="hr-kosul-etiket">{{ k.label }}</dt>
+                <dd class="hr-kosul-not tip-not">{{ k.body }}</dd>
+              </div>
+            </dl>
+          </div>
 
-        <!-- ── Görsel ────────────────────────────────────────────── -->
-        <div class="lg:col-span-5 xl:col-span-6">
-          <!-- Dış kap: fare parallax'ı (transform) -->
-          <div ref="imageRef" class="hero-visual relative mx-auto max-w-xl lg:max-w-none">
-            <!-- İç kap: clip-reveal animasyonu -->
-            <div class="enter-clip overflow-hidden rounded-hero shadow-deep" style="--reveal-i: 2">
-              <NuxtImg
-                v-if="heroData.image"
-                :src="heroData.image"
-                :alt="gorselAlt"
-                class="aspect-[4/3] w-full object-cover lg:aspect-[5/4]"
-                format="webp"
-                loading="eager"
-                sizes="xs:90vw lg:700px"
-                decoding="async"
-              />
-              <div v-else class="aspect-[4/3] w-full bg-brand-700"></div>
-            </div>
-
-            <!-- Cam bilgi kartı: sayısal bir iddia DEĞİL, hizmet vaadi.
-                 (Uydurma puan/yorum sayısı yazmıyoruz.) -->
-            <div
-              class="enter-up hero-glass absolute -bottom-5 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-xs"
-              style="--reveal-i: 5"
-            >
-              <span class="hero-glass__icon">
-                <ui-icon name="search" :size="20" />
-              </span>
-              <span>
-                <strong class="block text-sm font-semibold text-white">
-                  Ücretsiz ekspertiz
-                </strong>
-                <span class="block text-xs leading-snug text-white/75">
-                  Eve gelip ölçüyor, net fiyat veriyoruz
-                </span>
-              </span>
-            </div>
+          <div class="hr-durak">
+            <p class="hr-kapanis tip-anlati"><template v-for="(satir, i) in kapanisSatirlari" :key="i"><br v-if="i" />{{ satir }}</template></p>
+            <p class="hr-satir tip-govde">{{ bolum.closingNote }}</p>
           </div>
         </div>
       </div>
+
+      <!-- ── GÖRSEL ALAN — ölçülen kadraj ────────────────────────────
+           İki ölçü çizgisi kadrajın içine iniyor; fotoğraf ikisinin
+           arasındaki banda kırpılıyor. Çizgiler dekor değil, bandın
+           kenarını TANIMLIYORLAR — kırpma sınırının kendisi onlar. -->
+      <figure class="hr-gorsel">
+        <NuxtImg
+          :src="bolum.imagePath"
+          :alt="bolum.imageAlt"
+          class="hr-foto"
+          format="webp"
+          sizes="xs:90vw sm:90vw md:90vw lg:52vw xl:52vw"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          width="1448"
+          height="1086"
+        />
+        <span class="hr-olcu hr-olcu--ust" aria-hidden="true" />
+        <span class="hr-olcu hr-olcu--alt" aria-hidden="true" />
+      </figure>
     </div>
   </section>
 </template>
 
 <style scoped>
-.hero {
-  /* svh: mobil tarayıcı çubuğu açılıp kapandığında yüksekliğin zıplamasını
-     engeller. Üst sınır, çok uzun ekranlarda hero'nun absürt büyümemesi
-     için. Fallback (svh desteklemeyen tarayıcı) hemen üstte. */
-  min-height: 620px;
-  min-height: min(88svh, 820px);
+/* ===========================================================================
+   VARSAYILAN DÜZEN — normal akış, sıfır hareket.
+   Desteklemeyen tarayıcı, reduced-motion ve JS'siz durum bunu görür.
+   Üç durak da okunur, hiçbir içerik gizli değil.
+   ======================================================================== */
+.hr-kap {
+  background: rgb(var(--c-paper));
+  color: rgb(var(--c-ink));
 }
-
-/* Yönlü perde.
-   lg altı: metin ortalı olduğu için perde dikey ve daha yoğun.
-   lg üstü: metin solda olduğu için perde soldan sağa açılır. */
-.hero-scrim {
-  background:
-    linear-gradient(
-      to bottom,
-      rgb(var(--c-brand-950) / 0.82) 0%,
-      rgb(var(--c-brand-900) / 0.72) 55%,
-      rgb(var(--c-brand-950) / 0.86) 100%
-    );
-}
-
-@media (min-width: 1024px) {
-  .hero-scrim {
-    background:
-      linear-gradient(
-        100deg,
-        rgb(var(--c-brand-950) / 0.94) 0%,
-        rgb(var(--c-brand-950) / 0.86) 34%,
-        rgb(var(--c-brand-900) / 0.55) 62%,
-        rgb(var(--c-brand-900) / 0.25) 100%
-      );
-  }
-}
-
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4375rem 0.875rem;
-  border-radius: var(--r-full);
-  background: rgb(var(--c-surface) / 0.1);
-  border: 1px solid rgb(var(--c-surface) / 0.18);
-  color: rgb(var(--c-surface) / 0.92);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1;
-}
-
-/* Cam kart. backdrop-filter yalnızca bu küçük alanda kullanılıyor —
-   tam ekran uygulandığında ciddi bir render maliyeti oluyor. */
-.hero-glass {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 0.875rem 1.125rem;
-  border-radius: var(--r-lg);
-  background: rgb(var(--c-brand-950) / 0.55);
-  border: 1px solid rgb(var(--c-surface) / 0.16);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(12px);
-}
-
-.hero-glass__icon {
+/* MOBİL/VARSAYILAN — fotoğrafın yeri metnin İÇİNDE.
+   Fotoğraf üç metin durağının ARDINA düşerse ilk ekranda hiç görsel
+   kalmıyor (ölçüldü: kadraj ~1.900px aşağıdaydı, ilk ekran tamamen
+   metindi). Kareyi ilk durağın hemen ardına almak için duraklar ve
+   kadraj aynı ızgaranın kardeşi oluyor: `.hr-metin` ve `.hr-ray` kutu
+   üretmiyor, sıra `order` ile kuruluyor.
+   `order` tek başına yetmiyordu — `.hr` mobilde flex/grid değildi, o
+   yüzden eski `order: -1` hiçbir şey yapmıyordu. */
+.hr {
+  padding-block: var(--sahne-dikey-dar) var(--sahne-dikey);
   display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--r-full);
-  background: rgb(var(--c-accent-400) / 0.18);
-  color: rgb(var(--c-accent-300));
+  gap: clamp(2.5rem, 2rem + 2vw, 4rem);
+}
+.hr-kunye {
+  margin-bottom: 0;
+  order: 0;
+}
+.hr-metin,
+.hr-ray {
+  display: contents;
+}
+.hr-durak:nth-child(1) { order: 1; }   /* H1 + alt satır + eylem */
+.hr-durak:nth-child(2) { order: 3; }   /* dört koşul */
+.hr-durak:nth-child(3) { order: 4; }   /* kapanış */
+
+.hr-gorsel {
+  margin: 0;
+  order: 2;                            /* ilk ekranda görünen kare */
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+.hr-foto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+}
+/* Ölçü çizgileri hareketsiz hâlde de var: kadrajın üst ve alt kenarını
+   işaretliyorlar, yani statik durumda da bir ölçüm çizimi gibi duruyor. */
+.hr-olcu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgb(var(--c-paper) / 0.85);
+}
+.hr-olcu--ust { top: 0; }
+.hr-olcu--alt { bottom: 0; }
+
+.hr-h1 {
+  font-size: clamp(2.125rem, 1.4rem + 3.2vw, 4.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.032em;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+.hr-satir {
+  max-width: 42ch;
+  margin: 1.25rem 0 0;
+}
+.hr-eylem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin-top: 1.75rem;
+}
+.hr-bag--tel {
+  font-family: var(--f-mono);
+  letter-spacing: 0.02em;
+}
+.hr-alt {
+  max-width: 30ch;
+}
+.hr-kosul {
+  margin: clamp(1.25rem, 1rem + 0.8vw, 1.75rem) 0 0;
+  display: grid;
+  gap: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
+}
+.hr-kosul-etiket {
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  color: rgb(var(--c-ink-soft));
+}
+.hr-kosul-not {
+  margin: 0.25rem 0 0;
+  max-width: 46ch;
+}
+.hr-kapanis {
+  max-width: 18ch;
 }
 
-/* Görselin altındaki cam kart kabın dışına taştığı için alt boşluk. */
-.hero-visual {
-  margin-bottom: 1.75rem;
+/* ===========================================================================
+   İYİLEŞTİRME KATMANI — SIGNATURE #1
+   ======================================================================== */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* ---- MOBİL: PIN YOK ------------------------------------------------
+       Koreografi yerine tek okunur davranış: fotoğraf görünüme girerken
+       ölçüm bandına iniyor. Metin normal akışta kalıyor — dar ekranda
+       kayan metin okuma yükü (md.7). */
+    .hr-gorsel {
+      view-timeline-name: --hr-mobil;
+      view-timeline-axis: block;
+      animation-name: hr-m-kadraj;
+    }
+    .hr-olcu--ust { animation-name: hr-m-olcu-ust; }
+    .hr-olcu--alt { animation-name: hr-m-olcu-alt; }
+    .hr-gorsel,
+    .hr-olcu--ust,
+    .hr-olcu--alt {
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --hr-mobil;
+      animation-range: entry 85% exit 15%;
+    }
+
+    @keyframes hr-m-kadraj {
+      0%, 35% { clip-path: inset(0% 0% 0% 0%); }
+      100%    { clip-path: inset(12% 0% 12% 0%); }
+    }
+    @keyframes hr-m-olcu-ust {
+      0%, 35% { top: 0%; }
+      100%    { top: 12%; }
+    }
+    @keyframes hr-m-olcu-alt {
+      0%, 35% { bottom: 0%; }
+      100%    { bottom: 12%; }
+    }
+
+    /* ---- MASAÜSTÜ: yapışkan sahne ------------------------------------- */
+    @media (min-width: 1024px) {
+      .hr-kap {
+        /* Üç durak için 220vh. İlk durak scroll 0'da tam görünür. */
+        height: 220vh;
+        view-timeline-name: --hr;
+        view-timeline-axis: block;
+      }
+      .hr {
+        position: sticky;
+        top: var(--sahne-navbar);
+        height: calc(100vh - var(--sahne-navbar));
+        padding-block: clamp(2rem, 1.25rem + 2vw, 3.5rem);
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        column-gap: var(--sahne-kolon-arasi);
+        grid-template-rows: auto minmax(0, 1fr);
+        row-gap: clamp(1rem, 0.5rem + 1.5vw, 2rem);
+        align-content: center;
+      }
+      /* Mobildeki iç içe geçme geri alınıyor: metin kendi kutusunu yeniden
+         üretiyor, ray yapışkan sahnenin kayan kolonu oluyor. */
+      .hr-metin { display: block; }
+      .hr-ray {
+        display: grid;
+        gap: clamp(2.5rem, 2rem + 2vw, 4rem);
+      }
+      /* `.hr-ray .hr-durak` — sade sınıf değil: mobil sıra kuralları
+         `:nth-child` ile yazıldığı için daha özgül, sade sınıfla
+         sıfırlanmıyordu. */
+      .hr-ray .hr-durak { order: 0; }
+
+      .hr-kunye {
+        grid-column: 1 / 8;
+        grid-row: 1;
+        margin-bottom: 0;
+      }
+      /* EKSEN B — ana metin. */
+      .hr-metin {
+        grid-column: 2 / 8;
+        grid-row: 2;
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+      }
+      /* EKSEN D — görsel alan, menteşeden sağa. */
+      .hr-gorsel {
+        grid-column: 8 / 13;
+        grid-row: 1 / 3;
+        order: 0;
+        margin: 0;
+        aspect-ratio: auto;
+        height: 100%;
+        view-timeline-name: none;
+      }
+
+      /* --- Metin rayı: üç durak, pencereden uzun yuvalar -------------- */
+      .hr-ray {
+        gap: 0;
+        height: 100%;
+        grid-auto-rows: 160%;
+        animation-name: hr-ray-kay;
+      }
+      .hr-durak {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      /* `otur` — üç durak, aralarda geçiş. Başlangıç -%30: yuvanın
+         pencereden taşan payının yarısı ((160-100)/2). */
+      @keyframes hr-ray-kay {
+        0%, 24%   { transform: translateY(-30%); }
+        38%, 62%  { transform: translateY(-190%); }
+        76%, 100% { transform: translateY(-350%); }
+      }
+
+      /* --- `kadraj`: fotoğraf ölçüm bandına iniyor -------------------- */
+      .hr-gorsel { animation-name: hr-kadraj; }
+      .hr-foto { animation-name: hr-icerik; }
+      .hr-olcu--ust { animation-name: hr-olcu-ust; }
+      .hr-olcu--alt { animation-name: hr-olcu-alt; }
+      .hr-ray,
+      .hr-gorsel,
+      .hr-foto,
+      .hr-olcu--ust,
+      .hr-olcu--alt {
+        animation-duration: auto;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --hr;
+        animation-range: contain 0% contain 100%;
+      }
+
+      @keyframes hr-kadraj {
+        0%, 24%   { clip-path: inset(0% 0% 0% 0%); }
+        62%       { clip-path: inset(16% 0% 16% 0%); }
+        76%, 100% { clip-path: inset(27% 0% 27% 0%); }
+      }
+      @keyframes hr-icerik {
+        0%, 24%   { transform: scale(1) translateY(0); }
+        62%       { transform: scale(1.16) translateY(-3%); }
+        76%, 100% { transform: scale(1.34) translateY(-5%); }
+      }
+      @keyframes hr-olcu-ust {
+        0%, 24%   { top: 0%; }
+        62%       { top: 16%; }
+        76%, 100% { top: 27%; }
+      }
+      @keyframes hr-olcu-alt {
+        0%, 24%   { bottom: 0%; }
+        62%       { bottom: 16%; }
+        76%, 100% { bottom: 27%; }
+      }
+    }
+  }
 }
 </style>

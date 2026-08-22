@@ -130,7 +130,7 @@ cPanel → **Setup Node.js App** → Create Application
 | Node.js version | 20 veya üzeri |
 | Application mode | Production |
 | Application root | `nakliye`  (yani `/home/<CPANEL_USER>/nakliye` — public_html DIŞINDA) |
-| Application URL | evenakliyatevden.com |
+| Application URL | istanbulevenakliyat.com |
 | Application startup file | `.output/server/index.mjs` |
 
 Startup file alanı alt klasör yolunu kabul etmezse: `deploy/app.mjs`
@@ -145,9 +145,33 @@ Aynı ekranda "Environment variables" bölümüne:
 ```
 DATABASE_URL              mysql://<CPANEL_USER>_KULLANICI:PAROLA@localhost:3306/<CPANEL_USER>_VERITABANI
 NUXT_AUTH_SECRET          (.env'deki AUTH_SECRET değeri)
-NUXT_MAIL_SMTP_AUTH_PASS  (.env'deki MAIL_PASSWORD değeri)
 NODE_ENV                  production
+
+MAIL_HOST                 SMTP sunucusu
+MAIL_PORT                 587
+MAIL_SECURE               false
+MAIL_USER                 SMTP hesabı
+MAIL_PASSWORD             SMTP parolası
+MAIL_FROM                 gönderen adresi
+MAIL_TO                   bildirimlerin gideceği adres
 ```
+
+> **DEĞİŞTİ — mail değişkenleri.** Eskiden yalnız `NUXT_MAIL_SMTP_AUTH_PASS`
+> giriliyordu ve diğer alanlar derlemeye gömülü varsayılanlardan geliyordu.
+> O varsayılanlar kaldırıldı: gerçek SMTP parolası derleme çıktısının içine
+> düz metin olarak yazılıyordu (`.output/server/chunks/_/nitro.mjs`), yani
+> çıktıyı paylaşan parolayı da paylaşıyordu. Mail ayarı artık istek anında
+> ortamdan okunuyor (`server/mail/config.ts`).
+>
+> Sonuçları:
+> * `NUXT_MAIL_SMTP_*` adları **artık okunmuyor**; yukarıdaki `MAIL_*`
+>   adları kullanılmalı (bunlar `.env` ve `npm run hazir-mi` ile aynı adlar).
+> * Yedi alanın **tamamı** girilmeli — gömülü varsayılan kalmadı.
+> * Eksik alan varsa uygulama çökmez: talep yine veri tabanına yazılır,
+>   panelde `mailStatus` "basarisiz" görünür ve hangi değişkenin eksik
+>   olduğu yazar.
+> * Mail ayarını değiştirmek için **yeniden derleme gerekmez**; ortam
+>   değişkenini güncelleyip süreci yeniden başlatmak yeterli.
 
 **Host neden `localhost`:** uygulama veritabanıyla aynı makinede çalışıyor.
 `.env`'deki yorum satırında yazan dış adres (`cp66.servername.co`) hem daha
@@ -155,8 +179,8 @@ yavaş hem de cPanel → Remote MySQL bölümünden IP izni gerektirir; izin
 verilmemişse bağlantı hiç kurulmaz.
 
 `NUXT_SITE_URL` ve `NUXT_SITE_NAME` **gerekmiyor** — derlemedeki
-varsayılanlar zaten doğru. Diğer mail alanları da öyle; yalnızca parola
-dışarıdan veriliyor.
+varsayılanlar zaten doğru. Mail alanları için bu artık geçerli DEĞİL
+(yukarıdaki nota bakın): yedisi de dışarıdan veriliyor.
 
 **Doğrulama:** `NUXT_AUTH_SECRET` girilmezse panele giriş **500** verip
 "AUTH_SECRET tanımlı değil" der. Sessiz bir hata değildir; giriş
@@ -221,21 +245,21 @@ sitemap'i gönderebilirsiniz.
 3. Şu üç kontrolü **gözünüzle** yapın:
 
 ```
-https://evenakliyatevden.com/robots.txt
+https://istanbulevenakliyat.com/robots.txt
    → "Disallow:" satırının KARŞISI BOŞ olmalı.
      "Disallow: /" görürseniz site indekslenmez — durun ve haber verin.
 
-https://evenakliyatevden.com/sitemap.xml
+https://istanbulevenakliyat.com/sitemap.xml
    → <loc> satırları görünmeli.
 
-https://evenakliyatevden.com/
+https://istanbulevenakliyat.com/
    → 200 ve içerik dolu.
 ```
 
 4. Tam duman testini canlıya karşı çalıştırın:
 
 ```bash
-node scripts/duman-testi.mjs https://evenakliyatevden.com
+node scripts/duman-testi.mjs https://istanbulevenakliyat.com
 ```
 
 30'dan fazla kontrol yapar; sayfaların yalnızca 200 dönmesine değil,
@@ -248,14 +272,76 @@ canlıdaki aktif kayıtlardan kendisi seçer.
 
 ## 8) Yayın sonrası
 
-**Yedekleme cron'u.** `scripts/yedekle.mjs` `mysqldump` çağırıyor; cPanel'de
-mysqldump mevcut. Günlük bir cron:
+### Yedekleme cron'u
+
+Dört adım. `scripts/yedek-cron.sh` node'u kendisi buluyor, klasörleri kendisi
+açıyor ve bildirimi doğru yapıyor. Yerelde hem başarı hem iki hata yolu test
+edildi.
+
+**Bildirim mantığı.** cron e-postayı çıkış koduna göre değil, **çıktıya** göre
+gönderir. Betik bunu şöyle kullanıyor:
+
+| Durum | Ekrana çıktı | Sonuç |
+|---|---|---|
+| Yedek alındı | yok | e-posta gelmez |
+| Herhangi bir hata | sebep + günlüğün son 15 satırı | **e-posta gelir** |
+
+Başarıda da e-posta atılsaydı her gün bir bildirim gelir, birkaç hafta sonra
+okunmadan silinmeye başlar ve gerçek hata o yığının içinde kaybolurdu.
+
+cPanel > Cron Jobs sayfasının en üstündeki **"Cron E-postası"** alanına gerçek
+adresinizi yazın — bildirim oraya gider.
+
+**1. Parola dosyasını oluşturun.** cPanel > Dosya Yöneticisi ile ana dizinde
+(`/home/<CPANEL_USER>/`, `public_html`in içinde DEĞİL) `.env.yedek` adında bir
+dosya açın, tek satır yazın:
 
 ```
-0 3 * * * cd /home/<CPANEL_USER>/nakliye && DATABASE_URL="..." node scripts/yedekle.mjs /home/<CPANEL_USER>/yedekler
+DATABASE_URL="mysql://KULLANICI:PAROLA@localhost:3306/VERITABANI"
 ```
 
-Yedekleri **sunucu dışına** da kopyalayın; sunucu çökerse yedek de gider.
+Sunucudaki Node uygulamasının kullandığı değerin AYNISI. Host `localhost`
+olmalı, dışarıdaki `cp66.servername.co` değil.
+
+Sonra dosyaya sağ tıklayıp **İzinleri Değiştir → 600** yapın (yalnızca sahibi
+okusun). Parola cron satırına YAZILMIYOR; yazılsaydı hem crontab'da hem `ps`
+çıktısında açıkta dururdu.
+
+**2. Betiği çalıştırılabilir yapın.** Dosya Yöneticisi'nde
+`nakliye/scripts/yedek-cron.sh` → sağ tık → İzinleri Değiştir → **755**.
+
+**3. Cron'u ekleyin.** cPanel > **Cron Jobs** > Ortak Ayarlar: *Bir kez
+günde*. Komut:
+
+```
+/home/<CPANEL_USER>/nakliye/scripts/yedek-cron.sh
+```
+
+Saati gece 3'e alın (`0 3 * * *`) — trafik en düşükken.
+
+**4. Beklemeden test edin.** Cron'u geçici olarak "Her dakika" (`* * * * *`)
+yapın, bir dakika bekleyin, sonra Dosya Yöneticisi'nde şunlara bakın:
+
+```
+/home/<CPANEL_USER>/yedek.log        → "✔ Yedek alındı" satırı
+/home/<CPANEL_USER>/yedekler/        → .sql dosyası, ~1,5 MB
+```
+
+Görünce cron'u tekrar günlüğe çevirin. Bu adımı atlamayın: yedeklemenin en
+sinsi hatası, ihtiyaç duyulan güne kadar hiç çalışmadığının fark edilmemesidir.
+
+**Ayarlanabilirler** (gerekirse cron satırında `DEGISKEN=deger` ile öne
+yazılır): `YEDEK_KLASORU`, `ENV_DOSYASI`, `GUNLUK`, `UYGULAMA_KOKU`.
+
+Yedekler 30 gün tutulup eskiler otomatik siliniyor (`SAKLAMA_GUN`,
+`scripts/yedekle.mjs`).
+
+**Yedekler uygulama kökünün DIŞINDA** (`/home/<CPANEL_USER>/yedekler`) tutuluyor.
+İçeride olsalardı müşteri taleplerini içeren dump'lar web'den indirilebilir
+hâle gelebilirdi.
+
+**Ayda bir sunucudan dışarı indirin.** Sunucu çökerse yedek de onunla gider;
+sunucudaki yedek yalnızca "yanlışlıkla sildim" senaryosunu kurtarır.
 
 **Yeni sürüm atarken:** yalnızca `.output` değişir. `yuklemeler/` klasörüne
 DOKUNMAYIN — panelden yüklenen tüm görseller orada.

@@ -9,6 +9,7 @@ import {
 } from '../../utils/prismaError'
 import { ok, fail, type ServiceResult } from '../shared/response'
 import { policiesRepository } from './policies.repository'
+import { sanitizeContentFields } from '../../utils/sanitizeHtml'
 
 export interface PolicyInput {
   slug: string
@@ -46,10 +47,10 @@ const tariheCevir = (deger: unknown): Date | null | undefined => {
 
 async function get(slug?: string): Promise<ServiceResult<any>> {
   try {
-    if (!slug) return ok(await policiesRepository.findAll())
+    if (!slug) return ok(sanitizeContentFields(await policiesRepository.findAll()))
     const kayit = await policiesRepository.findBySlug(slug)
     if (!kayit) return fail(`'${slug}' için politika metni bulunamadı.`)
-    return ok(kayit)
+    return ok(sanitizeContentFields(kayit))
   } catch (error) {
     return fail(getSafeErrorMessage(error))
   }

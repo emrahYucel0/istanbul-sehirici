@@ -31,25 +31,52 @@ const yerTutucuMu = (v) => {
   return t === '' || YER_TUTUCULAR.includes(t)
 }
 
+/**
+ * DEVİR ALANLARI — eski markadan/eski konumlandırmadan gelen, elle yazılmış
+ * göründüğü için yukarıdaki yer tutucu kontrolüne TAKILMAYAN değerler.
+ *
+ * Bunlar `AYARLAR`dan ayrı tutuluyor çünkü koşul farklı: yer tutucu olup
+ * olmadıklarına değil, ESKİ DEĞERİN AYNISI olup olmadıklarına bakılıyor.
+ * Böylece betik tekrar çalıştırılabilir kalıyor ve panelden sonradan elle
+ * yazılmış bir metni ezmiyor — yalnız bilinen devir metnini değiştiriyor.
+ *
+ * Neden değişiyorlar:
+ *   brandName/siteName  eski marka kimliği (yeni alan adı: istanbulevenakliyat.com)
+ *   email               eski alan adının posta kutusu
+ *   siteDescription     "Türkiye genelinde", "depolama", "ücretsiz keşif" —
+ *                       ilki İstanbul konumlandırmasıyla çelişiyor, diğer
+ *                       ikisi doğrulanmamış/kapsam dışı
+ *   metaDescription     "sabit fiyat", "ücretsiz keşif", "depolama" — aynı
+ */
+const DEVIR = {
+  brandName: {
+    eskisi: 'EveNakliyatEvden',
+    yenisi: 'İstanbul Eve Nakliyat',
+  },
+  siteName: {
+    eskisi: 'EveNakliyatEvden',
+    yenisi: 'İstanbul Eve Nakliyat',
+  },
+  email: {
+    eskisi: 'info@evenakliyatevden.com',
+    yenisi: 'info@istanbulevenakliyat.com',
+  },
+  siteDescription: {
+    eskisi:
+      'İstanbul merkezli, Türkiye genelinde evden eve nakliyat, şehirler arası taşıma, ofis taşıma ve eşya depolama hizmeti. Sigortalı taşıma, ücretsiz keşif.',
+    yenisi:
+      "İstanbul'da evden eve nakliyat, ofis taşıma, parça eşya, ambalajlama ve marangozlu söküm-kurulum. Erişim ve kat koşulları keşifte yerinde ölçülür.",
+  },
+  metaDescription: {
+    eskisi:
+      'Evden eve nakliyat, asansörlü taşıma, parça eşya, ofis taşıma ve depolama. Yazılı sabit fiyat ve sigortalı taşımacılık. Ücretsiz keşif için arayın.',
+    yenisi:
+      "İstanbul'un 39 ilçesinde evden eve nakliyat. Araç erişimi, bina girişi ve kat keşifte ölçülüyor; fiyat ve yöntem buna göre planlanıyor.",
+  },
+}
+
 // ── Site Ayarları ──────────────────────────────────────────────────────────
 const AYARLAR = {
-  /**
-   * Firmanın ne yaptığını anlatan genel açıklama. `metaDescription` boşsa
-   * arama sonucu açıklamasının son yedeği olarak da kullanılıyor
-   * (bkz. useSiteSettings → metaDescriptionDefault), o yüzden 155 karakter
-   * sınırına uyuyor.
-   */
-  siteDescription:
-    'İstanbul merkezli, Türkiye genelinde evden eve nakliyat, şehirler arası taşıma, ofis taşıma ve eşya depolama hizmeti. Sigortalı taşıma, ücretsiz keşif.',
-
-  /**
-   * Site geneli yedek arama açıklaması. Sayfaların kendi açıklaması varken
-   * KULLANILMAZ; yalnızca hiçbir açıklama bulunamazsa devreye girer.
-   * Bu yüzden bilerek siteDescription'dan farklı yazıldı.
-   */
-  metaDescription:
-    'Evden eve nakliyat, asansörlü taşıma, parça eşya, ofis taşıma ve depolama. Yazılı sabit fiyat ve sigortalı taşımacılık. Ücretsiz keşif için arayın.',
-
   /**
    * BOŞ BIRAKILIYOR — bilinçli.
    *
@@ -64,9 +91,22 @@ const AYARLAR = {
 // ── Meta kayıtları ─────────────────────────────────────────────────────────
 const META = {
   about: {
-    title: 'Hakkımızda | Evden Eve Nakliyat ve Şehirler Arası Taşımacılık',
+    // Eskisi: "On iki yıllık deneyimle … Ücretsiz keşif, yazılı sabit fiyat,
+    // %100 sigortalı taşıma." Dördü de doğrulanmamış iddiaydı; ayrıca
+    // başlık "Şehirler Arası Taşımacılık" ile İstanbul konumlandırmasının
+    // önüne geçiyordu.
+    title: "Hakkımızda | İstanbul'da Evden Eve Nakliyat",
     description:
-      'On iki yıllık deneyimle evden eve nakliyat, şehirler arası taşıma, ofis taşıma ve depolama. Ücretsiz keşif, yazılı sabit fiyat, %100 sigortalı taşıma.',
+      "İstanbul'da evden eve nakliyat, ofis taşıma ve ambalajlama yapıyoruz. Nasıl çalıştığımız, keşifte neyi ölçtüğümüz ve ekibin kapsamı.",
+  },
+  services: {
+    // Eskisi "… ve fiyatı etkileyen konular. Ücretsiz keşif." ile bitiyordu;
+    // son cümle doğrulanmamış bir vaat, ortası da ana sayfadaki fiyat
+    // bölümünün işini tekrar ediyordu. Başlığa İstanbul eklendi: sayfa
+    // artık şehir odaklı konumlandırmayla aynı şeyi söylüyor.
+    title: 'İstanbul Nakliyat Hizmetleri | Evden Eve, Asansörlü, Ofis, Depolama',
+    description:
+      "İstanbul'da evden eve, asansörlü, parça eşya, ofis taşıma, depolama, ambalajlama ve şehirler arası nakliyat. Yedi hizmetin kapsamı ayrı ayrı.",
   },
 }
 
@@ -93,6 +133,19 @@ if (!ayar) {
       console.log(`  atlandı     ${alan}  (elle yazılmış, korundu)`)
     }
   }
+  // Devir alanları: yalnız BİLİNEN eski değerin aynısıysa değiştirilir.
+  for (const [alan, { eskisi, yenisi }] of Object.entries(DEVIR)) {
+    const mevcut = String(ayar[alan] ?? '').trim()
+    if (mevcut === yenisi) {
+      console.log(`  güncel      ${alan}`)
+    } else if (mevcut === eskisi || yerTutucuMu(mevcut) || hepsiniEz) {
+      guncelleme[alan] = yenisi
+      console.log(`  devredildi  ${alan}  → ${yenisi.slice(0, 46)}${yenisi.length > 46 ? '…' : ''}`)
+    } else {
+      console.log(`  atlandı     ${alan}  (elle değiştirilmiş, korundu)`)
+    }
+  }
+
   if (Object.keys(guncelleme).length) {
     await p.siteSettings.update({ where: { id: ayar.id }, data: guncelleme })
   }

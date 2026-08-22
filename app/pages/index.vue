@@ -1,5 +1,15 @@
 <script setup>
 /*
+ * GÜNCEL SIRA (yeni tasarım geçişi sürüyor)
+ *   Hero+Strip → Vaat → Süreç → Hizmetler → Kapsam  ← yeni, onaylı
+ *   Help → Choose → Testimonial → Pricing → Faq → FinalCTA  ← henüz eski
+ *
+ * Aşağıdaki blok ESKİ kompozisyonu anlatıyor ve artık geçerli değil:
+ * TrustBar, Process ve RegionFinder ana sayfadan çıkarıldı (bileşen
+ * dosyaları duruyor). Yeni bölümler geldikçe blok tamamen yenilenecek;
+ * şimdilik tarihsel kayıt olarak bırakıldı.
+ *
+ * ---- ESKİ (tarihsel) --------------------------------------------------
  * BÖLÜM SIRASI — ikna yayı
  *   Hero         ne vaat ediyoruz
  *   TrustBar     vaadi destekleyen sayılar (daha kaydırmadan)
@@ -42,61 +52,94 @@
 // Ayarları'ndan (SiteSettings) okunuyor — kodda sabit yazılmıyor.
 // Varsayılan başlık/açıklama app/utils/sayfa-meta.ts kütüğünde; panelden
 // girilen Meta kaydı varsa o kazanıyor.
-const { settings, brandName, siteUrl, socialLinks, description } = await usePageSeo(
-  "home",
-  sayfaMetasi("home")
+
+/**
+ * ANA SAYFA İÇERİĞİ — TEK İSTEK.
+ *
+ * Dokuz bölümün her biri kendi verisini çekseydi sunucu tarafında dokuz
+ * turlu bir şelale oluşurdu; üstelik ilçe sayımı, hizmet defteri, SSS ve
+ * yorumlar ayrı ayrı istenirdi. `/api/anasayfa` hepsini tek yanıtta veriyor:
+ *
+ *   bolumler   kontrollü içerik  (HomeSection)
+ *   ilceler    türetilmiş sayım  (Region kayıtlarından)
+ *   hizmetler  yayındaki hizmet defteri (Service)
+ *   surec      ProcessSection / ProcessStep
+ *   sorular    FaqSection / FaqItem (yalnız aktif)
+ *   yorumlar   Testimonial (yalnız onaylı) + türetilmiş ortalama/adet
+ *
+ * Bileşenler artık sunum katmanı: veriyi prop olarak alıyorlar, kendi
+ * istekleri yok. Tek istisna yorum FORMU — o bir gönderim (POST), okuma
+ * değil; sayfa yüklenirken çalışmıyor. Site Ayarları (telefon) BİLEREK ayrı kaldı — o istek
+ * zaten sayfa düzeni tarafından da yapılıyor ve anahtarla paylaşılıyor.
+ */
+/**
+ * İKİ İSTEK PARALEL — ŞELALE YOK.
+ *
+ * `usePageSeo` ile ana sayfa içeriği birbirinden bağımsız. Sırayla `await`
+ * edilselerdi sunucu tarafında iki turlu bir şelale oluşurdu; ikisi de aynı
+ * turda gidiyor. (Composable'lar kurulum sırasında SENKRON çağrılıyor,
+ * `await` yalnız sonuçları bekliyor.)
+ *
+ * ÜÇÜNCÜ İSTEK KALDIRILDI. Burada ayrıca `/api/reviews` çağrılıyordu; o veri
+ * artık `/api/anasayfa` yanıtının içinde geliyor (bkz. domain/home). Yorum
+ * bölümü eklenirken istek sayısı ARTMADI, azaldı.
+ */
+const [seo, anasayfaYanit] = await Promise.all([
+  usePageSeo("home", sayfaMetasi("home")),
+  useFetch("/api/anasayfa", { key: "anasayfa" }),
+]);
+
+const { settings, brandName, siteUrl, socialLinks, description } = seo;
+
+const icerik = computed(() => anasayfaYanit.data.value?.data ?? null);
+
+/** Bölüm anahtarına göre kontrollü içerik; kayıt yoksa boş nesne. */
+const bolum = (anahtar) => icerik.value?.bolumler?.[anahtar] ?? {};
+
+const ilceler = computed(
+  () => icerik.value?.ilceler ?? { avrupa: 0, anadolu: 0, digerleri: 0, toplam: 0 }
+);
+const hizmetler = computed(() => icerik.value?.hizmetler ?? []);
+const surec = computed(() => icerik.value?.surec ?? { heading: null, steps: [] });
+const sorular = computed(() => icerik.value?.sorular ?? { heading: null, items: [] });
+const yorumlar = computed(
+  () => icerik.value?.yorumlar ?? { items: [], ortalama: null, adet: 0 }
 );
 
 /** Serbest metin çalışma saatlerinin schema.org karşılığı; çözülemezse boş. */
 const acilisSaatleri = computed(() => calismaSaatleriSemasi(settings.value?.workingHours));
 
 /**
- * YORUM PUANI — arama sonucunda yıldız gösterimi için.
+ * YORUM YAPISAL VERİSİ — BİLEREK ÜRETİLMİYOR.
  *
- * Yalnızca ONAYLI yorumlar sayılıyor (filtre sunucu tarafında,
- * server/domain/reviews). Ortalama ve adet API'den geliyor, burada
- * hesaplanmıyor — iki yerde hesaplanırsa zamanla ayrışırlar.
- */
-const { data: reviewResponse } = await useFetch("/api/reviews", { key: "public-reviews" });
-const reviewData = computed(() => reviewResponse.value?.data ?? null);
-
-/**
- * Yıldız işaretlemesi için EN AZ bu kadar yorum gerekiyor.
+ * ─────────────────────────────────────────────────────────────────────────
+ * KALDIRILDI: `aggregateRating` VE `review` DÜĞÜMLERİ
  *
- * Tek-iki yorumdan hesaplanan ortalama istatistiksel olarak anlamsız; Google
- * da bu kadar küçük örneklemde yıldız göstermeyebiliyor. Eşik altında
- * işaretleme hiç üretilmiyor — eksik veri göndermektense hiç göndermemek
- * daha güvenli.
+ * Burada, aşağıdaki MovingCompany işaretlemesine eklenen iki blok vardı:
+ * onaylı yorumlardan hesaplanan bir `aggregateRating` ve ilk beş yorumdan
+ * üretilen `Review` düğümleri. İkisi de kaldırıldı.
+ *
+ * GEREKÇE — GOOGLE REVIEW SNIPPET KURALI
+ * Bir işletme, KENDİ sitesinde KENDİ hakkındaki yorumları işaretleyemiyor.
+ * Google bunu "self-serving review" sayıyor: yorumları toplayan, saklayan,
+ * onaylayan ve yayınlayan taraf ile hakkında yorum yapılan taraf aynı
+ * olduğunda yıldız işaretlemesi geçerli değil. Kural LocalBusiness ve
+ * Organization için açıkça yazılı ve `MovingCompany` bir LocalBusiness alt
+ * tipi.
+ *
+ * YORUMLARI GÖRÜNÜR YAPMAK BUNU DEĞİŞTİRMİYOR. M5 ile ziyaretçi yorumları
+ * ana sayfada gerçekten görünüyor — ama görünürlük, işaretleme hakkı
+ * doğurmuyor. Sayfadaki ortalama ve adet YALNIZ EKRAN İÇİN; hiçbir yapısal
+ * veriye dönüşmüyorlar.
+ *
+ * ESKİ EŞİK NOTU (tarihsel): en az üç yorum şartı vardı, "eksik veri
+ * göndermektense hiç göndermemek daha güvenli" diye. Doğru bir içgüdüydü
+ * ama yanlış sorunu çözüyordu: sorun örneklemin küçüklüğü değil,
+ * işaretlemenin en baştan bu siteye ait olmaması.
+ *
+ * FAQPage ve MovingCompany'nin geri kalanı AYNEN DURUYOR: ikisi de bu
+ * kuralın kapsamında değil.
  */
-const ASGARI_YORUM = 3;
-
-const puanBloklari = computed(() => {
-  const d = reviewData.value;
-  if (!d?.ortalama || (d.adet ?? 0) < ASGARI_YORUM) return {};
-
-  return {
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: String(d.ortalama),
-      reviewCount: String(d.adet),
-      bestRating: "5",
-      worstRating: "1",
-    },
-    // Google, aggregateRating ile birlikte en az birkaç tekil yorum bekliyor.
-    review: (d.items || []).slice(0, 5).map((r) => ({
-      "@type": "Review",
-      author: { "@type": "Person", name: r.customerName },
-      datePublished: r.date ? new Date(r.date).toISOString().slice(0, 10) : undefined,
-      reviewBody: r.comment,
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: String(r.rating),
-        bestRating: "5",
-        worstRating: "1",
-      },
-    })),
-  };
-});
 
 useHead({
   script: [
@@ -124,8 +167,13 @@ useHead({
               }
             : undefined,
           description: description.value || undefined,
-          areaServed: "TR",
-          sameAs: socialLinks.value,
+          // "TR" idi — bütün Türkiye demek. Sayfanın Kapsam bölümü
+          // İstanbul'un 39 ilçesini anlatıyor; şema onunla çelişmemeli.
+          areaServed: { "@type": "City", name: "İstanbul" },
+          // BOŞ DİZİ GÖNDERİLMİYOR. Panelde hiçbir sosyal hesap girilmemiş
+          // olduğu için `sameAs: []` basılıyordu; boş alan Google'a bilgi
+          // vermez, yalnız gürültü üretir.
+          sameAs: socialLinks.value?.length ? socialLinks.value : undefined,
           priceRange: settings.value?.priceRange || undefined,
           // Koordinat UYDURULMAZ: ikisi de girilmemişse alan hiç eklenmez.
           // Yanlış konum, işletmeyi haritada başka yerde gösterir.
@@ -142,26 +190,132 @@ useHead({
           openingHoursSpecification: acilisSaatleri.value.length
             ? acilisSaatleri.value
             : undefined,
-          // Yorum puanı ve tekil yorumlar — yalnızca onaylı yorumlardan ve
-          // yeterli sayı varsa. Yoksa alanlar hiç eklenmiyor.
-          ...puanBloklari.value,
+          // `aggregateRating` ve `review` BİLEREK YOK — gerekçe yukarıda.
         }),
     },
   ],
 });
+
+/**
+ * SSS YAPISAL VERİSİ — SORULAR BÖLÜMÜYLE AYNI KAYNAKTAN.
+ *
+ * Ana sayfada bugüne kadar FAQPage işaretlemesi hiç yoktu: altı soru
+ * bileşenin içinde sabit yazılıydı ve hiçbir yerden okunamıyordu. Sorular
+ * veri tabanına bağlandığı anda işaretleme de ÜCRETSİZ hâle geldi — ve
+ * kritik olan şu: ekrandaki soru ile Google'a bildirilen soru AYNI
+ * kayıttan geliyor. İkinci bir SSS dizisi yok, yani ikisi hiçbir zaman
+ * ayrışamaz.
+ *
+ * Ayrı bir `useHead` çağrısı: soru yoksa etiket HİÇ basılmıyor. Boş bir
+ * `FAQPage` yazmak Google'a "burada SSS var" deyip hiçbir şey vermek olur.
+ */
+useHead(
+  computed(() => {
+    const liste = sorular.value.items;
+    if (!liste.length) return {};
+    return {
+      script: [
+        {
+          type: "application/ld+json",
+          key: "anasayfa-sss",
+          innerHTML: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: liste.map((s) => ({
+              "@type": "Question",
+              name: s.question,
+              acceptedAnswer: { "@type": "Answer", text: s.answer },
+            })),
+          }),
+        },
+      ],
+    };
+  })
+);
 </script>
 
 <template>
+  <!--
+    GECİKMELİ HİDRASYON — ölçülmüş bir soruna karşılık.
+
+    Canlı Lighthouse'ta 2.040 ms'de başlayan 727 ms'lik tek bir uzun görev
+    vardı: sayfadaki ON bölümün HEPSİNİN aynı anda hidrate edilmesi. Oysa
+    mobilde ilk ekranda yalnızca hero var; kalan dokuzunun JS'i, kullanıcı
+    oraya kaydırana kadar hiç çalışmak zorunda değil.
+
+    `Lazy` öneki bileşeni ayrı bir parçaya alıyor, `hydrate-on-visible` ise
+    hidrasyonu görünürlüğe bağlıyor. SUNUCU ÇIKTISI DEĞİŞMİYOR: HTML yine
+    eksiksiz basılıyor, SEO ve JS-kapalı davranışı aynı kalıyor. Değişen
+    tek şey "ne zaman canlanacağı".
+
+    `rootMargin: 300px` KEYFİ DEĞİL: bu bölümlerin hepsi `useReveal`
+    kullanıyor ve o, `onMounted`'da `.is-hidden` sınıfını ekliyor. Hidrasyon
+    tam görünürlük anında olsaydı sıra şöyle işlerdi — eleman görünür →
+    hidrate olur → gizlenir → animasyonla geri gelir; yani göz kırpma.
+    300px erken hidrate edilince gizleme, eleman daha ekrana girmeden
+    yapılıyor ve animasyon normal akışında oynuyor.
+
+    Hero BİLEREK dışarıda: ilk ekranda ve parallax'ı imleci hemen izlemeli.
+  -->
   <main class="flex flex-col">
-    <base-hero />
-    <base-trust-bar />
-    <base-region-finder />
-    <base-help />
-    <base-process />
-    <base-choose />
-    <base-testimonial />
-    <base-pricing />
-    <base-faq />
-    <base-final-cta />
+    <!-- =====================================================================
+         ANA SAYFA V2 — DÖRT ANLATI BÖLÜMÜ
+         ---------------------------------------------------------------------
+         Bağımsız section yığını değil; tek bir anlatının dört perdesi.
+         Ortak eksen sistemi `assets/css/sahne.css` içinde: dört eksen
+         (künye · metin · menteşe · görsel alan) ve tek tekrar eden yapısal
+         araç (operasyon çizgisi). Her bölüm aynı ızgaranın başka bir DURUMU.
+
+         01  İSTANBUL'DA TAŞINMAK      Hero          SIGNATURE #1  ölçüm
+             nefes                     Kapsam        25 / 14 / 39
+         02  ŞEHİR PLANI DEĞİŞTİRİR    UcIstanbul    SIGNATURE #2  uyum
+         03  TAŞIMANIN İÇİNDE          Surec         SIGNATURE #3  süreklilik
+             hizmet dizini             Hizmetler
+         04  KARAR VERMEDEN ÖNCE       Fiyat · Sorular · Yorumlar · Kapanış
+
+         YORUMLAR M5'te eklendi ve public yapının BİLİNÇLİ bir
+         değişikliği: ziyaretçinin yorum gönderebileceği tek yer burası.
+
+         HAREKET YOĞUNLUĞU finale doğru azalıyor: Signature'lar 01-03'te,
+         son bölümde hiç scroll koreografisi yok.
+
+         MOTOR: native CSS scroll-driven animation (view-timeline + sticky).
+         GSAP kullanılmadı — gerekçesi ve ölçümü raporda.
+
+         ESKİ RENDER'LAR KALDIRILDI, DOSYALARI DURUYOR:
+           base-vaat   → Signature #1'in kapanışı aynı işi yapıyor
+           base-kanit  → Süreç'in 04. karesine taşındı (kamyon içi)
+           base-nefes  → Süreç'in 05. karesine taşındı (kapanış cümlesi)
+    ===================================================================== -->
+
+    <!-- ── BÖLÜM 01 ─────────────────────────────────────────────────── -->
+    <base-hero :bolum="bolum('hero')" />
+    <!-- Nefes anı: Signature #1'den hemen sonra ikinci bir büyük etkileşim
+         başlatılmıyor. Sakin editoryal durum + kapsam sayımı. -->
+    <lazy-base-kapsam
+      :bolum="bolum('kapsam')"
+      :ilceler="ilceler"
+      :hydrate-on-visible="{ rootMargin: '300px' }"
+    />
+
+    <!-- ── BÖLÜM 02 ─────────────────────────────────────────────────── -->
+    <lazy-base-uc-istanbul :bolum="bolum('uc-istanbul')" :ilceler="ilceler" hydrate-never />
+
+    <!-- ── BÖLÜM 03 ─────────────────────────────────────────────────── -->
+    <lazy-base-surec :surec="surec" hydrate-never />
+    <lazy-base-hizmetler :bolum="bolum('hizmetler')" :hizmetler="hizmetler" hydrate-never />
+
+    <!-- ── BÖLÜM 04 ─────────────────────────────────────────────────── -->
+    <lazy-base-fiyat :bolum="bolum('fiyat')" hydrate-never />
+    <lazy-base-sorular :sorular="sorular" hydrate-never />
+    <!-- Yorumlar TEK HİDRATE EDİLEN geç bölüm: içindeki form etkileşimli.
+         `hydrate-never` verilseydi düğme hiç çalışmazdı. Liste yine SSR'da
+         basılı geliyor; hidrasyon yalnız formu canlandırıyor. -->
+    <lazy-base-yorumlar
+      :bolum="bolum('yorumlar')"
+      :yorumlar="yorumlar"
+      :hydrate-on-visible="{ rootMargin: '300px' }"
+    />
+    <lazy-base-kapanis :bolum="bolum('kapanis')" :hydrate-on-visible="{ rootMargin: '300px' }" />
   </main>
 </template>

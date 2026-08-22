@@ -67,10 +67,18 @@ export default defineEventHandler(async (event) => {
   // ---------------- Buradan sonrası admin ----------------
   requireAdmin(event)
 
+  // PATCH iki AYRI eylemi taşıyor ve hangisi olduğu gövdeden anlaşılıyor.
+  // Tek bir alanda birleştirilmediler çünkü iki farklı soruyu cevaplıyorlar:
+  //   isApproved  moderasyon kararı — yayınlanmaya uygun mu
+  //   isActive    yayın durumu      — şu anda görünüyor mu
   if (method === 'PATCH') {
     const body = await readBody(event)
     const id = Number(body?.id)
     if (!Number.isInteger(id)) return { success: false, error: 'Geçersiz id' }
+
+    if (body?.isActive !== undefined) {
+      return reviewsService.setActive(id, Boolean(body.isActive))
+    }
     return reviewsService.setApproved(id, Boolean(body?.isApproved))
   }
 

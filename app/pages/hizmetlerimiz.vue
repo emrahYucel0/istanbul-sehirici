@@ -12,7 +12,24 @@
  * verilmişse) kendi sayfasına aynı anda yansıyor; iki ayrı yerde güncel
  * tutulması gereken kopya veri oluşmuyor.
  */
-const { data: response } = await useFetch('/api/services', { key: 'services-section' })
+/**
+ * İKİ İSTEK PARALEL — ŞELALE YOK.
+ *
+ * Hizmet envanteri (`/api/services`) ile sayfanın editoryal çerçevesi
+ * (`/api/ic-sayfa`) birbirinden bağımsız. Sırayla `await` edilselerdi
+ * sunucu tarafında iki turlu bir şelale oluşurdu; ikisi de aynı turda
+ * gidiyor.
+ *
+ * Bölümler ayrı ayrı istek atmıyor: içerik sayfa seviyesinde TEK istekle
+ * alınıp prop olarak geçiliyor (M4'teki ana sayfa deseni).
+ */
+const [response, icerikYanit] = await Promise.all([
+  useFetch('/api/services', { key: 'services-section' }),
+  useFetch('/api/ic-sayfa?page=hizmetler', { key: 'ic-hizmetler' }),
+])
+
+/** Bölüm anahtarına göre kontrollü içerik; kayıt yoksa boş nesne. */
+const bolum = (anahtar) => icerikYanit.data.value?.data?.[anahtar] ?? {}
 
 const section = computed(() => response.value?.data || null)
 const services = computed(() => section.value?.services || [])
@@ -29,11 +46,11 @@ useHead({
       innerHTML: () =>
         JSON.stringify({
           '@context': 'https://schema.org',
-          // NOT: Yol izi (BreadcrumbList) BURADA DEĞİL — sayfa başlığı bandı
-          // (fixed/PageHeader.vue) onu Microdata olarak, ekranda görünen yol
-          // izinin AYNI kaynağından üretiyor. Burada ikinci bir bildirim
-          // vardı ve bantla ÇELİŞİYORDU: bant "Anasayfa > Bölgelerimiz",
-          // buradaki "Ana sayfa > Hizmetlerimiz" diyordu. Tek kaynak kaldı.
+          // NOT: Yol izi (BreadcrumbList) BURADA DEĞİL — `service/Giris.vue`
+          // onu Microdata olarak, ekranda GÖRÜNEN yol izinin aynı kaynağından
+          // üretiyor. (Önceden bu işi eski koyu bant yapıyordu; bant V2'de
+          // kalktı, işaretleme yeni girişe taşındı.) Tek kaynak kuralı
+          // sürüyor: burada ikinci bir bildirim açılmıyor.
           '@graph': [
             {
               // Hizmetleri sıralı bir liste olarak bildirmek, Google'ın bu
@@ -61,21 +78,29 @@ useHead({
 </script>
 
 <template>
-  <fixed-page-header
-    title="Hizmetlerimiz"
-    subtitle="Evden eve, asansörlü, parça eşya, ofis taşıma, depolama ve şehirler arası nakliyat."
-  />
+  <!--
+    V2 İÇ SAYFA. Değişenler ve gerekçeleri:
 
+    · `fixed-page-header` (koyu yeşil zemin + noktalı desen + beyaz başlık)
+      KALDIRILDI. Bant hâlâ duruyor ve diğer iç sayfalar onu kullanmaya
+      devam ediyor — yalnız bu sayfa kendi editoryal girişine geçti.
+    · `service-list` (yedi eş yuvarlak kart + yedi eski görsel) yerine
+      `service-dizin` kütüğü geldi. Kartlar taranamıyordu: hepsi aynı
+      ağırlıkta, aynı yükseklikteydi.
+    · `base-final-cta` KALDIRILDI: eski aksan paletiyle çizilen ikinci bir
+      dev CTA bloğuydu ve alt bilgideki iletişim katmanıyla üst üste
+      biniyordu. Sonraki adım artık `service-birlikte` içinde, cümlenin
+      içinde veriliyor.
+  -->
   <main>
-    <service-list
-      :services="services"
-      :heading="section?.mainTitle || 'Nakliyat Hizmetlerimiz'"
-      :description="
-        section?.description ||
-        'Taşınmanın her aşaması için ayrı bir hizmetimiz var. Hangisinin size uygun olduğunu keşifte birlikte belirliyoruz.'
-      "
+    <service-giris :bolum="bolum('giris')" />
+
+    <service-dizin
+      :hizmetler="services"
+      :giris="section?.description || ''"
+      :bolum="bolum('dizin')"
     />
 
-    <base-final-cta />
+    <service-birlikte :bolum="bolum('birlikte')" :sahne="bolum('sahne')" />
   </main>
 </template>

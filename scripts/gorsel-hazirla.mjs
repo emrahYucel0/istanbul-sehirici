@@ -49,6 +49,56 @@ const GENISLIKLER = [160, 320, 640, 1024, 1600, 2048]
 const WEBP_KALITE = 78
 const JPEG_KALITE = 82
 
+/**
+ * SAHNE PROFİLİ — ana sayfa V2'nin kompozisyon fotoğrafları.
+ *
+ * Bu dosyalar yukarıdaki genel profile girmiyor, çünkü iki farklı işleri var:
+ *
+ *  1) Merdiven farkı. Genel profil 160'tan başlıyor (48px'lik avatar slotları
+ *     için). Sahne fotoğrafları hiçbir yerde 320'nin altında gösterilmiyor;
+ *     buna karşılık masaüstünde 640 ile 1024 arasında yoğun kullanılıyorlar,
+ *     o aralıkta 768 basamağı olmadan 1024 iniyor ve mobil-orta ekranlarda
+ *     boşuna bayt gidiyordu.
+ *  2) Taban raster yok. Genel profil her kaynağa aynı adla 1600px'lik bir
+ *     JPEG/PNG taban dosyası üretiyor (veritabanındaki eski `/images/x.jpg`
+ *     kayıtları için). Sahne fotoğraflarını yalnız `NuxtImg` çağırıyor ve
+ *     her çağrıda genişlik veriyor — yani taban dosya hiç istenmiyor. PNG
+ *     tabanı üretmek dağıtım paketine ~2 MB ekliyor, üstelik `palette: true`
+ *     ile 256 renge inen bir fotoğraf gözle görülür şekilde bantlanıyor.
+ *
+ * Bu set daha önce elle üretilmişti; buraya alınmasının sebebi tek komutun
+ * (`npm run gorseller`) her şeyi yeniden üretebilmesi. Aksi hâlde komut bir
+ * daha çalıştırıldığında bu dosyaların varyant kayıtları genel profille
+ * ezilirdi.
+ */
+const SAHNE = new Set([
+  'hero-istanbul',
+  'stage-a',
+  'stage-b',
+  'bleed-sabitleme',
+  'sahne-kat',
+  'sahne-erisim',
+  'sahne-paketleme',
+  'sahne-sokum',
+])
+const SAHNE_GENISLIKLER = [320, 640, 768, 1024]
+
+/**
+ * Sahne profili neden 78 değil 52 kalitede: bu set LCP'yi doğrudan belirliyor
+ * ve sayfanın en ağır transferi.
+ *
+ * 78 → 62 → 52 basamakları 1:1 kırpmada karşılaştırıldı; en zorlayıcı iki
+ * kare seçildi (paketleme makrosunun karton/balonlu naylon dokusu ve
+ * kahraman karenin ambalaj yüzeyi). Üçü arasında gözle fark yok, buna
+ * karşılık 78'den 52'ye inince dosya üçte bir küçülüyor. Bu set masaüstünde
+ * en fazla 1,4 kat büyütülerek gösteriliyor, yani 768'lik varyant neredeyse
+ * 1:1 izleniyor — karşılaştırma tam o ölçekte yapıldı.
+ *
+ * Panel görselleri ve veritabanındaki eski kayıtlar 78'de kalıyor; onlar bu
+ * bütçeyi paylaşmıyor ve tek karede LCP belirlemiyorlar.
+ */
+const SAHNE_KALITE = 52
+
 const UYGULA = process.argv[2] === 'uygula'
 const mb = (b) => (b / 1048576).toFixed(2)
 
@@ -92,25 +142,29 @@ for (const dosyaAdi of readdirSync(KAYNAK_KLASORU).sort((a, b) => a.localeCompar
 
   const meta = await sharp(kaynak).metadata()
   const kaynakGenislik = meta.width ?? 0
+  const sahne = SAHNE.has(name)
 
   // 1) Taban dosya: aynı adla, 1600px'e indirilmiş, optimize JPEG.
   //    Aynı adı koruyoruz çünkü veritabanında 137 kayıt /images/nakliye2.jpg
   //    diye bu yolu tutuyor — yol değişirse hepsini güncellemek gerekirdi.
+  //    Sahne profilinde taban üretilmiyor (gerekçe SAHNE tanımında).
   const tabanGenislik = Math.min(kaynakGenislik || 1600, 1600)
-  const taban = await sharp(kaynak)
-    .resize({ width: tabanGenislik, withoutEnlargement: true })
-    .jpeg({ quality: JPEG_KALITE, mozjpeg: true })
-    .toBuffer()
+  const taban = sahne
+    ? null
+    : await sharp(kaynak)
+        .resize({ width: tabanGenislik, withoutEnlargement: true })
+        .jpeg({ quality: JPEG_KALITE, mozjpeg: true })
+        .toBuffer()
 
-  let yeniToplam = taban.length
+  let yeniToplam = taban ? taban.length : 0
   const uretilen = []
 
   // 2) Responsive webp varyantları
-  for (const g of GENISLIKLER) {
+  for (const g of (sahne ? SAHNE_GENISLIKLER : GENISLIKLER)) {
     if (kaynakGenislik && g > kaynakGenislik) continue   // büyütme yok
     const tampon = await sharp(kaynak)
       .resize({ width: g, withoutEnlargement: true })
-      .webp({ quality: WEBP_KALITE })
+      .webp({ quality: sahne ? SAHNE_KALITE : WEBP_KALITE })
       .toBuffer()
     yeniToplam += tampon.length
     uretilen.push({ genislik: g, tampon })
@@ -125,7 +179,7 @@ for (const dosyaAdi of readdirSync(KAYNAK_KLASORU).sort((a, b) => a.localeCompar
   if (kaynakTavan > enBuyuk) {
     const tampon = await sharp(kaynak)
       .resize({ width: kaynakTavan, withoutEnlargement: true })
-      .webp({ quality: WEBP_KALITE })
+      .webp({ quality: sahne ? SAHNE_KALITE : WEBP_KALITE })
       .toBuffer()
     yeniToplam += tampon.length
     uretilen.push({ genislik: kaynakTavan, tampon })
@@ -134,25 +188,30 @@ for (const dosyaAdi of readdirSync(KAYNAK_KLASORU).sort((a, b) => a.localeCompar
   sonrasi += yeniToplam
   rapor.push({ dosyaAdi, kaynakGenislik, hamBoyut, yeniToplam, adet: uretilen.length })
 
-  // Sağlayıcının okuyacağı harita: taban yol -> mevcut genişlikler
-  varyantlar[`/images/${dosyaAdi}`] = {
-    taban: `/images/${name}.jpg`,
-    genislikler: uretilen.map((u) => u.genislik),
-    onEk: `/images/${name}-`,
-  }
-
   // Taban dosyanın uzantısı kaynağınkiyle AYNI kalır. Sebebi: veritabanındaki
   // 137 kayıt ve bileşenler görseli `/images/nakliye3.png` gibi kendi
   // uzantısıyla tutuyor; hepsini .jpg'ye çevirmek o referansları kırardı.
   const tabanUzanti = /\.png$/i.test(dosyaAdi) ? 'png' : 'jpg'
-  varyantlar[`/images/${dosyaAdi}`].taban = `/images/${name}.${tabanUzanti}`
+  const onEk = `/images/${name}-`
+
+  // Sağlayıcının okuyacağı harita: kaynak yol -> mevcut genişlikler.
+  // Sahne profilinde ANAHTAR `.webp`: bileşenler bu seti `/images/x.webp`
+  // diye çağırıyor, kaynak dosyanın PNG olması onları ilgilendirmiyor.
+  // Taban da 1024'lük webp — o profilde raster taban üretilmiyor.
+  varyantlar[sahne ? `/images/${name}.webp` : `/images/${dosyaAdi}`] = {
+    taban: sahne ? `${onEk}1024.webp` : `/images/${name}.${tabanUzanti}`,
+    genislikler: uretilen.map((u) => u.genislik),
+    onEk,
+  }
 
   if (UYGULA) {
-    const tabanTampon = tabanUzanti === 'png'
-      ? await sharp(kaynak).resize({ width: tabanGenislik, withoutEnlargement: true })
-          .png({ compressionLevel: 9, palette: true }).toBuffer()
-      : taban
-    writeFileSync(join(HEDEF_KLASORU, `${name}.${tabanUzanti}`), tabanTampon)
+    if (taban) {
+      const tabanTampon = tabanUzanti === 'png'
+        ? await sharp(kaynak).resize({ width: tabanGenislik, withoutEnlargement: true })
+            .png({ compressionLevel: 9, palette: true }).toBuffer()
+        : taban
+      writeFileSync(join(HEDEF_KLASORU, `${name}.${tabanUzanti}`), tabanTampon)
+    }
 
     for (const u of uretilen) {
       writeFileSync(join(HEDEF_KLASORU, `${name}-${u.genislik}.webp`), u.tampon)

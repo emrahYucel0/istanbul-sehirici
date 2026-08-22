@@ -3,11 +3,49 @@
 // ve kendi paneli var: Admin > Güven Bandı. Ana sayfadaki hizmetler bölümü
 // kaldırıldıktan sonra ikisinin aynı ekranda durması için bir sebep kalmamıştı.
 // `buttonText`/`buttonLink` de kaldırıldı: o düğme kaldırılan bölüme aitti.
-const { form, message, showDeleteModal, recordId, isSaving, isDeleting, save, remove } = useSectionCrud('services', 'services', {
-  mainTitle: '',
-  description: '',
-  services: [],
-});
+const { form, message, showDeleteModal, recordId, isSaving, isDeleting, load, save, remove } = useSectionCrud(
+  'services',
+  'services',
+  {
+    mainTitle: '',
+    description: '',
+    services: [],
+  },
+  // `?admin=true` OLMADAN bu panel yalnız YAYINDAKİ hizmetleri görürdü:
+  // taslaklar herkese açık okumadan süzülüyor (bkz. services.config.ts).
+  // Panelin var olma sebebi tam olarak taslakları da yönetmek.
+  { loadQuery: '?admin=true' }
+);
+
+// --- Yayın durumu ---------------------------------------------------------
+//
+// "Tümünü Güncelle" İÇERİĞİ kaydeder, yayın durumuna DOKUNMAZ. Yayın ayrı
+// bir eylem (bkz. server/api/services-yayin.post.ts): genel kaydetme
+// gövdesinde bir onay kutusu olsaydı, hizmet oluşturmak onu anında public
+// yapmaya devam ederdi.
+//
+// Kaydedilmemiş bir hizmet (henüz slug'ı DB'de yok) yayına alınamaz —
+// düğme o durumda gizleniyor ve kullanıcıya sırası söyleniyor.
+const yayinIsleniyor = ref('')
+
+const yayinDegistir = async (slug, yayinda) => {
+  if (!slug) return
+  yayinIsleniyor.value = slug
+  try {
+    const cevap = await $fetch('/api/services-yayin', {
+      method: 'POST',
+      body: { slug, yayinda },
+    })
+    if (cevap?.success === false) throw new Error(cevap.error || 'İşlem tamamlanamadı')
+    message.value = cevap.message || 'Güncellendi.'
+    // Listeyi sunucudan tazele: yayın durumu formda değil kayıtta yaşıyor.
+    await load()
+  } catch (e) {
+    message.value = e?.data?.message || e?.message || 'İşlem tamamlanamadı'
+  } finally {
+    yayinIsleniyor.value = ''
+  }
+};
 
 const updateServiceImageUrl = (url, index) => {
   form.services[index].imagePath = url
@@ -23,10 +61,14 @@ const addService = () => {
     subtitle: '',
     description: '',
     order: form.services.length,
+    // Yeni hizmet TASLAK başlar. Bu alan sunucuya GÖNDERİLMİYOR (yup şeması
+    // atıyor); yalnız panelde rozeti doğru göstermek için duruyor.
+    isActive: false,
     // Kendi sayfası olan hizmetler için. `slug` boş bırakılırsa hizmet
     // yalnızca kart olarak görünür, ayrı sayfası açılmaz.
     slug: '',
     excerpt: '',
+    metaTitle: '',
     metaDescription: '',
     content: '',
     includes: [],
@@ -99,11 +141,51 @@ const moveService = (index, delta) => {
           :key="'service-' + (service.id || index)"
           class="p-6 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition duration-150"
         >
-          <div class="flex justify-between items-start mb-4">
-            <h4 class="font-bold text-lg text-gray-700">Hizmet #{{ index + 1 }}</h4>
-            <button :aria-label="`${index + 1}. Hizmeti sil`" type="button" @click="removeService(index)" class="text-white bg-red-500 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center transition duration-150">
+          <div class="flex justify-between items-start mb-4 gap-3 flex-wrap">
+            <h4 class="font-bold text-lg text-gray-700">
+              Hizmet #{{ index + 1 }}
+              <span
+                v-if="service.isActive"
+                class="ml-2 rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 align-middle"
+              >YAYINDA</span>
+              <span
+                v-else
+                class="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 align-middle"
+              >TASLAK</span>
+            </h4>
+
+            <div class="flex items-center gap-2">
+              <!-- Yayın düğmesi yalnız KAYDEDİLMİŞ hizmetlerde: yayın
+                   kayıttaki slug üzerinden yürüyor, formdaki metin üzerinden
+                   değil. -->
+              <template v-if="service.id && service.slug">
+                <button
+                  v-if="!service.isActive"
+                  type="button"
+                  @click="yayinDegistir(service.slug, true)"
+                  :disabled="yayinIsleniyor === service.slug"
+                  class="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  {{ yayinIsleniyor === service.slug ? 'İşleniyor…' : 'Yayına Al' }}
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  @click="yayinDegistir(service.slug, false)"
+                  :disabled="yayinIsleniyor === service.slug"
+                  class="px-3 py-1 text-sm border border-amber-500 text-amber-800 rounded hover:bg-amber-50 disabled:opacity-50"
+                >
+                  {{ yayinIsleniyor === service.slug ? 'İşleniyor…' : 'Yayından Kaldır' }}
+                </button>
+              </template>
+              <span v-else class="text-xs text-gray-500">
+                Önce “Tümünü Güncelle” ile kaydedin, sonra yayına alın.
+              </span>
+
+              <button :aria-label="`${index + 1}. Hizmeti sil`" type="button" @click="removeService(index)" class="text-white bg-red-500 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center transition duration-150">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+              </button>
+            </div>
           </div>
 
           <!-- Görsel Yönetimi -->
@@ -220,6 +302,34 @@ const moveService = (index, delta) => {
                 class="w-full rounded border p-2"
                 placeholder="Bir-iki cümlelik özet"
               ></textarea>
+            </div>
+
+            <!--
+              ARAMA BAŞLIĞI — hizmet adından AYRI, boş bırakılabilir.
+              Boşken `hizmet adı | marka` üretiliyor. Hizmet sayfalarında
+              elle girmenin değeri, aranan ifadeyi başa alabilmek: sayfadaki
+              başlık "Parça Eşya Taşıma" iken aramada "Parça Eşya Taşıma
+              Fiyatları" daha çok tıklanabilir.
+            -->
+            <div class="mt-4">
+              <label :for="'service-metatitle-' + index" class="block text-sm font-medium text-gray-600">
+                Google Arama Başlığı
+              </label>
+              <input
+                v-model="service.metaTitle"
+                :id="'service-metatitle-' + index"
+                type="text"
+                maxlength="70"
+                class="w-full rounded border p-2"
+                placeholder="Parça Eşya Taşıma | Marka"
+              />
+              <p
+                class="mt-1 text-xs"
+                :class="(service.metaTitle || '').length > 60 ? 'text-amber-700' : 'text-gray-500'"
+              >
+                {{ (service.metaTitle || '').length }} / 60 karakter — 60 üstü aramada kesilir.
+                Boşsa <strong>hizmet adı | marka</strong> üretilir.
+              </p>
             </div>
 
             <!--

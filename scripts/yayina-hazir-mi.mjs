@@ -129,8 +129,11 @@ const cevre = {
 for (const [k, ad] of Object.entries(cevre)) {
   if (bos(process.env[k])) ekle('ENGEL', `${k} tanımsız`, ad, '.env')
 }
-for (const k of ['MAIL_USER', 'MAIL_PASSWORD', 'MAIL_HOST']) {
-  if (bos(process.env[k])) ekle('UYARI', `${k} tanımsız`, 'Teklif formu kaydediliyor ama e-posta bildirimi gitmiyor.', '.env')
+// Yedisi de gerekli. Mail ayarı derlemeye GÖMÜLÜ DEĞİL, istek anında
+// ortamdan okunuyor (server/mail/config.ts) — yani gömülü varsayılan yok,
+// eksik kalan alan doğrudan "bildirim gitmiyor" demek.
+for (const k of ['MAIL_HOST', 'MAIL_PORT', 'MAIL_USER', 'MAIL_PASSWORD', 'MAIL_FROM', 'MAIL_TO']) {
+  if (bos(process.env[k])) ekle('UYARI', `${k} tanımsız`, 'Teklif formu kaydediliyor ama e-posta bildirimi gitmiyor.', '.env / hosting ortam değişkenleri')
 }
 
 // ── 7) Yönetici hesabı ─────────────────────────────────────────────────────

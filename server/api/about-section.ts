@@ -1,36 +1,31 @@
 import * as yup from 'yup';
 import { aboutSectionService, type AboutSectionInput } from '../domain/sections/about-section.service';
 
-const aboutServiceSchema = yup.object({
-  iconPath: yup.string().trim().notRequired(),
-  iconAlt: yup.string().trim().notRequired(),
-  title: yup.string().trim().notRequired(),
-  description: yup.string().trim().notRequired(),
-  order: yup.number().notRequired(),
-});
-
-const aboutStatSchema = yup.object({
-  value: yup.string().trim().notRequired(),
-  label: yup.string().trim().notRequired(),
-  order: yup.number().notRequired(),
-});
-
+// ÖLÜ ALANLAR ŞEMADAN ÇIKARILDI (M6).
+//
+// `hakkimizda.vue` okuduğu alanları AÇIK BİR BEYAZ LİSTEYLE seçiyor
+// (`const ALANLAR = [...]`, sekiz alan). Beyaz listede olmayan her şey
+// sayfaya hiç gitmiyor:
+//
+//   seoTitle / seoDescription  Sayfanın SEO sahibi Meta("about");
+//                              ikinci bir düzenleme yüzeyi, yöneticinin
+//                              hangi panelin kazandığını bilememesi demek.
+//   teamImage / teamImageAlt   Görsel sentetik ve "gerçek ekibimiz" diye
+//                              sunuluyordu; sayfadan çıkarılmıştı.
+//   services / stats           Altı hizmet ve dört istatistik kaydı;
+//                              hiçbiri basılmıyor.
+//
+// Sütunlar, tablolar ve içindeki veriler DURUYOR.
 const aboutSectionSchema = yup.object({
   sectionName: yup.string().trim().notRequired(),
   mainTitle: yup.string().trim().notRequired(),
   description1: yup.string().trim().notRequired(),
   description2: yup.string().trim().notRequired(),
   description3: yup.string().trim().notRequired(),
-  teamImage: yup.string().trim().notRequired(),
-  teamImageAlt: yup.string().trim().notRequired(),
   historyTitle: yup.string().trim().notRequired(),
   historyText1: yup.string().trim().notRequired(),
   historyText2: yup.string().trim().notRequired(),
   historyText3: yup.string().trim().notRequired(),
-  seoTitle: yup.string().trim().notRequired(),
-  seoDescription: yup.string().trim().notRequired(),
-  services: yup.array().of(aboutServiceSchema).notRequired(),
-  stats: yup.array().of(aboutStatSchema).notRequired(),
 });
 
 const aboutSectionDeleteSchema = yup.object({

@@ -31,7 +31,11 @@ defineProps({
 </script>
 
 <template>
-  <div class="prose-body" v-html="sanitizeHtml(html)" />
+  <!-- İçerik SUNUCUDA temizleniyor (server/utils/sanitizeHtml.ts), API'den
+       temiz geliyor. Burada tekrar temizlemek, `sanitize-html` +
+       `htmlparser2` paketlerinin (234 KB) her ziyaretçinin tarayıcısına
+       inmesi demekti — ölçüldü, bölge sayfasında ön yüklenen JS'in %45'i. -->
+  <div class="prose-body" v-html="html" />
 </template>
 
 <style scoped>

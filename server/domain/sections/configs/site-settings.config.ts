@@ -21,11 +21,15 @@ export interface SiteSettingsInput {
   linkedinUrl?: string
   youtubeUrl?: string
   githubUrl?: string
-  googleAnalyticsId?: string
-  googleTagManagerId?: string
-  googleAdsenseId?: string
+  // ANALİTİK ALANLARI YAZMA SÖZLEŞMESİNDEN ÇIKARILDI (M6).
+  // Herkese açık tüketicileri ölçüldü: sıfır. Projede gtag/GTM/dataLayer
+  // yükleyen kod ve rıza altyapısı yok. Sütunlar şemada duruyor (veri
+  // kaybı yok) ama panelden yazılamıyorlar — "doldur ama hiçbir şey olmuyor"
+  // durumu bu turda kapatıldı.
+  /** Genel çağrı — M6'da HeroPage'den devralındı. */
+  ctaLabel?: string
+  ctaLink?: string
   footerText?: string
-  copyrightText?: string
   workingHours?: string
   googleMapsEmbed?: string
   latitude?: number | null
@@ -54,11 +58,9 @@ const mapScalarFields = (b: SiteSettingsInput) => ({
   linkedinUrl: b.linkedinUrl,
   youtubeUrl: b.youtubeUrl,
   githubUrl: b.githubUrl,
-  googleAnalyticsId: b.googleAnalyticsId,
-  googleTagManagerId: b.googleTagManagerId,
-  googleAdsenseId: b.googleAdsenseId,
+  ctaLabel: b.ctaLabel,
+  ctaLink: b.ctaLink,
   footerText: b.footerText,
-  copyrightText: b.copyrightText,
   workingHours: b.workingHours,
   googleMapsEmbed: b.googleMapsEmbed,
   latitude: b.latitude,

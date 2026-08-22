@@ -20,7 +20,20 @@
 // bir cache anahtarı kullanır ve load() burada birden çok kez (mount + her
 // save/remove sonrası) çağrıldığından, useFetch ikinci çağrıda sunucuya gitmek
 // yerine ilk yüklemedeki veriyi cache'ten döndürebiliyordu.
-export function useSectionCrud<T extends Record<string, any>>(apiPath: string, sectionName: string, initialShape: T) {
+export function useSectionCrud<T extends Record<string, any>>(
+  apiPath: string,
+  sectionName: string,
+  initialShape: T,
+  /**
+   * `loadQuery`: OKUMA çağrısına eklenen sorgu dizesi (örn. `?admin=true`).
+   *
+   * Yayın durumu gelen bölümlerde (bugün yalnız hizmetler) herkese açık
+   * okuma taslakları süzüyor; panel ise onları görmek zorunda. Yazma
+   * çağrılarına EKLENMİYOR: POST/PUT/DELETE zaten `requireAdmin` arkasında
+   * ve gövdeye sorgu parametresi taşımak bir anlam ifade etmiyor.
+   */
+  options: { loadQuery?: string } = {}
+) {
   const form = reactive({ ...initialShape }) as T
   const message = ref('')
   const showDeleteModal = ref(false)
@@ -50,7 +63,7 @@ export function useSectionCrud<T extends Record<string, any>>(apiPath: string, s
 
   const load = async () => {
     try {
-      const response = await $fetch(`/api/${apiPath}`)
+      const response = await $fetch(`/api/${apiPath}${options.loadQuery ?? ''}`)
       applyData(extractPayload(response))
     } catch {
       message.value = 'Veri alınırken hata oluştu.'
@@ -68,7 +81,21 @@ export function useSectionCrud<T extends Record<string, any>>(apiPath: string, s
         body: { sectionName, ...form },
       })
       if (response?.success === false) {
-        message.value = method === 'POST' ? 'Oluşturma sırasında hata oluştu.' : 'Güncelleme sırasında hata oluştu.'
+        // SUNUCUNUN CÜMLESİ AYNEN GÖSTERİLİYOR.
+        //
+        // Genel "hata oluştu" metni, adres çakışması gibi düzeltilebilir
+        // sorunlarda yöneticiyi kör bırakıyordu: hangi adresin, hangi
+        // kayıtla çakıştığı yalnız sunucu yanıtında vardı. Domain hataları
+        // zaten okunur cümleler (bkz. root-paths.ts); ham yığın izi ya da
+        // Prisma hatası buraya ulaşmıyor (getSafeErrorMessage süzüyor).
+        //
+        // "hata" ÖNEKİ BİLEREK KORUNUYOR: on bir panel mesajın kırmızı mı
+        // yeşil mi görüneceğine `message.includes('hata')` ile karar
+        // veriyor. Sunucunun cümlesi bu kelimeyi içermek zorunda değil —
+        // önek olmadan adres çakışması BAŞARI rengiyle basılırdı.
+        message.value = response.error
+          ? `Kaydetme hatası: ${response.error}`
+          : method === 'POST' ? 'Oluşturma sırasında hata oluştu.' : 'Güncelleme sırasında hata oluştu.'
         return { success: false, error: response.error }
       }
       applyData(extractPayload(response))

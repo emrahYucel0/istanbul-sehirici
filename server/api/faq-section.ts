@@ -1,45 +1,21 @@
 import * as yup from 'yup';
 import { faqSectionCrudService, type FaqSectionInput } from '../domain/sections/configs/faq-section.config';
 
-const faqDetailSchema = yup.object({
-  text: yup.string().trim().notRequired(),
-  order: yup.number().notRequired(),
-});
-
 const faqItemSchema = yup.object({
   question: yup.string().trim().notRequired(),
   answer: yup.string().notRequired(),
   order: yup.number().notRequired(),
   isActive: yup.boolean().notRequired(),
-  details: yup.array().of(faqDetailSchema).notRequired(),
 });
 
-const faqStatsCardSchema = yup.object({
-  value: yup.string().trim().notRequired(),
-  label: yup.string().trim().notRequired(),
-  bgColor: yup.string().trim().notRequired(),
-  textColor: yup.string().trim().notRequired(),
-  position: yup.string().trim().notRequired(),
-  order: yup.number().notRequired(),
-});
-
-const faqImageSchema = yup.object({
-  imagePath: yup.string().trim().notRequired(),
-  altText: yup.string().trim().notRequired(),
-  position: yup.string().trim().notRequired(),
-  order: yup.number().notRequired(),
-});
-
+// ÖLÜ ALANLAR ŞEMADAN ÇIKARILDI (M6): description, ctaTitle, ctaButtonText,
+// ctaButtonLink, statsCards, images ve soru içindeki `details`. Hepsinin
+// herkese açık tüketicisi sıfırdı; gerekçe faq-section.config.ts içinde.
+// `stripUnknown: true` olduğu için gövdeye elle eklenseler bile düşerler.
 const faqSectionSchema = yup.object({
   sectionName: yup.string().trim().notRequired(),
   mainTitle: yup.string().trim().notRequired(),
-  description: yup.string().notRequired(),
-  ctaTitle: yup.string().trim().notRequired(),
-  ctaButtonText: yup.string().trim().notRequired(),
-  ctaButtonLink: yup.string().trim().notRequired(),
   faqs: yup.array().of(faqItemSchema).notRequired(),
-  statsCards: yup.array().of(faqStatsCardSchema).notRequired(),
-  images: yup.array().of(faqImageSchema).notRequired(),
 });
 
 const faqSectionDeleteSchema = yup.object({

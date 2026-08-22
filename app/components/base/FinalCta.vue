@@ -8,11 +8,20 @@
  * yoktu. Hero'daki çağrıyı gören ama o an harekete geçmeyen ziyaretçi,
  * sayfanın sonuna geldiğinde ikinci bir fırsat bulamıyordu.
  *
- * VERİ KAYNAĞI — yeni şema YOK
- * Buton metni ve hedefi Hero'nun `primaryButton`/`primaryLink` alanlarından
- * geliyor; yani admin panelinden zaten yönetilebiliyor ve sayfanın başıyla
- * sonu kendiliğinden aynı çağrıyı gösteriyor. Telefon numarası Site
- * Ayarları'ndan okunuyor.
+ * VERİ KAYNAĞI — M6'DA DEĞİŞTİ
+ * Buton metni ve hedefi eskiden `HeroPage.primaryButton`/`primaryLink`
+ * alanlarından geliyordu. HeroPage'in kalan 10 alanının herkese açık
+ * tüketicisi yoktu; iki alan için 12 alanlık bir "Hero" paneli canlıymış
+ * gibi duruyor ve yöneticiye ana sayfayı oradan yönettiğini
+ * düşündürüyordu — oysa ana sayfa M4'ten beri HeroPage'i hiç okumuyor.
+ *
+ * Alanlar Site Ayarları'na taşındı (`ctaLabel` / `ctaLink`). Doğal sahip
+ * orası: telefon, WhatsApp ve adres de orada duruyor. Değerler birebir
+ * kopyalandı, görünen metin ve adres DEĞİŞMEDİ.
+ *
+ * İSTEK SAYISI DA AZALDI: bu bileşen artık `/api/hero` çağırmıyor; Site
+ * Ayarları isteği zaten sayfa düzeni tarafından yapılıyor ve anahtarla
+ * paylaşılıyor.
  *
  * İKİNCİ BUTON — koşullu
  * SSS bölümünün yapışkan kartı da "Bize Ulaşın" diyerek /iletisim'e
@@ -23,14 +32,10 @@
  */
 import { computed } from 'vue'
 
-// Ortak anahtar — bkz. components/base/Hero.vue'daki gerekçe.
-const { data: heroResponse } = await useFetch('/api/hero', { key: 'hero-section' })
-const hero = computed(() => heroResponse.value?.data ?? null)
-
 const { settings, brandName } = await useSiteSettings()
 
-const buttonText = computed(() => hero.value?.primaryButton || 'Ücretsiz Keşif Talep Et')
-const buttonLink = computed(() => hero.value?.primaryLink || '/iletisim')
+const buttonText = computed(() => settings.value?.ctaLabel || 'Ücretsiz Keşif Talep Et')
+const buttonLink = computed(() => settings.value?.ctaLink || '/iletisim')
 
 const phone = computed(() => settings.value?.phone || settings.value?.mobilePhone || '')
 /** tel: bağlantısı için boşluk/parantez temizliği. */

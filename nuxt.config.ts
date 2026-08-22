@@ -58,6 +58,20 @@ export default defineNuxtConfig({
     "/admin/**": { robots: "noindex, nofollow" },
     "/evdeneveyonetim": { robots: "noindex, nofollow" },
     "/evdeneveyonetim/**": { robots: "noindex, nofollow" },
+
+    // ───────────────────────────────────────────────────────────────────
+    // /istanbul → /  (KALICI, TEK SIÇRAMA)
+    //
+    // Sitenin ana hedefi "İstanbul evden eve nakliyat" olduğu için ayrı bir
+    // /istanbul iniş sayfası tutulmuyor: ana sayfanın KENDİSİ İstanbul
+    // otorite sayfası. Eski Region kaydı veri tabanında DURUYOR (silinmedi,
+    // pasifleştirilmedi) — yalnız adresi yönlendiriliyor.
+    //
+    // Nitro seviyesinde: istek sayfaya hiç ulaşmıyor, ara durak yok.
+    // Dahili bağlantılar da zincir üretmemek için doğrudan `/` ya da
+    // `/bolgelerimiz` gösteriyor (bkz. base/UcIstanbul.vue,
+    // region/BolgeAciklama.vue). Sitemap'ten de çıkarıldı.
+    "/istanbul": { redirect: { to: "/", statusCode: 301 } },
   },
 
   // NOT: Burada `.prisma/client/index-browser` için bir Vite alias'ı vardı.
@@ -87,6 +101,12 @@ export default defineNuxtConfig({
 
   sitemap: {
     sources: ["/api/__sitemap__/urls"],
+    // Prototip rotaları sayfada `noindex` taşıyor AMA sitemap onları yine de
+    // Google'a SUNUYORDU. İkisi çelişik bir sinyal: Search Console bunu
+    // "Submitted URL marked noindex" uyarısı olarak raporlar. Rotalar
+    // onaylı referans/hata ayıklama aracı olarak KALIYOR, yalnız sitemap
+    // dışına alındılar.
+    exclude: ["/prototip/**"],
   },
 
   app: {
@@ -112,7 +132,7 @@ export default defineNuxtConfig({
           rel: "preload",
           as: "font",
           type: "font/woff2",
-          href: "/fonts/inter-latin.woff2",
+          href: "/fonts/archivo.woff2",
           crossorigin: "anonymous",
         },
         // LATIN-EXT DE ÖN YÜKLENİYOR — önceden yüklenmiyordu.
@@ -129,7 +149,7 @@ export default defineNuxtConfig({
           rel: "preload",
           as: "font",
           type: "font/woff2",
-          href: "/fonts/inter-latin-ext.woff2",
+          href: "/fonts/jetbrains-mono.woff2",
           crossorigin: "anonymous",
         },
       ],
@@ -140,7 +160,22 @@ export default defineNuxtConfig({
   // fonts.css  — @font-face tanımları, hiçbir şeye bağımlı değil, en başta.
   // tokens.css — main.css (ve Tailwind'in ürettiği tüm sınıflar) içindeki
   //              var(--…) referansları bu dosyada tanımlanıyor.
-  css: ["~/assets/css/fonts.css", "~/assets/css/tokens.css", "~/assets/css/main.css"],
+  // `sahne.css` ana sayfa V2'nin ORTAK EKSEN SİSTEMİ: dört eksen, tek
+  // operasyon çizgisi, dört tipografi kademesi. Bölümler kendi ızgarasını ve
+  // punto ölçeğini uydurmasın diye tek yerde; asimetrinin gerekçeli kalması
+  // buna bağlı. `tokens.css`'ten SONRA yükleniyor çünkü onun değişkenlerini
+  // kullanıyor.
+  css: [
+    "~/assets/css/fonts.css",
+    "~/assets/css/tokens.css",
+    "~/assets/css/tipografi.css",
+    "~/assets/css/sahne.css",
+    "~/assets/css/main.css",
+    // GEÇİCİ — palet karşılaştırma laboratuvarı. `data-palette` niteliği
+    // yokken tek kural bile uygulanmıyor; seçim yapıldıktan sonra bu satır
+    // ve iki dosya silinecek (bkz. palet-lab.css başlığı).
+    "~/assets/css/palet-lab.css",
+  ],
 
   // NOT: Bu dosyada daha önce İKİ ayrı `postcss` anahtarı vardı; ikincisi
   // birincisini sessizce eziyordu, dolayısıyla cssnano hiçbir zaman
@@ -167,8 +202,8 @@ export default defineNuxtConfig({
   // `NUXT_SITE_URL` / `NUXT_SITE_NAME` ortam değişkenleriyle ezilebilir —
   // yani başka bir siteye taşırken bu dosyaya dokunmak gerekmiyor.
   site: {
-    url: process.env.NUXT_SITE_URL || "https://evenakliyatevden.com",
-    name: process.env.NUXT_SITE_NAME || "EveNakliyatEvden",
+    url: process.env.NUXT_SITE_URL || "https://istanbulevenakliyat.com",
+    name: process.env.NUXT_SITE_NAME || "İstanbul Eve Nakliyat",
   },
 
   // GÖRSELLER — sunucuda işleme YOK.
@@ -194,7 +229,7 @@ export default defineNuxtConfig({
         provider: "~/providers/statik.ts",
       },
     },
-    domains: ["evenakliyatevden.com", "cdn.evenakliyatevden.com"],
+    domains: ["istanbulevenakliyat.com", "cdn.istanbulevenakliyat.com"],
     quality: 70,
     format: ["webp"],
     screens: {
@@ -208,37 +243,46 @@ export default defineNuxtConfig({
     },
   },
 
+  /**
+   * DERLEME ÇIKTISINA GİZLİ DEĞER GİRMİYOR.
+   *
+   * Bu blok DERLEME ANINDA çalışıyor. Burada `process.env.X` yazmak, X'in o
+   * andaki değerini çıktının içine LİTERAL olarak gömmek demek. Ölçüldü:
+   * gerçek SMTP parolası ve AUTH_SECRET `.output/server/chunks/_/nitro.mjs`
+   * içinde düz metin duruyordu. İki sonucu vardı — çıktıyı paylaşan sırrı da
+   * paylaşıyordu ve çalışma zamanında değişkeni değiştirmek hiçbir şeyi
+   * değiştirmiyordu.
+   *
+   * MAIL AYARLARI BURADAN TAMAMEN KALKTI. Artık istek anında okunuyor:
+   * `server/mail/config.ts`. Değişken adları aynı (`MAIL_*`).
+   *
+   * `authSecret` DURUYOR ama VARSAYILANI BOŞ. Nuxt'un `NUXT_AUTH_SECRET`
+   * ile çalışma zamanında ezme mekanizması korunuyor (dağıtım notu onu
+   * kullanıyor, testler de bu alanı taklit ediyor); değeri derlemeye gömen
+   * `process.env.AUTH_SECRET` varsayılanı kaldırıldı. Boş kaldığında
+   * `server/utils/auth.ts` çalışma zamanında `process.env.AUTH_SECRET`'e
+   * düşüyor, böylece `.env` ile çalışan yerel geliştirme de bozulmuyor.
+   */
   runtimeConfig: {
-    authSecret: process.env.AUTH_SECRET || "",
-    mail: {
-      smtp: {
-        host: process.env.MAIL_HOST || "mail.evenakliyatevden.com",
-        port: parseInt(process.env.MAIL_PORT || "587", 10),
-        secure: process.env.MAIL_SECURE === "true" || false,
-        auth: {
-          user: process.env.MAIL_USER || "info@evenakliyatevden.com",
-          pass: process.env.MAIL_PASSWORD || "",
-        },
-      },
-      message: {
-        // Gönderici bir E-POSTA ADRESİ olmalı; buradaki varsayılan da
-        // "mail.evenakliyatevden.com" (sunucu adı) yazıyordu. MAIL_FROM
-        // tanımsızsa kimlik doğrulanan hesaba düşülüyor — çoğu SMTP
-        // sunucusu zaten göndericinin o hesapla aynı olmasını istiyor.
-        from:
-          process.env.MAIL_FROM ||
-          process.env.MAIL_USER ||
-          "info@evenakliyatevden.com",
-        to: process.env.MAIL_TO || "info@evenakliyatevden.com",
-      },
-    },
+    authSecret: '',
   },
 
-  hooks: {
-    "app:error": (err: any) => {
-      if ([500, 503].includes(err.statusCode)) return false;
-    },
-  },
+  // NOT: Burada bir `app:error` kancası vardı ve 500/503 hatalarında `false`
+  // dönüyordu — yani sunucu hatalarını SESSİZCE YUTUYORDU. Ne kayda geçiyor
+  // ne bildirim üretiyordu.
+  //
+  // 14 Ağustos 2026'da site 503 verdi; kullanıcı fark edip haber verdi,
+  // sistem değil. Ne kadar kapalı kaldığını hâlâ bilmiyoruz. Sebep tam
+  // olarak buydu: hata bir yere yazılmıyordu.
+  //
+  // Kanca kaldırıldı. Hata artık normal akışta ilerliyor:
+  //   · sunucu tarafı yakalama → server/plugins/hata-kaydi.ts (yapılandırılmış
+  //     günlük, cPanel'in uygulama günlüğüne düşer)
+  //   · ziyaretçiye görünen yüz → app/error.vue (teknik ayrıntı GÖSTERMEZ)
+  //   · dışarıdan izleme → /api/health
+  //
+  // Bu kancanın var olma sebebi muhtemelen "hata ekranı çirkin görünmesin"di;
+  // o iş error.vue'nun ve onu bastırmak hatayı yok saymak demekti.
 
   nitro: {
     // SIKIŞTIRMA — JS/CSS/font için derleme zamanında .gz ve .br üretilir.

@@ -1,0 +1,215 @@
+/* =============================================================================
+   PALET LABORATUVARI — GEÇİCİ, ÜRETİM KİMLİĞİ DEĞİL
+   -----------------------------------------------------------------------------
+   Amaç tek: aynı sayfayı aynı tipografi, aynı fotoğraf, aynı yerleşim ve aynı
+   hareketle farklı renk paletlerinde görmek. Bu dosya HİÇBİR ŞEYİ kalıcı
+   olarak değiştirmez — kanonik palet `tokens.css` içindeki değerlerdir ve
+   `<html>` üzerinde `data-palette` yokken tek bir kural bile uygulanmaz.
+
+   NASIL ÇALIŞIYOR
+   Bloklar yalnız KİMLİK token'larını (kâğıt, mürekkep, çizgi, sinyal) ve eski
+   `brand`/`accent` rampalarının ara basamaklarını yeniden tanımlıyor.
+   `--c-surface`, `--c-line`, `--c-ink-muted` gibi devir token'ları zaten
+   `var()` ile kimliğe bağlı olduğu için kendiliğinden takip ediyorlar.
+
+   RAMPA EĞRİSİ
+   Ara basamaklar uydurulmadı: CURRENT paletindeki basamakların kâğıt→mürekkep
+   ve kâğıt→sinyal eksenindeki konumu ölçüldü, aynı eğri her palete uygulandı.
+   Böylece paletler arasında değişen tek şey RENK; açıklık ilişkileri —
+   dolayısıyla kontrast dengesi ve görsel hiyerarşi — aynı kalıyor.
+
+   NEDEN CURRENT BLOĞU \`:root\` DEĞİL
+   \`:root\` da yazılsaydı bu dosya kanonik değerleri sessizce yeniden
+   tanımlardı ve \`tokens.css\` tek doğruluk kaynağı olmaktan çıkardı.
+   Şimdi nitelik yokken kanonik değerler geçerli; \`?palette=current\`
+   yalnızca aynı değerleri açıkça yeniden uyguluyor.
+
+   KALDIRMA: bu dosyayı sil, `nuxt.config.ts` css dizisinden satırı çıkar,
+   `app/plugins/palet-lab.client.ts` dosyasını sil. Başka iz kalmıyor.
+   ========================================================================== */
+
+/* ---- CURRENT — Kâğıt / Mürekkep / Bakır ---- */
+[data-palette='current'] {
+  --c-paper: 247 244 239;
+  --c-paper-sunken: 237 232 223;
+  --c-ink: 27 26 24;
+  --c-ink-soft: 92 87 78;
+  --c-rule: 214 206 193;
+  --c-measure: 138 129 112;
+  --c-signal: 180 68 28;
+  --c-signal-deep: 140 52 20;
+
+  --c-brand-50: 243 240 235;
+  --c-brand-100: 236 233 228;
+  --c-brand-200: 222 219 215;
+  --c-brand-300: 202 200 195;
+  --c-brand-400: 168 166 162;
+  --c-brand-500: 112 110 107;
+  --c-brand-700: 66 65 62;
+  --c-brand-800: 48 47 45;
+  --c-brand-900: 34 33 31;
+
+  --c-accent-50: 246 240 235;
+  --c-accent-100: 240 226 217;
+  --c-accent-200: 229 197 183;
+  --c-accent-300: 214 156 134;
+  --c-accent-400: 196 111 79;
+  --c-accent-500: 188 88 52;
+  --c-accent-700: 162 61 24;
+  --c-accent-900: 112 42 16;
+}
+
+/* ---- NAVY — Kemik / Lacivert / Kiremit ---- */
+[data-palette='navy'] {
+  --c-paper: 245 241 232;
+  --c-paper-sunken: 232 225 212;
+  --c-ink: 23 32 42;
+  --c-ink-soft: 89 97 106;
+  --c-rule: 210 201 186;
+  --c-measure: 125 117 105;
+  --c-signal: 181 74 47;
+  --c-signal-deep: 132 52 33;
+
+  --c-brand-50: 241 237 229;
+  --c-brand-100: 234 231 223;
+  --c-brand-200: 220 217 211;
+  --c-brand-300: 200 198 193;
+  --c-brand-400: 166 166 164;
+  --c-brand-500: 109 113 116;
+  --c-brand-700: 63 69 76;
+  --c-brand-800: 44 52 60;
+  --c-brand-900: 30 39 48;
+
+  --c-accent-50: 244 238 228;
+  --c-accent-100: 238 224 213;
+  --c-accent-200: 228 196 183;
+  --c-accent-300: 213 158 140;
+  --c-accent-400: 197 115 92;
+  --c-accent-500: 188 93 68;
+  --c-accent-700: 159 64 41;
+  --c-accent-900: 106 42 26;
+}
+
+/* ---- STONE — Taş / Kömür / Pas ---- */
+[data-palette='stone'] {
+  --c-paper: 241 239 234;
+  --c-paper-sunken: 227 222 213;
+  --c-ink: 32 32 29;
+  --c-ink-soft: 98 95 88;
+  --c-rule: 203 197 186;
+  --c-measure: 129 122 112;
+  --c-signal: 164 71 39;
+  --c-signal-deep: 120 48 29;
+
+  --c-brand-50: 237 235 230;
+  --c-brand-100: 231 229 224;
+  --c-brand-200: 217 216 211;
+  --c-brand-300: 198 197 192;
+  --c-brand-400: 166 165 161;
+  --c-brand-500: 113 112 108;
+  --c-brand-700: 69 69 65;
+  --c-brand-800: 52 52 49;
+  --c-brand-900: 39 39 36;
+
+  --c-accent-50: 239 236 230;
+  --c-accent-100: 233 222 214;
+  --c-accent-200: 220 194 182;
+  --c-accent-300: 203 155 137;
+  --c-accent-400: 183 112 87;
+  --c-accent-500: 173 90 61;
+  --c-accent-700: 144 61 35;
+  --c-accent-900: 96 38 23;
+}
+
+/* ---- PETROL — Kireç / Petrol / Turuncu ---- */
+[data-palette='petrol'] {
+  --c-paper: 243 242 235;
+  --c-paper-sunken: 228 229 220;
+  --c-ink: 23 37 34;
+  --c-ink-soft: 83 97 92;
+  --c-rule: 201 206 196;
+  --c-measure: 116 127 121;
+  --c-signal: 208 90 39;
+  --c-signal-deep: 150 61 28;
+
+  --c-brand-50: 239 238 231;
+  --c-brand-100: 232 232 225;
+  --c-brand-200: 218 219 212;
+  --c-brand-300: 198 200 194;
+  --c-brand-400: 164 169 163;
+  --c-brand-500: 108 116 112;
+  --c-brand-700: 62 73 70;
+  --c-brand-800: 44 57 53;
+  --c-brand-900: 30 44 41;
+
+  --c-accent-50: 242 239 231;
+  --c-accent-100: 239 226 215;
+  --c-accent-200: 234 201 183;
+  --c-accent-300: 226 166 137;
+  --c-accent-400: 217 127 87;
+  --c-accent-500: 212 107 61;
+  --c-accent-700: 182 77 34;
+  --c-accent-900: 120 49 22;
+}
+
+/* ---- SWISS — Soğuk Gri / Grafit / Kırmızı ---- */
+[data-palette='swiss'] {
+  --c-paper: 242 242 239;
+  --c-paper-sunken: 227 227 223;
+  --c-ink: 23 23 23;
+  --c-ink-soft: 95 95 91;
+  --c-rule: 205 205 199;
+  --c-measure: 128 128 121;
+  --c-signal: 196 59 39;
+  --c-signal-deep: 139 40 28;
+
+  --c-brand-50: 238 238 235;
+  --c-brand-100: 231 231 228;
+  --c-brand-200: 217 217 215;
+  --c-brand-300: 197 197 195;
+  --c-brand-400: 164 164 162;
+  --c-brand-500: 108 108 107;
+  --c-brand-700: 62 62 61;
+  --c-brand-800: 44 44 44;
+  --c-brand-900: 30 30 30;
+
+  --c-accent-50: 241 238 235;
+  --c-accent-100: 237 223 219;
+  --c-accent-200: 230 193 186;
+  --c-accent-300: 219 151 139;
+  --c-accent-400: 207 104 88;
+  --c-accent-500: 201 80 62;
+  --c-accent-700: 170 50 34;
+  --c-accent-900: 111 32 22;
+}
+
+/* ---- TURQUOISE — Kireçtaşı / Derin Mürekkep / Oksit ---- */
+[data-palette='turquoise'] {
+  --c-paper: 244 241 234;
+  --c-paper-sunken: 231 225 215;
+  --c-ink: 23 35 33;
+  --c-ink-soft: 86 97 93;
+  --c-rule: 204 208 199;
+  --c-measure: 119 130 125;
+  --c-signal: 25 124 120;
+  --c-signal-deep: 16 91 88;
+
+  --c-brand-50: 240 237 230;
+  --c-brand-100: 233 231 224;
+  --c-brand-200: 219 218 211;
+  --c-brand-300: 199 199 193;
+  --c-brand-400: 165 167 162;
+  --c-brand-500: 109 115 111;
+  --c-brand-700: 62 72 69;
+  --c-brand-800: 44 55 52;
+  --c-brand-900: 30 42 40;
+
+  --c-accent-50: 240 239 232;
+  --c-accent-100: 222 229 222;
+  --c-accent-200: 186 210 204;
+  --c-accent-300: 135 183 177;
+  --c-accent-400: 78 153 148;
+  --c-accent-500: 50 137 133;
+  --c-accent-700: 21 109 106;
+  --c-accent-900: 13 73 70;
+}

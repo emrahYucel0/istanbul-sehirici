@@ -1,131 +1,65 @@
 <script setup>
 /**
- * FİYAT HESAPLAMA — ayrı sayfa.
+ * /FIYAT-HESAPLAMA — V2
  *
- * NEDEN ANA SAYFAYA GÖMÜLMEDİ
- * Nakliyat aramalarının büyük kısmı fiyat niyetli ("nakliyat fiyatları",
- * "evden eve nakliyat ne kadar"). Ayrı sayfa olarak:
- *   - o aramalarda kendi başına sıralanabiliyor,
- *   - dışarıdan bağlantı alabiliyor (araçlar doğal bağlantı çeker),
- *   - 120 bölge sayfasının hepsinden bağlantı verilebilecek bir hedef oluyor.
- * Ana sayfaya gömülseydi bunların hiçbiri olmazdı.
+ * NEDEN AYRI SAYFA (değişmedi)
+ * Nakliyat aramalarının büyük kısmı fiyat niyetli. Ayrı sayfa olarak kendi
+ * başına sıralanabiliyor, dışarıdan bağlantı alabiliyor ve bölge
+ * sayfalarının hepsinden bağlanabilecek bir hedef oluyor.
+ *
+ * ESKİ SAYFA (bu turda değiştirildi)
+ *   · `ui-heading` açıklaması: "Kesin fiyat, ücretsiz keşif sonrasında
+ *     netleşir" — iki doğrulanmamış iddia.
+ *   · YOL İZİ HİÇ YOKTU (ölçüldü: 0 `BreadcrumbList`).
+ *   · Dört yuvarlak köşeli kart, hesaba giren ve girmeyen faktörleri aynı
+ *     kefeye koyuyordu.
+ *   · Kapanış notu "keşif ücretsizdir ve hiçbir yükümlülük doğurmaz"
+ *     diyordu.
+ *   · `base-price-estimator`: koyu kutu içinde tutar, hap biçimli
+ *     "Ücretsiz keşif talep edin" düğmesi, gizli varsayılan seçim ve
+ *     sınırlanmamış kat alanı.
+ *
+ * Eski `base/PriceEstimator.vue` SİLİNMEDİ, yalnız kullanılmıyor.
+ *
+ * HESAP MANTIĞI DEĞİŞMEDİ. Formül `app/utils/fiyat.ts`'e taşındı ve test
+ * edildi; iş katsayıları (taban tutarlar, çarpanlar, kat ücreti, aralık
+ * yüzdesi) yine panelden geliyor ve HİÇBİRİ değiştirilmedi.
  */
-const { brandName } = await usePageSeo('fiyat-hesaplama', sayfaMetasi('fiyat-hesaplama'))
+await usePageSeo('fiyat-hesaplama', sayfaMetasi('fiyat-hesaplama'))
 
-useHead({
-  script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: () =>
-        JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'WebApplication',
-          name: 'Nakliyat Fiyat Hesaplama',
-          applicationCategory: 'BusinessApplication',
-          operatingSystem: 'Web',
-          // Araç ücretsiz; Google'ın "fiyat" beklentisini karşılamak için açıkça belirtiliyor.
-          offers: { '@type': 'Offer', price: '0', priceCurrency: 'TRY' },
-          provider: { '@type': 'Organization', name: brandName.value },
-        }),
-    },
-  ],
+/**
+ * YAPISAL VERİ — yalnız yol izi, o da bileşende.
+ *
+ * `WebApplication` + `Offer{price:"0"}` düğümü KALDIRILDI. İki sorunu vardı:
+ *   1. Sayfanın ürettiği tutar tamamen kullanıcı girdisine bağlı; sabit bir
+ *      `Offer` bildirmek arama motoruna yanlış bilgi vermek olurdu.
+ *   2. `price: "0"` aracın ücretsizliğini bildiriyordu — sitenin geri
+ *      kalanından kaldırılan "ücretsiz" dilinin yapısal veride kalmış hâli.
+ *
+ * Yol izi `price/Giris.vue` içinde Microdata olarak, ekranda görünen
+ * listeyle aynı kaynaktan işaretleniyor. `AggregateRating` ve `Review` yok.
+ */
+
+/**
+ * SAYFANIN EDİTORYAL ÇERÇEVESİ — TEK İSTEK.
+ *
+ * Hesaplama katsayıları BURADAN GELMİYOR: onları `price/Hesaplayici`
+ * kendi ucundan (`/api/price-estimator`) okuyor ve tek sahibi orası.
+ * Buradaki istek yalnız aracın etrafındaki metin için.
+ */
+const { data: icerikYanit } = await useFetch('/api/ic-sayfa?page=fiyat', {
+  key: 'ic-fiyat',
 })
+
+const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
+
 </script>
 
 <template>
   <main>
-    <ui-section tone="surface" labelledby="fh-baslik">
-      <!-- `as="h1"`: bu sayfada başka h1 yok. Öncesinde başlık h2 olarak
-           basılıyordu, yani sayfanın hiç h1'i yoktu. -->
-      <ui-heading
-        id="fh-baslik"
-        as="h1"
-        eyebrow="Fiyat Hesaplama"
-        title="Taşınma Maliyetinizi Tahmin Edin"
-        description="Birkaç soruyla yaklaşık bir aralık görün. Kesin fiyat, ücretsiz keşif sonrasında netleşir."
-      />
-
-      <base-price-estimator class="mt-8" />
-    </ui-section>
-
-    <ui-section tone="muted" labelledby="fh-neler">
-      <h2 id="fh-neler" class="text-h2 text-ink">Nakliyat Fiyatını Ne Belirler?</h2>
-
-      <div class="fh-kartlar">
-        <article>
-          <h3>Eşya miktarı</h3>
-          <p>
-            Fiyatın taban değerini belirleyen ilk etken. 1+1 bir daire ile 4+1 bir ev arasında
-            hem araç hacmi hem ekip sayısı değişiyor.
-          </p>
-        </article>
-        <article>
-          <h3>Kat ve asansör</h3>
-          <p>
-            Asansörsüz her kat, taşıma süresini ve ekip yükünü artırıyor. Yük asansörü olmayan
-            yüksek katlarda dış cephe asansörü devreye giriyor.
-          </p>
-        </article>
-        <article>
-          <h3>Mesafe</h3>
-          <p>
-            Şehir içi taşımalar çoğunlukla tek günde biterken şehirler arası taşımada yakıt,
-            konaklama ve ambalaj standardı yükseliyor.
-          </p>
-        </article>
-        <article>
-          <h3>Ek hizmetler</h3>
-          <p>
-            Paketlemenin ekip tarafından yapılması, mobilya söküm-montajı ve depolama ihtiyacı
-            toplam maliyeti değiştiriyor.
-          </p>
-        </article>
-      </div>
-
-      <p class="fh-not">
-        Bu sayfadaki hesaplama bir <strong>ön tahmindir</strong>. Nakliyatta kesin fiyat, eşyaların
-        yerinde görülmesiyle netleşir — bu yüzden keşif ücretsizdir ve hiçbir yükümlülük doğurmaz.
-      </p>
-    </ui-section>
+    <price-giris :bolum="bolum('giris')" />
+    <price-hesaplayici :bolum="bolum('arac')" />
+    <price-faktorler :girenler="bolum('girenler')" :disarida="bolum('disarida')" />
+    <price-sonraki-adim :bolum="bolum('sonraki')" />
   </main>
 </template>
-
-<style scoped>
-.fh-kartlar {
-  display: grid;
-  gap: 1.25rem;
-  margin-top: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-}
-
-.fh-kartlar article {
-  padding: 1.5rem;
-  border: 1px solid rgb(var(--c-line));
-  border-radius: var(--r-2xl);
-  background: rgb(var(--c-surface));
-}
-
-.fh-kartlar h3 {
-  font-size: 1.0625rem;
-  font-weight: 700;
-  color: rgb(var(--c-ink));
-}
-
-.fh-kartlar p {
-  margin-top: 0.5rem;
-  color: rgb(var(--c-ink-muted));
-  line-height: 1.7;
-  text-wrap: pretty;
-}
-
-.fh-not {
-  max-width: 60ch;
-  margin-top: 2rem;
-  padding: 1.25rem 1.5rem;
-  border-left: 3px solid rgb(var(--c-brand-600));
-  background: rgb(var(--c-surface));
-  border-radius: var(--r-lg);
-  color: rgb(var(--c-ink-muted));
-  line-height: 1.7;
-}
-</style>

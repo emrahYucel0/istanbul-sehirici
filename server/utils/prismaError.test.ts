@@ -55,7 +55,12 @@ describe('getSafeErrorMessage', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const err = new Error('detaylı hata')
     getSafeErrorMessage(err)
-    expect(spy).toHaveBeenCalledWith(err)
+    // Kayıt artık ham nesne değil, YAPILANDIRILMIŞ TEK SATIR (zaman damgası +
+    // kod + mesaj + yığının ilk iki satırı). Testin derdi biçim değil niyet:
+    // client'a jenerik mesaj gitse bile detay sunucu logunda duruyor mu.
+    const satir = spy.mock.calls.at(0)?.at(0) as string
+    expect(satir).toContain('detaylı hata')
+    expect(satir).toMatch(/^\[hata\] \d{4}-\d{2}-\d{2}T/)
     spy.mockRestore()
     vi.unstubAllEnvs()
   })

@@ -1,5 +1,6 @@
 import * as yup from 'yup';
-import { servicesCrudService, type ServicesInput } from '../domain/sections/configs/services.config';
+import { servicesSectionService, type ServicesInput } from '../domain/sections/configs/services.config';
+import { sanitizeContentFields } from '../utils/sanitizeHtml'
 
 const serviceFaqSchema = yup.object({
   question: yup.string().trim().notRequired(),
@@ -22,6 +23,7 @@ const serviceItemSchema = yup.object({
   // anlamına gelir.
   slug: yup.string().trim().nullable().notRequired(),
   excerpt: yup.string().notRequired(),
+  metaTitle: yup.string().notRequired(),
   metaDescription: yup.string().notRequired(),
   content: yup.string().notRequired(),
   includes: yup.array().of(yup.string().trim()).notRequired(),
@@ -44,31 +46,42 @@ const servicesDeleteSchema = yup.object({
 
 export default defineEventHandler(async (event) => {
   const method = event.node.req.method;
+  const { admin } = getQuery(event);
 
-  if (method !== 'GET') {
+  // TASLAK HİZMETLERİ GÖRMEK YETKİ İSTER — `posts.ts` ve `regions.ts` ile
+  // aynı desen. `requireAdmin` try/catch dışında çağrılıyor ki 401 gerçekten
+  // 401 dönsün.
+  const isAdminMode = admin === 'true' || admin === true;
+
+  if (method !== 'GET' || isAdminMode) {
     requireAdmin(event);
   }
 
   if (method === 'GET') {
-    return servicesCrudService.get();
+    // Hizmet kayıtları da `content` alanı taşıyor ve hizmet sayfasında
+    // `v-html` ile basılıyor. Bölüm factory'sinden geçtiği için diğer
+    // içerik servisleri gibi kendi `get()`i içinde sarılamıyor; temizlik
+    // burada, yanıt dışarı çıkmadan hemen önce yapılıyor.
+    const sonuc = await servicesSectionService.get({ includeDrafts: isAdminMode });
+    return sonuc.success ? { ...sonuc, data: sanitizeContentFields(sonuc.data) } : sonuc;
   }
 
   if (method === 'POST') {
     const validation = await validateOrError<ServicesInput>(servicesSchema, await readBody(event));
     if (!validation.success) return validation;
-    return servicesCrudService.create(validation.data);
+    return servicesSectionService.create(validation.data);
   }
 
   if (method === 'PUT') {
     const validation = await validateOrError<ServicesInput>(servicesSchema, await readBody(event));
     if (!validation.success) return validation;
-    return servicesCrudService.update(validation.data);
+    return servicesSectionService.update(validation.data);
   }
 
   if (method === 'DELETE') {
     const validation = await validateOrError<{ sectionName?: string }>(servicesDeleteSchema, await readBody(event));
     if (!validation.success) return validation;
-    return servicesCrudService.remove(validation.data.sectionName);
+    return servicesSectionService.remove(validation.data.sectionName);
   }
 
   return { success: false, error: `HTTP ${method} yöntemi desteklenmiyor.` };

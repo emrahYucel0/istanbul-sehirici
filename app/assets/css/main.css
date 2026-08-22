@@ -24,7 +24,7 @@
   }
 
   body {
-    @apply overflow-x-hidden relative font-inter font-normal text-ink antialiased;
+    @apply overflow-x-hidden relative font-archivo font-normal text-ink antialiased;
     /* 16px taban. Önceki 14px (text-sm) gövde metni için okunabilirlik
        sınırının altındaydı ve mobilde WCAG uyarısı üretiyordu. */
     font-size: 1rem;
@@ -75,8 +75,13 @@
      Önceki `.btn { &:focus { outline-none } }` kuralı bunu tüm butonlarda
      yok ediyordu — WCAG 2.4.7 ihlali. :focus-visible sayesinde halka fare
      tıklamasında görünmez, klavyede görünür olur. */
+  /* Halka rengi `--c-brand-600` idi; o token artık ikincil metin tonu
+     (6,34:1). Odak göstergesi sitenin EN yüksek kontrastlı işareti olmalı,
+     ikincil ton değil — mürekkep kâğıt üzerinde 15,85:1 veriyor ve ana
+     sayfadaki `.op-bag:focus-visible` zaten bunu kullanıyor; ikisi artık
+     aynı dil. */
   :focus-visible {
-    outline: 2px solid rgb(var(--c-brand-600));
+    outline: 2px solid rgb(var(--c-ink));
     outline-offset: 3px;
     border-radius: var(--r-xs);
   }
@@ -303,10 +308,20 @@
   transition-delay: calc(var(--reveal-i, 0) * var(--stagger));
 }
 
+/* `will-change: opacity, transform` BİLEREK KALDIRILDI.
+   Bu kural sayfadaki TÜM gizli öğelere uygulanıyor: ana sayfada 69
+   `[data-reveal]` var, yani 650 elemanlık DOM'un %10'u. `will-change` her
+   birini ayrı bir compositor katmanına terfi ettiriyordu; üstelik `once:false`
+   olduğu için öğeler ekrandan çıkınca yeniden gizleniyor ve katmanlar sürekli
+   kurulup yıkılıyordu. Canlı Lighthouse ölçümünde ana iş parçacığının en
+   büyük kalemi buydu: Style & Layout 1.344 ms.
+   Zaten `opacity` ve `transform` compositor'da çalışan özellikler; ipucu
+   olmadan da 60 FPS veriyorlar. `will-change` animasyondan HEMEN ÖNCE tek bir
+   öğeye konulduğunda anlamlı, kalıcı olarak onlarca öğede tutulduğunda
+   Chrome'un açıkça uyardığı anti-desen. */
 [data-reveal].is-hidden {
   opacity: 0;
   transform: translate3d(0, var(--reveal-y), 0);
-  will-change: opacity, transform;
 }
 
 [data-reveal="fade"].is-hidden {
