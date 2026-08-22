@@ -48,9 +48,16 @@ Uygulama kökünü belge kökünün dışına almanın iki faydası var:
 ## 0) Dağıtım paketini üret  ← BU ADIMI ATLAMAYIN
 
 ```bash
+npm run test          # 1030 test
 npm run build
+npm run sir-tara      # derlemede sır var mı
 npm run dagitim-paketi
+npm run surum-yedegi  # ← TAZE veritabanı + görsel paketi (bkz. adım 1)
 ```
+
+Sıra önemli: `surum-yedegi` **en sonda** çalışır, çünkü üretime gidecek
+döküm kesme anındaki veriyi taşımalı. Klasörde duran eski bir döküm
+kullanılmaz.
 
 `.output` klasörünü **doğrudan yüklemeyin.** Nitro, `.output/server/node_modules`
 içinde pnpm benzeri bir depo kuruyor: aynı paketin farklı sürümleri `.nitro/`
@@ -96,9 +103,15 @@ ve `prisma/` klasörleri YÜKLENMEYECEK.
 | `yuklemeler/` | `/home/<CPANEL_USER>/nakliye/yuklemeler` | **uygulama kökünün İÇİNDE** — bkz. aşağıdaki not |
 | `dagitim/scripts/` | `/home/<CPANEL_USER>/nakliye/scripts/` | yedek cron'u için, pakete dahil |
 | `deploy/app.mjs` | `/home/<CPANEL_USER>/nakliye/` | **yalnızca gerekirse** — bkz. adım 2 |
+| `yedekler/surum-<damga>/veritabani.sql` | phpMyAdmin → Import | kesme anında alınmış TAZE döküm |
+| `yedekler/surum-<damga>/yuklemeler.tar.gz` | `/home/<CPANEL_USER>/nakliye/` içinde açılır | `yuklemeler/` klasörünü üretir |
 
-**Yüklenmeyecekler:** `.env`, `node_modules/`, `prisma/`, `app/`, `server/`,
-`yedekler/`, `.nuxt/`, `gorsel-kaynak/`.
+**Yüklenmeyecekler:** `.env`, `.env.example`, `node_modules/`, `prisma/`,
+`app/`, `server/`, `yedekler/`, `.nuxt/`, `gorsel-kaynak/`.
+
+> `prisma/` yüklenmediği için üretimde `prisma migrate deploy`
+> **çalıştırılamaz.** Şema değişikliği döküm yoluyla taşınıyor — gerekçesi
+> ve tam yordamı adım 1'de.
 
 > `.env` özellikle yüklenmemeli. İçindeki aktif `DATABASE_URL` **local**
 > adresi (`root@localhost`). Sunucuya giderse uygulama yanlış veritabanına
@@ -107,17 +120,125 @@ ve `prisma/` klasörleri YÜKLENMEYECEK.
 
 ---
 
-## 1) Veritabanı
+## 1) Veritabanı ve yüklenen görseller
+
+> **BU ADIM DEĞİŞTİ.** Önceki sürüm "`yedekler/` klasöründeki **en güncel**
+> `.sql` dosyasını yükle" diyordu. O yönerge yanlış sonuç veriyordu:
+> klasördeki en güncel döküm M1 öncesine ait olabiliyor ve içinde
+> `Neighborhood`, `HomeSection`, `InternalPageSection` tabloları hiç
+> bulunmuyordu. Böyle bir dökümle açılan sunucu, kodun beklediği tabloları
+> bulamaz.
+>
+> Artık kural şu: **döküm kesme anında alınır.** Klasörde duran eski bir
+> dosya kullanılmaz.
+
+### 1.1 Kanonik yol — neden dump/import, neden `prisma migrate deploy` DEĞİL
+
+Şema değişikliği üretime **göç çalıştırarak taşınmıyor**, taşınamıyor:
+
+* Üretim sunucusuna `prisma/` klasörü ve `node_modules` **yüklenmiyor**
+  (bkz. adım 0b). Prisma CLI orada yok.
+* `.output` içindeki gömülü Prisma istemcisi yalnız sorgu çalıştırır;
+  `migrate deploy` komutu paketin parçası değil.
+* Sunucuda `npm install` yapılmıyor — dağıtımın hızlı ve öngörülebilir
+  kalmasının sebebi de bu.
+
+Bu bir eksiklik değil, **bilinçli bir dağıtım modeli**. Ama "üretimde
+`prisma migrate deploy` çalıştırın" diye belgelenmesi yanlış olurdu; o
+komut orada çalışmaz.
+
+Göçler **yerelde** uygulanır (`npx prisma migrate deploy`), sonuç şema +
+veri olarak dökülür ve üretime **döküm** gider:
+
+```
+YEREL                                     ÜRETİM
+─────                                     ──────
+göç uygulanır (prisma migrate deploy)
+tohum/geri doldurma çalıştırılır
+        │
+        ▼
+npm run surum-yedegi ──────────────────►  phpMyAdmin Import
+  veritabani.sql                          + yuklemeler/ klasörüne aç
+  yuklemeler.tar.gz
+  surum.json (künye)
+```
+
+**Sonuç:** sıfırdan kurulum ile mevcut veritabanını yükseltme AYNI yoldan
+gider — ikisi de tam bir döküm içe aktarır. "Boş veritabanına kurup
+tohumla" senaryosu **desteklenmiyor**: tohum betikleri Node, Prisma
+istemcisi ve `shared/` modüllerini gerektiriyor, üçü de üretim paketinde
+yok.
+
+### 1.2 Sürüm yedeği — veritabanı ve görseller AYRI ama BİRLİKTE
+
+```bash
+npm run surum-yedegi
+```
+
+`yedekler/surum-<damga>/` klasörü üretir:
+
+| Dosya | İçerik |
+|---|---|
+| `veritabani.sql` | `mysqldump --single-transaction`; tablo adları şemadaki yazıma çevrilmiş (Linux'ta büyük/küçük harf duyarlı) |
+| `yuklemeler.tar.gz` | `yuklemeler/` klasörünün tamamı |
+| `surum.json` | künye: tarih · git commit · tablo sayımları · her iki dosyanın sha256'sı |
+
+İkisi neden tek pakette: `Region.image` sütunu `/yuklemeler/…` diyor, dosya
+diskte. Yalnız veritabanını geri yüklerseniz sayfalar kırık görsele işaret
+eder; yalnız dosyaları geri yüklerseniz onları kimse göstermez. Künye
+ikisini birbirine bağlıyor — hangi dökümün hangi arşivle eşleştiği tahmin
+edilmiyor.
+
+`npm run yedekle` (günlük cron) **kalkmadı** ve yerini almıyor: o yalnız
+veritabanını döküyor ve müşteri talepleri için doğru araç. Sürüm yedeği
+yayın/geri dönüş içindir.
+
+### 1.3 Üretime kurulum
 
 1. cPanel → MySQL Databases → veritabanı ve kullanıcı oluştur, kullanıcıyı
    veritabanına **ALL PRIVILEGES** ile ekle.
-2. phpMyAdmin → Import → `yedekler/` klasöründeki **en güncel** `.sql`
-   dosyasını yükle.
+2. phpMyAdmin → Import → paketteki **`veritabani.sql`**.
+   (Büyük dosyada zaman aşımı olursa: SSH varsa
+   `mysql -u KULLANICI -p VERITABANI < veritabani.sql`.)
+3. `yuklemeler.tar.gz` dosyasını `/home/<CPANEL_USER>/nakliye/` altına yükleyip
+   aç:
+   ```bash
+   tar -xzf yuklemeler.tar.gz     # içinden `yuklemeler/` klasörü çıkar
+   ```
 
-**Doğrulama:** phpMyAdmin'de `Region` tablosunda kayıt sayısı, local'deki
-sayıyla aynı olmalı. Local sayıyı öğrenmek için:
-`node --env-file=.env scripts/kirik-gorsel-tara.mjs` çalıştırmadan önce
-panelden bakabilirsiniz.
+**Doğrulama — künyedeki sayılarla karşılaştırın.** `surum.json` içindeki
+`sayimlar` bloğu ne yazıyorsa phpMyAdmin'de o görünmeli. Bugünkü değerler:
+
+```
+Region  40   Neighborhood 473   Service 7    Post 10
+HomeSection 7 / Item 15         InternalPageSection 21 / Item 21
+FaqItem 15   ProcessStep 5      Meta 2       PolicyPage 3
+SiteSettings 1                  StoredFile 269   Testimonial 3   User 2
+yuklemeler/ → 265 dosya
+```
+
+### 1.4 Geri yüklemenin çalıştığı nasıl doğrulanır
+
+Yerelde, **ayrı bir test veritabanına**:
+
+```bash
+# kuru çalıştırma — hiçbir şey yazmaz
+npm run surum-geri-yukle -- --paket=yedekler/surum-<damga> --veritabani=nakliyeDB_test
+
+# uygula
+npm run surum-geri-yukle -- --paket=yedekler/surum-<damga>   --veritabani=nakliyeDB_test --yuklemeler=C:/temp/yuklemeler-test --uygula
+```
+
+Betik sha256'ları doğruluyor, şemayı sıfırdan kuruyor, dökümü içe
+aktarıyor ve sayımları künyeyle karşılaştırıyor. Sapma varsa sıfırdan
+farklı çıkış kodu döner.
+
+Üç çit var: hedef veritabanı **açıkça verilmek zorunda** (varsayılan yok),
+`DATABASE_URL`deki veritabanının üzerine yazmak ayrı bir `--ustune-yaz`
+onayı ister, ve `--uygula` olmadan hiçbir şey yazılmaz.
+
+Test veritabanını sonra düşürmeyi unutmayın:
+`DROP DATABASE nakliyeDB_test;`
 
 ---
 
@@ -139,6 +260,10 @@ dosyasını uygulama kökine kopyalayıp startup file olarak `app.mjs` verin.
 ---
 
 ## 3) Ortam değişkenleri
+
+Girilecek değişkenlerin tam listesi ve her birinin ne işe yaradığı
+depodaki **`.env.example`** dosyasında. Aşağıdaki blok onun üretim
+alt kümesi:
 
 Aynı ekranda "Environment variables" bölümüne:
 
@@ -270,6 +395,69 @@ canlıdaki aktif kayıtlardan kendisi seçer.
 
 ---
 
+## 7b) Geri alma (rollback)
+
+Yayın kötü giderse geri dönüş **iki ayrı parçadan** oluşuyor ve ikisi
+farklı davranıyor. Karıştırmak veri kaybettirir.
+
+### Kod
+
+`.output` bir önceki sürümle değiştirilir ve uygulama yeniden başlatılır.
+Yeni sürümü atmadan önce eskisini `.output-onceki` diye saklayın —
+yeniden derlemek dakikalar sürer, klasörü geri koymak saniyeler.
+
+```bash
+mv .output .output-bozuk && mv .output-onceki .output
+# cPanel → Setup Node.js App → Restart
+```
+
+### Veritabanı
+
+**Göçler yalnız EKLEME yapıyor** (M1–M7'nin yedisinde de `DROP` sayısı
+sıfır; ölçüldü). Somut sonucu: **eski kod yeni şemayla çalışır.** Yeni
+sütunları görmez, yok sayar. Yani çoğu geri alma senaryosunda
+**veritabanına dokunmanız gerekmez** — yalnız kodu geri alın.
+
+Veritabanını gerçekten geri almanız gereken tek durum, verinin kendisinin
+bozulmasıdır (yanlış tohum, hatalı toplu güncelleme, yanlış silme). O zaman:
+
+```bash
+npm run surum-geri-yukle -- --paket=<sürüm-paketi>   --veritabani=<üretim-veritabanı> --ustune-yaz --uygula
+```
+
+> `--ustune-yaz` bilerek zorunlu. Hedef `DATABASE_URL`deki veritabanıysa
+> betik onsuz çalışmayı reddeder.
+
+**Yıkıcı geri alma SQL'i üretilmiyor ve önerilmiyor.** "Son göçü geri al"
+diye bir komut yok; geri dönüş yolu dökümdür.
+
+### Yüklenen görseller
+
+`yuklemeler/` klasörü `.output` dışında olduğu için yeni sürüm atarken
+**silinmiyor** — normal bir kod geri almasında ona dokunulmaz.
+
+Görsel kaybı yaşandıysa (yanlışlıkla silinen dosyalar) sürüm paketindeki
+arşiv açılır:
+
+```bash
+tar -xzf yuklemeler.tar.gz -C /home/<CPANEL_USER>/nakliye/
+```
+
+### Sıra
+
+```
+1. Kodu geri al               → çoğu durumda tek gereken bu
+2. Site açılıyor mu kontrol   → node scripts/duman-testi.mjs https://…
+3. Veri bozuksa               → sürüm paketinden veritabanını geri yükle
+4. Görsel eksikse             → aynı paketten arşivi aç
+```
+
+Veritabanı ve görseller **aynı paketten** gelmeli. Farklı zamanlara ait bir
+döküm ile arşivi eşleştirmek, kayıtların var olmayan dosyalara işaret
+etmesi demektir — `surum.json` künyesi tam bunun için var.
+
+---
+
 ## 8) Yayın sonrası
 
 ### Yedekleme cron'u
@@ -350,7 +538,9 @@ DOKUNMAYIN — panelden yüklenen tüm görseller orada.
 Analytics kimliği, konum koordinatı, fiyat aralığı. Hiçbiri yayını
 engellemiyor, ilk hafta içinde panelden doldurulabilir.
 
-**Bölge açma:** 375 bölgenin 45'i aktif, 330'u pasif. Panelden il filtresiyle
-seçip kademeli açın. Aktif ettiğiniz sayfa anında yayına girer; sitemap'e
+**Bölge açma:** 40 bölge kaydı var — 39 İstanbul ilçesi (hepsi yayında) ve
+adresi `/`'a yönlendirilen özel `istanbul` kaydı. İstanbul dışı 335 eski
+kayıt kapsam kararıyla silindi (bkz. `prisma/legacy-bolge-temizligi.mjs`).
+Yayına alınacak yeni sayfa mahalle tarafında: 473 mahallenin 10'u açık. Aktif ettiğiniz sayfa anında yayına girer; sitemap'e
 girmesi **10 dakika** sürer (sitemap önbelleği `cacheMaxAgeSeconds: 600`).
 Bu bir hata değildir.

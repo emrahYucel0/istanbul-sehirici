@@ -42,7 +42,9 @@
     "ic-sayfa-icerik": "node --env-file=.env prisma/ic-sayfa-tohum.mjs",
     "legacy-emeklilik": "node --env-file=.env prisma/legacy-bolge-emeklilik.mjs",
     "iddia-temizligi": "node --env-file=.env prisma/iddia-temizligi.mjs",
-    "legacy-temizlik": "node --env-file=.env prisma/legacy-bolge-temizligi.mjs"
+    "legacy-temizlik": "node --env-file=.env prisma/legacy-bolge-temizligi.mjs",
+    "surum-yedegi": "node --env-file=.env scripts/surum-yedegi.mjs",
+    "surum-geri-yukle": "node --env-file=.env scripts/surum-geri-yukle.mjs"
   },
   "dependencies": {
     "@nuxt/image": "^2.1.0",
