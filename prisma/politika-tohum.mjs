@@ -23,10 +23,10 @@ import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { PrismaClient } from './generated/client/client.ts'
 
 const GIZLILIK = `
-<p>evenakliyatevden.com olarak kişisel verilerinizin güvenliği hususuna azami hassasiyet göstermekteyiz. Kişisel verileriniz, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK)'na uygun olarak işlenmekte ve saklanmaktadır.</p>
+<p>istanbulevenakliyat.com olarak kişisel verilerinizin güvenliği hususuna azami hassasiyet göstermekteyiz. Kişisel verileriniz, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK)'na uygun olarak işlenmekte ve saklanmaktadır.</p>
 
 <h2>1. Kişisel Verilerin İşlenmesi</h2>
-<p>KVKK uyarınca, evenakliyatevden.com ile paylaştığınız kişisel veriler, tamamen veya kısmen, otomatik olarak veya herhangi bir veri kayıt sisteminin parçası olmak kaydıyla otomatik olmayan yollarla elde edilerek, kaydedilerek, depolanarak, değiştirilerek, yeniden düzenlenerek; yani veriler üzerinde gerçekleştirilen her türlü işlem "kişisel verilerin işlenmesi" olarak kabul edilmektedir.</p>
+<p>KVKK uyarınca, istanbulevenakliyat.com ile paylaştığınız kişisel veriler, tamamen veya kısmen, otomatik olarak veya herhangi bir veri kayıt sisteminin parçası olmak kaydıyla otomatik olmayan yollarla elde edilerek, kaydedilerek, depolanarak, değiştirilerek, yeniden düzenlenerek; yani veriler üzerinde gerçekleştirilen her türlü işlem "kişisel verilerin işlenmesi" olarak kabul edilmektedir.</p>
 
 <h2>2. Kişisel Verilerin İşlenme Amaçları ve Hukuki Sebepleri</h2>
 <p>Paylaştığınız kişisel veriler, aşağıdaki amaçlarla işlenmektedir:</p>
@@ -39,20 +39,20 @@ const GIZLILIK = `
 <p>Tüm işlemler, 6698 sayılı KVKK ve ilgili ikincil düzenlemelere uygun olarak gerçekleştirilmektedir.</p>
 
 <h2>3. Üçüncü Kişilere Aktarım ve Çerez Politikası</h2>
-<p>KVKK kapsamındaki amaçlarla, evenakliyatevden.com ile paylaştığınız kişisel verileriniz, ana hissedarlarımız, hissedarlarımız, reklam verenler, yurt içi/yurt dışı iştiraklerimiz; altyapımızı kullanan üye firmalar ve hizmetimizle ilişkili diğer kişi ve kuruluşlarla paylaşılabilir.</p>
+<p>KVKK kapsamındaki amaçlarla, istanbulevenakliyat.com ile paylaştığınız kişisel verileriniz, ana hissedarlarımız, hissedarlarımız, reklam verenler, yurt içi/yurt dışı iştiraklerimiz; altyapımızı kullanan üye firmalar ve hizmetimizle ilişkili diğer kişi ve kuruluşlarla paylaşılabilir.</p>
 <p>Ayrıca, reklam amaçlı kullanılacak çerezler <a href="/cerez-politikasi">Çerez Politikası</a> kapsamında değerlendirilmekte ve bu gizlilik politikasının bir parçası olarak uygulanmaktadır.</p>
 
 <h2>4. Kişisel Verilerin Toplanma Şekli</h2>
 <p>Kişisel verileriniz aşağıdaki yollarla toplanmaktadır:</p>
 <ul>
-<li>evenakliyatevden.com internet sitesi ve mobil uygulamalarındaki formlar aracılığıyla (ad, soyad, adres, telefon, iş veya özel e-posta gibi);</li>
+<li>istanbulevenakliyat.com internet sitesi ve mobil uygulamalarındaki formlar aracılığıyla (ad, soyad, adres, telefon, iş veya özel e-posta gibi);</li>
 <li>Kullanıcı adı ve şifre ile giriş yapılan sayfalarda, tercihlerin, IP kayıtlarının, çerez verilerinin, gezinme süresi ve detaylarının toplanması;</li>
 <li>Ticari ilişki kurma, iş başvurusu, teklif verme gibi amaçlarla, kartvizit, özgeçmiş, teklif vb. yollarla sağlanan veriler;</li>
 <li>Farklı kanallardan (web siteleri, bloglar, yarışmalar, anketler, oyunlar, kampanyalar, sosyal medya) dolaylı olarak elde edilen veriler.</li>
 </ul>
 
 <h2>5. KVKK Yürürlüğe Girmeden Önce Elde Edilen Veriler</h2>
-<p>evenakliyatevden.com, KVKK'nın yürürlük tarihi olan 7 Nisan 2016'dan önce yayım hayatına başlamadığı için bu tarihten önce depolanan herhangi bir kişisel veri bulunmamaktadır.</p>
+<p>istanbulevenakliyat.com, KVKK'nın yürürlük tarihi olan 7 Nisan 2016'dan önce yayım hayatına başlamadığı için bu tarihten önce depolanan herhangi bir kişisel veri bulunmamaktadır.</p>
 
 <h2>6. Kişisel Verilerin Aktarılması</h2>
 <p>Türkiye'de işlenerek veya Türkiye dışında işlenip muhafaza edilmek üzere toplanan kişisel verileriniz, KVKK kapsamında kalmak koşuluyla, sözleşme amaçlarına uygun olarak yurtdışında bulunan ve yeterli korumanın sağlandığı ülkelere aktarılabilir.</p>
@@ -61,16 +61,16 @@ const GIZLILIK = `
 <li>Ürün ve hizmetlerin sunulması ve tanıtılması için işbirliği yapılan/hizmet alınan iş ortaklarımıza,</li>
 <li>Acil yardım çağrısı halinde konumunuzu tespit edecek yetkili mercilere,</li>
 <li>Düzenleyici ve denetleyici kurumlar, mahkeme ve icra müdürlükleri gibi resmi kuruluşlara,</li>
-<li>evenakliyatevden.com ile ticari ilişki içinde bulunan ve telefon numaranıza sahip tüzel kişilere,</li>
+<li>istanbulevenakliyat.com ile ticari ilişki içinde bulunan ve telefon numaranıza sahip tüzel kişilere,</li>
 <li>Gerekli görüldüğü durumlarda diğer üçüncü şahıslara.</li>
 </ul>
 
 <h2>7. Kişisel Verilerin Saklanması ve Korunması</h2>
-<p>evenakliyatevden.com, kişisel verilerinizin bulunduğu sistem ve veri tabanlarını, KVKK'nın 12. maddesi gereği, yetkisiz erişimleri engellemek, hukuka aykırı işlenmelerin önüne geçmek amacıyla hash, şifreleme, işlem kaydı, erişim yönetimi gibi yazılımsal tedbirlerin yanı sıra fiziksel güvenlik önlemleriyle korumaktadır.</p>
+<p>istanbulevenakliyat.com, kişisel verilerinizin bulunduğu sistem ve veri tabanlarını, KVKK'nın 12. maddesi gereği, yetkisiz erişimleri engellemek, hukuka aykırı işlenmelerin önüne geçmek amacıyla hash, şifreleme, işlem kaydı, erişim yönetimi gibi yazılımsal tedbirlerin yanı sıra fiziksel güvenlik önlemleriyle korumaktadır.</p>
 <p>Kişisel verilerin yasal olmayan yollarla elde edilmesinin tespit edilmesi durumunda, derhal yasal düzenlemelere uygun olarak Kişisel Verileri Koruma Kurulu'na bildirilecektir.</p>
 
 <h2>8. Kişisel Verilerin Güncel ve Doğru Tutulması</h2>
-<p>KVKK'nın 4. maddesi uyarınca, evenakliyatevden.com'un kişisel verilerinizi doğru ve güncel tutma yükümlülüğü bulunmaktadır. Bu kapsamda, üyelerimizin doğru ve güncel verilerini paylaşması veya web sitesi/mobil uygulama üzerinden güncellemesi gerekmektedir.</p>
+<p>KVKK'nın 4. maddesi uyarınca, istanbulevenakliyat.com'un kişisel verilerinizi doğru ve güncel tutma yükümlülüğü bulunmaktadır. Bu kapsamda, üyelerimizin doğru ve güncel verilerini paylaşması veya web sitesi/mobil uygulama üzerinden güncellemesi gerekmektedir.</p>
 
 <h2>9. 6698 Sayılı KVKK Uyarınca Kişisel Veri Sahibinin Hakları</h2>
 <p>6698 sayılı KVKK'nın 11. maddesi 07 Ekim 2016 tarihinde yürürlüğe girmiş olup, kişisel veri sahibi aşağıdaki haklara sahiptir:</p>
@@ -87,20 +87,20 @@ const GIZLILIK = `
 </ul>
 
 <h2>10. İletişim ve Başvuru Yöntemi</h2>
-<p>evenakliyatevden.com tarafından atanacak Veri Sorumlusu Temsilcisi, yasal altyapı sağlandığında Veri Sorumluları Sicilinde ve bu belgenin bulunduğu internet adresinde ilan edilecektir.</p>
-<p>Kişisel veri sahipleri, sorularını, görüşlerini veya taleplerini <a href="mailto:info@evenakliyatevden.com">info@evenakliyatevden.com</a> adresine yöneltebilirler.</p>
+<p>istanbulevenakliyat.com tarafından atanacak Veri Sorumlusu Temsilcisi, yasal altyapı sağlandığında Veri Sorumluları Sicilinde ve bu belgenin bulunduğu internet adresinde ilan edilecektir.</p>
+<p>Kişisel veri sahipleri, sorularını, görüşlerini veya taleplerini <a href="mailto:info@istanbulevenakliyat.com">info@istanbulevenakliyat.com</a> adresine yöneltebilirler.</p>
 <p>Taleplerinize, gerekçeli olmak ve 30 gün içerisinde yanıt vermek kaydıyla yazılı veya dijital ortamda olumlu/olumsuz bildirim yapılacaktır. İşlemlerin ücretsiz olması esas olmakla birlikte, maliyet gerektiren durumlarda ücret talep etme hakkı saklıdır. Bu ücretler, Kişisel Verilerin Korunması Kurulu'nun belirlediği tarife üzerinden hesaplanır.</p>
 <p>Web sayfamız, uygulamalarımız ve diğer kanallar üzerinden kişisel verilerinizi paylaşarak, Gizlilik ve Kişisel Verilerin Korunması Politikamızı kabul ettiğinizi beyan etmiş olursunuz.</p>
 `.trim()
 
 const SARTLAR = `
-<p>Bu Kullanım Şartları, evenakliyatevden.com tarafından sunulan web sitesi, mobil uygulama ve ilgili hizmetlerin ("Hizmet") kullanımını düzenler. Hizmeti kullanarak, bu Şartları ve ek politikalarımızı (<a href="/gizlilik-politikasi">Gizlilik Politikası</a>, <a href="/cerez-politikasi">Çerez Politikası</a> vb.) kabul etmiş sayılırsınız.</p>
+<p>Bu Kullanım Şartları, istanbulevenakliyat.com tarafından sunulan web sitesi, mobil uygulama ve ilgili hizmetlerin ("Hizmet") kullanımını düzenler. Hizmeti kullanarak, bu Şartları ve ek politikalarımızı (<a href="/gizlilik-politikasi">Gizlilik Politikası</a>, <a href="/cerez-politikasi">Çerez Politikası</a> vb.) kabul etmiş sayılırsınız.</p>
 
 <h2>1. Şartların Kabulü</h2>
 <ul>
 <li>Şartlar, Hizmet'e erişim sağladığınız anda yürürlüğe girer.</li>
 <li>Şartları kabul etmiyorsanız, Hizmet'i kullanamazsınız.</li>
-<li>Şirket, Şartları dilediği zaman güncelleme hakkını saklı tutar; güncellemeler web sitemizde yayınlandığında geçerli olur.</li>
+<li>Site işletmecisi, Şartları dilediği zaman güncelleme hakkını saklı tutar; güncellemeler web sitemizde yayınlandığında geçerli olur.</li>
 </ul>
 <blockquote><p><strong>Önemli Not:</strong> Bu Şartlar bir yasal sözleşme niteliğindedir ve dikkatle okunmalıdır.</p></blockquote>
 
@@ -110,7 +110,7 @@ const SARTLAR = `
 <li>Kullanıcılar, gerçek, doğru ve güncel bilgiler sağlamakla yükümlüdür (ad, soyad, e-posta vb.).</li>
 <li>Sahte veya yanıltıcı profiller oluşturmak kesinlikle yasaktır.</li>
 <li>Hesap şifrenizin güvenliğinden ve hesabınız üzerinden yapılan tüm faaliyetlerden siz sorumlusunuz.</li>
-<li>Hesabınızın yetkisiz kullanımı durumunda derhal <a href="mailto:info@evenakliyatevden.com">destek ekibimize</a> bildirimde bulunmalısınız.</li>
+<li>Hesabınızın yetkisiz kullanımı durumunda derhal <a href="mailto:info@istanbulevenakliyat.com">destek ekibimize</a> bildirimde bulunmalısınız.</li>
 <li>18 yaşından küçük kullanıcılar Hizmet'i yalnızca yasal vasi izniyle kullanabilir.</li>
 </ul>
 <h3>Hesap Oluşturma Süreci</h3>
@@ -132,15 +132,15 @@ const SARTLAR = `
 <blockquote><p><strong>Yaptırımlar:</strong> Kurallara uymayan kullanıcıların hesapları haber verilmeksizin sonlandırılabilir.</p></blockquote>
 
 <h2>4. Fikri Mülkiyet Hakları</h2>
-<p>Hizmet'teki tüm içerikler (metinler, logolar, tasarımlar, kodlar vb.) Şirket'e veya lisans verenlerine aittir ve fikri mülkiyet yasalarıyla korunmaktadır.</p>
+<p>Hizmet'teki tüm içerikler (metinler, logolar, tasarımlar, kodlar vb.) site işletmecisine veya lisans verenlerine aittir ve fikri mülkiyet yasalarıyla korunmaktadır.</p>
 <ul>
 <li>Hizmet içeriğini izinsiz kopyalamak, dağıtmak veya değiştirmek yasaktır.</li>
-<li>Kullanıcılar, Hizmet'e yükledikleri içeriklerin sahipliğini korur ancak Şirket'e bu içerikleri kullanma, saklama ve görüntüleme için sınırlı, geri alınabilir bir lisans verir.</li>
-<li>Fikri mülkiyet ihlali iddiaları için <a href="mailto:info@evenakliyatevden.com">info@evenakliyatevden.com</a> adresine bildirimde bulunabilirsiniz.</li>
+<li>Kullanıcılar, Hizmet'e yükledikleri içeriklerin sahipliğini korur ancak site işletmecisine bu içerikleri kullanma, saklama ve görüntüleme için sınırlı, geri alınabilir bir lisans verir.</li>
+<li>Fikri mülkiyet ihlali iddiaları için <a href="mailto:info@istanbulevenakliyat.com">info@istanbulevenakliyat.com</a> adresine bildirimde bulunabilirsiniz.</li>
 </ul>
 
 <h2>5. Hizmetin Sonlandırılması</h2>
-<p>Şirket, aşağıdaki durumlarda Hizmet'i sonlandırma veya hesabınızı kapatma hakkını saklı tutar:</p>
+<p>Site işletmecisi, aşağıdaki durumlarda Hizmet'i sonlandırma veya hesabınızı kapatma hakkını saklı tutar:</p>
 <ul>
 <li>Şartların ihlali durumunda.</li>
 <li>Yasal gereklilikler veya mahkeme kararı doğrultusunda.</li>
@@ -149,13 +149,13 @@ const SARTLAR = `
 <p>Kullanıcılar da diledikleri zaman hesaplarını kapatma hakkına sahiptir.</p>
 
 <h2>6. Sorumluluğun Sınırlandırılması</h2>
-<p>Hizmet "olduğu gibi" sağlanır ve Şirket, aşağıdaki durumlar için sorumluluk kabul etmez:</p>
+<p>Hizmet "olduğu gibi" sağlanır ve site işletmecisi, aşağıdaki durumlar için sorumluluk kabul etmez:</p>
 <ul>
 <li>Hizmet'teki kesintiler, hatalar veya veri kayıpları.</li>
 <li>Kullanıcıların Hizmet'i yanlış veya yasa dışı kullanımı.</li>
 <li>Üçüncü taraf sistemlerinden kaynaklanan sorunlar (ör. internet sağlayıcıları).</li>
 </ul>
-<p>Şirket'in toplam sorumluluğu, kullanıcı tarafından son 12 ayda ödenen ücretlerle sınırlıdır.</p>
+<p>Site işletmecisinin toplam sorumluluğu, kullanıcı tarafından son 12 ayda ödenen ücretlerle sınırlıdır.</p>
 
 <h2>7. Geçerli Hukuk ve Uyuşmazlık Çözümü</h2>
 <p>Bu Şartlar, Türkiye Cumhuriyeti yasalarına tabidir. Uyuşmazlık durumunda aşağıdaki kurallar geçerlidir:</p>
@@ -165,7 +165,7 @@ const SARTLAR = `
 </ul>
 
 <h2>İletişim</h2>
-<p>Sorularınız için: <a href="mailto:info@evenakliyatevden.com">info@evenakliyatevden.com</a></p>
+<p>Sorularınız için: <a href="mailto:info@istanbulevenakliyat.com">info@istanbulevenakliyat.com</a></p>
 `.trim()
 
 const CEREZ = `
