@@ -109,10 +109,14 @@ const yakalar = computed(() => [
   color: rgb(var(--c-ink));
 }
 
+/* DİKEY RİTİM — perde yapısına göre, simetrik değil.
+   Kapsam PERDE 01'in kapanış bloğu: Hero sahnesiyle AYNI perdede olduğu
+   için üstteki dikiş dar; altındaki dikiş perde 02'ye geçtiği için geniş.
+   (Kademelerin gerekçesi: assets/css/sahne.css → `--sahne-perde`.) */
 .kp-alan {
   max-width: var(--container-wide);
   margin: 0 auto;
-  padding: clamp(3.5rem, 2.25rem + 4vw, 6.5rem) clamp(1.25rem, 0.5rem + 3vw, 4rem);
+  padding: var(--sahne-dikey-dar) var(--sahne-pad) var(--sahne-perde);
 }
 
 .kp-h2 {
@@ -240,34 +244,55 @@ const yakalar = computed(() => [
     align-items: start;
   }
 
-  .kp-h2 {
-    grid-column: 2 / 9;
-    grid-row: 1;
-  }
-  /* Sayım BAŞLIKLA AYNI HİZADA DEĞİL: kendi baseline'ında, aşağıdan
-     başlıyor. Bölümün ikinci ekseni bu. */
+  /* ═══════════════════════════════════════════════════════════════════
+     EKSEN TERSİNE ÇEVRİLDİ — ARDIŞIK TEKRARI KIRMAK İÇİN
+     ───────────────────────────────────────────────────────────────────
+     Kapsam iki yapışkan sahnenin (Hero 01, Üç İstanbul 02) ARASINDA
+     duruyor ve önceki yerleşimi ikisiyle aynı cümleyi kuruyordu:
+     büyük tipografi solda (kol 2'den), ikincil blok sağda. Üç ekran
+     üst üste aynı silüet — sayfanın ritmi değil, tek şablonun tekrarı.
+
+     Yeni yerleşim aynı içerikle ekseni TERSİNE çeviriyor: okuma SAYIMLA
+     başlıyor (kol 1, A ekseni), başlık ve destek cümlesi sağ tarafta
+     kuruluyor. Perde 01'in kapanışı bir CÜMLE değil bir ÖLÇÜ ile
+     açılıyor; 25 + 14 = 39 zaten bölümün asıl argümanı.
+
+     Örnekler bandı kol 1'den başlayarak tam genişlik: üstteki iki
+     sütunlu baştan sonra üçüncü bir kayıt, aynı sol eksene oturuyor.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* Sayım artık bölümün GİRİŞİ. Küçük üst payı, mono etiketin optik
+     olarak H2'nin ilk satırına oturması için. */
   .kp-sayim {
-    grid-column: 10 / 13;
+    grid-column: 1 / 4;
+    grid-row: 1 / 3;
+    margin-top: 0.5rem;
+  }
+
+  .kp-h2 {
+    grid-column: 5 / 12;
     grid-row: 1;
-    margin-top: clamp(1rem, 0.5rem + 1vw, 2rem);
+    max-width: 18ch;
   }
 
   .kp-not {
-    grid-column: 2 / 7;
+    grid-column: 5 / 11;
     grid-row: 2;
   }
 
   /* Ledger yatay çizgilerle bölüyordu; burada bölen şey yalnız BOŞLUK.
      Aynı çizgi dili, farklı eksen — ve burada çizgi hiç yok. */
   .kp-ornek {
-    grid-column: 2 / 12;
+    grid-column: 1 / 13;
     grid-row: 3;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: clamp(1.5rem, 0.5rem + 2.5vw, 3.5rem);
   }
 
   .kp-bag {
-    grid-column: 2 / 7;
+    /* Çıkış da A ekseninde: sol kolon sayımla açıyor, bağlantıyla
+       kapatıyor. */
+    grid-column: 1 / 5;
     grid-row: 4;
     /* Izgara öğesi varsayılan olarak sütunu doldurur ve alt çizgi metnin
        değil hücrenin genişliğinde çizilirdi (ölçüldü: 540px). Alt çizgi

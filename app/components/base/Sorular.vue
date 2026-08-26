@@ -85,10 +85,12 @@ const liste = computed(() => props.sorular.items || [])
   color: rgb(var(--c-ink));
 }
 
+/* Perde 04'ün ikinci bloğu: üstte blok dikişi, altta dar pay —
+   Yorumlar da aynı perdede. (bkz. assets/css/sahne.css) */
 .sr-alan {
   max-width: var(--container-wide);
   margin: 0 auto;
-  padding: clamp(3.5rem, 2.25rem + 4vw, 6.5rem) clamp(1.25rem, 0.5rem + 3vw, 4rem);
+  padding: var(--sahne-dikey) var(--sahne-pad) var(--sahne-dikey-dar);
 }
 
 .sr-h2 {

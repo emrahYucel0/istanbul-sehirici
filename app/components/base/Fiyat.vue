@@ -81,8 +81,10 @@ const faktorler = computed(() =>
   background: rgb(var(--c-paper));
   color: rgb(var(--c-ink));
 }
+/* Perde 04'ün AÇILIŞ bloğu. Üstteki perde dikişini Hizmetler'in geniş alt
+   payı taşıyor; burada tekrar etmiyor. (bkz. assets/css/sahne.css) */
 .fy {
-  padding-block: var(--sahne-dikey);
+  padding-block: var(--sahne-dikey-dar);
 }
 .fy-kunye {
   margin-bottom: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
@@ -133,7 +135,23 @@ const faktorler = computed(() =>
 }
 
 /* ===========================================================================
-   MASAÜSTÜ — etiket A ekseninde, açıklama B ekseninde
+   MASAÜSTÜ — İKİ SÜTUNLU FAKTÖR ALANI
+   ---------------------------------------------------------------------------
+   ÖNCEKİ YERLEŞİM NEDEN DEĞİŞTİ (ölçüldü, 1440)
+
+   Fiyat, Hizmetler defteri ile Sorular listesinin ARASINDA duruyor ve
+   üçü de aynı silüeti çiziyordu: tam genişlik, satır satır, solda kısa
+   etiket sağda açıklama. Üst üste üç ekran aynı tabakayı tekrarlıyordu.
+   Üstelik faktörler tek sütunda dizilince sağ üçte bir tamamen boş
+   kalıyordu (~450×900px kâğıt).
+
+   Yeni yerleşim aynı içerikle silüeti değiştiriyor: beş faktör İKİ
+   SÜTUNLU bir alana giriyor, blok kısalıyor ve boş kalan kâğıt kullanıma
+   dönüyor. Açıklama çizgisi kaldırılmadı — Fiyat'ın kendi aracı o —
+   yalnız artık kendi yarım kolonunun sağ kenarına kadar uzanıyor.
+
+   Başlık kol 2 yerine KOL 1'den başlıyor: Hero ve Üç İstanbul kol 2'den
+   başlıyor; perde 04 sayfanın kenarından açılarak onlardan ayrılıyor.
    ======================================================================== */
 @media (min-width: 1024px) {
   .fy {
@@ -142,38 +160,44 @@ const faktorler = computed(() =>
     column-gap: var(--sahne-kolon-arasi);
     row-gap: 0;
   }
-  .fy-kunye { grid-column: 1 / 8; }
+  .fy-kunye { grid-column: 1 / 13; }
   .fy-ust {
-    grid-column: 2 / 8;
+    grid-column: 1 / 13;
     display: contents;
   }
-  .fy-h2 { grid-column: 2 / 8; }
-  .fy-giris { grid-column: 9 / 13; margin-top: 0.5rem; max-width: none; }
+  .fy-h2 { grid-column: 1 / 6; }
+  .fy-giris { grid-column: 7 / 12; margin-top: 0.5rem; max-width: none; }
 
-  .fy-liste { grid-column: 1 / 13; }
-  .fy-oge {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--sahne-kolon-arasi);
-    align-items: start;
+  .fy-liste {
+    grid-column: 1 / 13;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(2rem, 0.5rem + 4vw, 5rem);
+    row-gap: var(--sahne-dikey-dar);
   }
-  /* Etiket A ekseninden başlıyor; açıklama çizgisi kolonu boydan boya
-     geçip metnin başladığı yere kadar uzanıyor — gerçek annotation. */
+  /* Öge artık yatay değil DİKEY kuruluyor: etiket + çizgi üstte, açıklama
+     altta. Yatay kurgu tam genişlikte anlamlıydı; yarım kolonda metni
+     ~20 karaktere düşürüyordu. */
+  .fy-oge {
+    display: block;
+  }
   .fy-etiket {
-    grid-column: 1 / 5;
     gap: 0;
   }
+  /* Çizgi etiketten sonra başlayıp yarım kolonun sağ kenarına kadar
+     gidiyor: hâlâ gerçek bir annotation, yalnız ölçtüğü alan değişti. */
   .fy-cizgi {
     width: auto;
     flex: 1 1 auto;
     margin-left: 1rem;
-    margin-right: 1rem;
     order: 1;
   }
   .fy-metin {
-    grid-column: 5 / 12;
-    margin-top: 0;
+    margin-top: 0.625rem;
+    max-width: none;
   }
-  .fy-kapanis { grid-column: 2 / 9; }
+  /* Beş faktör iki sütunda 3 satır yapıyor; son satırın sağ hücresi boş
+     kalıyor. Kapanış cümlesi o boşluğun altına, sağ yarıya iniyor —
+     alan tek parça okunuyor. */
+  .fy-kapanis { grid-column: 7 / 13; }
 }
 </style>

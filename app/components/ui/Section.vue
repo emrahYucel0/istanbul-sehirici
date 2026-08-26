@@ -81,8 +81,16 @@ const widthClass = computed(
 </script>
 
 <template>
+  <!-- `data-yuzey` TONDAN TÜRETİLİYOR, elle yazılmıyor.
+       `brand` tonunun zemini `--c-brand-900` (34 32 29) — pratikte
+       mürekkep. Yapışkan bar kâğıt zeminli olduğu için bu bölümlerin
+       üstüne geldiğinde açık bir şerit olarak kalıyordu; bar niteliği
+       görüp tonunu alıyor (bkz. components/fixed/Navbar.vue).
+       Ana sayfanın Kapanış bloğu aynı niteliği kendi şablonunda
+       taşıyor — o bileşen ui-section kullanmıyor. -->
   <section
     :class="[toneClass, sizeClass]"
+    :data-yuzey="tone === 'brand' ? 'koyu' : undefined"
     :aria-labelledby="labelledby"
     :aria-label="labelledby ? undefined : label"
   >

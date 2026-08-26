@@ -89,10 +89,91 @@ watch(menuAcik, (acik) => {
 })
 // Sayfa değişince menü kapanmalı; aksi hâlde yeni sayfa menü açık açılıyor.
 watch(() => route.path, () => menuKapat())
+
+// ---- Koyu yüzey uyumu ----------------------------------------------------
+/**
+ * BAR, ALTINDAKİ ZEMİNİN TONUNU ALIYOR.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * ÖLÇÜLEN SORUN
+ * Ana sayfanın kapanış bloğu sayfanın tek koyu yüzeyi. Bar kâğıt zeminli
+ * ve yapışkan; o bloğun üstüne geldiğinde koyu alanın tepesinde açık bir
+ * şerit olarak duruyordu. Barın alt kenarındaki 1px'lik ayraç da koyu
+ * zeminde görünmüyor, yani bar "sınır" olma işini bırakıp yapıştırılmış
+ * bir yamaya dönüşüyordu.
+ *
+ * ÇÖZÜM NEDEN KAYDIRMA DİNLEYİCİSİ DEĞİL
+ * `IntersectionObserver`ın kökü barın kendi bandına kırpılıyor
+ * (`rootMargin` ile alt kenar yukarı çekiliyor). Tarayıcı kesişimi kendi
+ * hesaplıyor; her kaydırma karesinde JS çalışmıyor.
+ *
+ * BU BİR HAREKET DEĞİL, BİR DURUM. Konum, boyut, opaklık değişmiyor;
+ * yalnız renk. Süre `.nb-link` hover'ıyla aynı sözlükte (0,15s).
+ *
+ * SÖZLEŞME: izlenen şey sınıf değil `[data-yuzey="koyu"]` niteliği. Koyu
+ * bir bölüm ekleyen herkes yalnız o niteliği koyar; burada liste tutulmuyor.
+ */
+const koyuYuzey = ref(false)
+/** Mobil panel açıkken zemin kâğıt: bar da kâğıt kalmalı. */
+const koyuBar = computed(() => koyuYuzey.value && !menuAcik.value)
+
+if (import.meta.client) {
+  let gozlemci = null
+  const kesisenler = new Set()
+
+  const barYuksekligi = () => {
+    const d = getComputedStyle(document.documentElement).getPropertyValue('--sahne-navbar')
+    return Number.parseFloat(d) || 56
+  }
+
+  const kur = () => {
+    gozlemci?.disconnect()
+    kesisenler.clear()
+    koyuYuzey.value = false
+    const yuzeyler = document.querySelectorAll('[data-yuzey="koyu"]')
+    if (!yuzeyler.length) return
+    // Kök barın bandına kırpılıyor: alt kenar viewport'un tepesinden
+    // bar yüksekliği kadar aşağıda.
+    const kirp = Math.max(0, window.innerHeight - barYuksekligi())
+    gozlemci = new IntersectionObserver(
+      (kayitlar) => {
+        for (const k of kayitlar) {
+          if (k.isIntersecting) kesisenler.add(k.target)
+          else kesisenler.delete(k.target)
+        }
+        koyuYuzey.value = kesisenler.size > 0
+      },
+      { rootMargin: `0px 0px -${kirp}px 0px`, threshold: 0 }
+    )
+    for (const y of yuzeyler) gozlemci.observe(y)
+  }
+
+  // Pencere yüksekliği değişince kırpma payı da değişiyor.
+  let zamanlayici = null
+  const yenidenKur = () => {
+    clearTimeout(zamanlayici)
+    zamanlayici = setTimeout(kur, 150)
+  }
+
+  onMounted(() => {
+    kur()
+    window.addEventListener('resize', yenidenKur)
+  })
+  // Yeni sayfanın koyu yüzeyleri farklı; DOM oturduktan sonra yeniden kur.
+  watch(() => route.path, () => nextTick(kur))
+  onUnmounted(() => {
+    clearTimeout(zamanlayici)
+    gozlemci?.disconnect()
+    window.removeEventListener('resize', yenidenKur)
+  })
+}
 </script>
 
 <template>
-  <header class="nb">
+  <!-- `on-dark` boşuna eklenmiyor: global odak halkası mürekkep renginde
+       ve koyu zeminde görünmüyor; bu yardımcı sınıf onu kâğıda çeviriyor
+       (bkz. assets/css/main.css). -->
+  <header class="nb" :class="{ 'nb--koyu on-dark': koyuBar }">
     <div class="nb-bar">
       <NuxtLink to="/" class="nb-marka">{{ brandLabel }}</NuxtLink>
 
@@ -166,6 +247,39 @@ watch(() => route.path, () => menuKapat())
   z-index: 50;
   background: rgb(var(--c-paper));
   border-bottom: 1px solid rgb(var(--c-rule));
+  /* Ton geçişi: konum/boyut/opaklık değişmiyor, yalnız renk. Süre
+     `.nb-link` hover'ıyla aynı — barın kendi sözlüğü. */
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out;
+}
+
+/* ---- KOYU YÜZEY TONU ----------------------------------------------------
+   `[data-yuzey="koyu"]` bir bölüm barın bandına girdiğinde açılıyor
+   (mantık script bloğunda). Yeni renk ÜRETİLMEDİ: aynı aile, roller
+   yer değiştiriyor. Kâğıt zemindeki `--c-signal` bakırı burada
+   KULLANILMIYOR — mürekkep üzerinde metin olarak 2,76:1 veriyor, AA'yı
+   geçmiyor (ölçüldü). Koyu blokta vurguyu zaten `.cl-birincil`in bakır
+   alt çizgisi taşıyor. */
+.nb--koyu {
+  background: rgb(var(--c-ink));
+  border-bottom-color: rgb(var(--c-paper) / 0.18);
+}
+.nb--koyu .nb-marka {
+  color: rgb(var(--c-paper));
+}
+.nb--koyu .nb-tel,
+.nb--koyu .nb-tel-etiket,
+.nb--koyu .nb-tel-no {
+  color: rgb(var(--c-paper));
+}
+.nb--koyu .nb-wp {
+  color: rgb(var(--c-rule));
+}
+.nb--koyu .nb-wp:hover {
+  color: rgb(var(--c-paper));
+}
+.nb--koyu .nb-acma {
+  color: rgb(var(--c-paper));
+  border-bottom-color: rgb(var(--c-paper) / 0.45);
 }
 
 /* BAR, SAYFANIN KENDİ IZGARASINDA.
@@ -348,6 +462,23 @@ watch(() => route.path, () => menuKapat())
   .nb-tel-etiket {
     font-size: 0.625rem;
     color: rgb(var(--c-ink-soft));
+  }
+
+  /* Koyu ton — masaüstü menüsü.
+     Blok BİLEREK medya sorgusunun içinde ve en sonda: yukarıdaki
+     `.nb-link:hover` ve `.nb-link--aktif` kuralları da (0,2,0)/(0,1,0)
+     özgüllükte; kaynak sırası olmadan aktif bağlantı koyu zeminde
+     ayırt edilemiyordu. */
+  .nb--koyu .nb-link {
+    color: rgb(var(--c-rule));
+  }
+  .nb--koyu .nb-link:hover,
+  .nb--koyu .nb-link--aktif {
+    color: rgb(var(--c-paper));
+  }
+  .nb--koyu .nb-tel-etiket {
+    /* Kâğıdın soluk hâli; mürekkep üzerinde ikincil ama okunur. */
+    color: rgb(var(--c-rule));
   }
 }
 </style>

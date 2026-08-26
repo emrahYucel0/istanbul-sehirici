@@ -280,6 +280,33 @@ const kapanisSatirlari = computed(() => String(props.bolum.closing || '').split(
         view-timeline-axis: block;
       }
       .hr {
+        /* ALAN YÜKSEKLİĞİ — KOMPOZİSYONUN ÖLÇÜSÜ, EKRANIN DEĞİL.
+           ───────────────────────────────────────────────────────────────
+           Eskiden ikinci satır `minmax(0, 1fr)` idi: metin kolonu ve
+           fotoğraf yapışkan pencerenin TAMAMINI kaplıyordu. Ölçüldü:
+
+             1920×1080   kolon 853px · birinci durağın içeriği 360px
+                         → künye altı ile H1 üstü arasında 278px boşluk
+             1440×900    kolon 690px · içerik 290px → 230px boşluk
+
+           Yani kolon, en uzun durağın (dört koşul, ~375px) iki katından
+           fazlaydı ve içerik ortalandığı için boşluk altta ve üstte
+           eşit paylaşılıyordu. Ortalanmış bir bloğun etrafındaki boşluk
+           kolon kısalmadan azalmaz — bu yüzden çözüm kolonu ölçmek.
+
+           Fotoğraf da aynı sorunun ikinci yüzüydü: kaynak 4:3 yatay
+           (1448×1086) ama kutu 528×904'e, yani 0,58 dikey orana
+           geriliyordu; kamyon küçülüyor, kadrajın üstü gökyüzü altı
+           asfalt kalıyordu. Alan ölçülünce oran ~0,8–1,0'a dönüyor ve
+           kare kendi konusuna oturuyor. ASSET BÜYÜTÜLMEDİ; kutu küçüldü,
+           `sizes` aynı kaldı.
+
+           Değer iki kaynaklı: `28rem` en uzun durağın taban ölçüsü,
+           `58vh` uzun ekranlarda kompozisyonun ekranla birlikte
+           büyümesi. `min(100%, …)` kısa ekranda pencereyi aşmayı
+           engelliyor. */
+        --hr-alan: min(100%, max(28rem, 58vh));
+
         position: sticky;
         top: var(--sahne-navbar);
         height: calc(100vh - var(--sahne-navbar));
@@ -287,7 +314,7 @@ const kapanisSatirlari = computed(() => String(props.bolum.closing || '').split(
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--sahne-kolon-arasi);
-        grid-template-rows: auto minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, var(--hr-alan));
         row-gap: clamp(1rem, 0.5rem + 1.5vw, 2rem);
         align-content: center;
       }
@@ -327,11 +354,19 @@ const kapanisSatirlari = computed(() => String(props.bolum.closing || '').split(
         view-timeline-name: none;
       }
 
-      /* --- Metin rayı: üç durak, pencereden uzun yuvalar -------------- */
+      /* --- Metin rayı: üç durak, pencereden uzun yuvalar --------------
+         YUVA ORANI 160% → 200%.
+         Sözleşme md.5'in kuralı: geçiş ortasında iki durak birden
+         görünmemeli, yani  yuva − içerik ≥ pencere.  Pencere artık
+         ölçülü (`--hr-alan`) ve kısaldı; oran 160%'ta kalsaydı kural
+         kısa pencerelerde bozulurdu:
+           pencere 495 · en uzun içerik 366  →  gereken oran %174
+           pencere 422 · içerik 351          →  gereken oran %183
+         200% her ölçüde payı koruyor (495'te 624px, 422'de 493px pay). */
       .hr-ray {
         gap: 0;
         height: 100%;
-        grid-auto-rows: 160%;
+        grid-auto-rows: 200%;
         animation-name: hr-ray-kay;
       }
       .hr-durak {
@@ -340,12 +375,14 @@ const kapanisSatirlari = computed(() => String(props.bolum.closing || '').split(
         flex-direction: column;
         justify-content: center;
       }
-      /* `otur` — üç durak, aralarda geçiş. Başlangıç -%30: yuvanın
-         pencereden taşan payının yarısı ((160-100)/2). */
+      /* `otur` — üç durak, aralarda geçiş. Başlangıç -%50: yuvanın
+         pencereden taşan payının yarısı ((200-100)/2). Adım -%200:
+         tam bir yuva. Yüzdeler rayın KENDİ kutusuna göre çözülüyor
+         (kutu = pencere yüksekliği; satırlar taşıyor). */
       @keyframes hr-ray-kay {
-        0%, 24%   { transform: translateY(-30%); }
-        38%, 62%  { transform: translateY(-190%); }
-        76%, 100% { transform: translateY(-350%); }
+        0%, 24%   { transform: translateY(-50%); }
+        38%, 62%  { transform: translateY(-250%); }
+        76%, 100% { transform: translateY(-450%); }
       }
 
       /* --- `kadraj`: fotoğraf ölçüm bandına iniyor -------------------- */

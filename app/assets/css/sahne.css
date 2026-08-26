@@ -37,6 +37,28 @@
   --sahne-dikey-genis: clamp(6rem, 2rem + 12vw, 13rem);
   --sahne-dikey-dar: clamp(2rem, 1.5rem + 1.5vw, 3rem);
 
+  /* PERDE DİKİŞİ — anlatının dört perdesi ARASINDAKİ boşluk.
+     ─────────────────────────────────────────────────────────────────────
+     NEDEN AYRI BİR KADEME GEREKTİ (ölçüldü, 1440×900)
+
+     Önce bütün durağan bölümler `--sahne-dikey`i hem üstte hem altta
+     kullanıyordu. Sonuç: her dikiş 93,6 + 93,6 = 187px ve HEPSİ AYNI.
+     Yani ekranda "04 / KARAR VERMEDEN ÖNCE" künyesiyle başlayan yeni bir
+     perde ile aynı perdenin iki bloğu arasındaki boşluk birbirinden
+     ayırt edilemiyordu; boşluk bilgi taşımıyor, yalnız yer kaplıyordu.
+
+     Perde sınırları zaten TİPOGRAFİK olarak duyuruluyor (01 / 02 / 03 / 04
+     künyeleri). Dikey ritim de aynı şeyi söylemeli. Kademeler artık:
+
+       ~94px   perde İÇİNDE, sahne ile onun kapanış bloğu arasında
+       ~139px  perde içinde iki ayrı blok arasında
+       ~181px  PERDE DİKİŞİ  (01→02, 03→04)
+       ~250px  finale (Kapanış)
+
+     Değer `--sahne-dikey` ile `--sahne-dikey-genis` ARASINDA bilerek:
+     perde sınırı bir bölüm sınırından güçlü, sayfanın kapanışından zayıf. */
+  --sahne-perde: clamp(5rem, 3rem + 6vw, 9rem);
+
   /* YAPIŞKAN BARIN YÜKSEKLİĞİ — TEK KAYNAK.
      Hem Navbar'ın kendi yüksekliği hem mobil menü panelinin üst kenarı hem
      de yapışkan sahnelerin ofseti bunu okuyor (bkz. HAREKET-SOZLESMESI

@@ -59,7 +59,15 @@ const telHref = computed(() => `tel:${String(phone.value).replace(/[^\d+]/g, '')
 </script>
 
 <template>
-  <section class="cl" aria-labelledby="kapanis-baslik">
+  <!-- `data-yuzey="koyu"` DEKORATİF DEĞİL, BİR SÖZLEŞME.
+       Yapışkan bar kâğıt zeminli; bu blok sayfanın tek koyu yüzeyi.
+       Bar bu bloğun üstüne geldiğinde açık bir şerit olarak kalıyordu
+       (ölçüldü: 1440'ta sayfa dibinde barın altındaki 1px'lik ayraç
+       çizgisi koyu zeminde tamamen kayboluyor, bar yapışmış bir yama
+       gibi duruyor). Navbar bu niteliği taşıyan bölümleri izliyor ve
+       tonunu ona göre alıyor — bkz. components/fixed/Navbar.vue.
+       Gelecekte başka bir koyu bölüm eklenirse yalnız bu nitelik yeter. -->
+  <section class="cl" data-yuzey="koyu" aria-labelledby="kapanis-baslik">
     <div class="cl-alan">
 <h2 id="kapanis-baslik" class="cl-h2">{{ bolum.heading }}</h2>
 
@@ -85,10 +93,17 @@ const telHref = computed(() => `tel:${String(phone.value).replace(/[^\d+]/g, '')
   color: rgb(var(--c-paper));
 }
 
+/* İÇ PAY ÖLÇÜLDÜ VE KÜÇÜLTÜLDÜ.
+   1440'ta pay 204,8px'ti; blok 531px, içindeki içerik (iki satır başlık +
+   iki bağlantı) 120px. Yani koyu yüzeyin dörtte üçü boştu ve kapanış
+   "büyük" değil "seyrek" okunuyordu. Perde ölçüsüne indirilince blok
+   ~389px'e iniyor, içerik oranı 0,23'ten 0,31'e çıkıyor.
+   Zemin değişiminin kendisi zaten sayfanın en güçlü ayracı; onu bir de
+   200px kâğıtla duyurmak gerekmiyor. */
 .cl-alan {
   max-width: var(--container-wide);
   margin: 0 auto;
-  padding: clamp(6rem, 2rem + 12vw, 13rem) clamp(1.25rem, 0.5rem + 3vw, 4rem);
+  padding: var(--sahne-perde) var(--sahne-pad);
 }
 
 .cl-h2 {

@@ -120,7 +120,10 @@ const satirlar = computed(() =>
 
   max-width: var(--container-wide);
   margin: 0 auto;
-  padding: clamp(3.5rem, 2.25rem + 4vw, 6.5rem) clamp(1.25rem, 0.5rem + 3vw, 4rem);
+  /* Hizmet defteri PERDE 03'ün kapanış bloğu: Süreç sahnesiyle aynı
+     perdede olduğu için üst dikiş dar, perde 04'e geçtiği için alt dikiş
+     geniş. (bkz. assets/css/sahne.css → `--sahne-perde`) */
+  padding: var(--sahne-dikey-dar) var(--sahne-pad) var(--sahne-perde);
 }
 
 .lg-h2 {
