@@ -78,8 +78,14 @@ const kapanisSatirlari = computed(() => String(props.bolum.closing || '').split(
           <div class="hr-durak">
             <h1 id="hero-baslik" class="hr-h1">{{ bolum.heading }}</h1>
             <p class="hr-satir tip-govde">{{ bolum.lead }}</p>
+            <!-- AĞIRLIK FARKI GERÇEK: telefon BİRİNCİL (2px bakır çizgi,
+                 büyük punto), form bağlantısı SAKİN kademede. İkisi de
+                 1rem/550 + 1px çizgiyken hangisinin asıl eylem olduğu
+                 okunmuyordu. Telefon birincil çünkü bu işte dönüşüm
+                 telefonla oluyor; barın "ARA" eylemi de aynı numarayı
+                 gösteriyor. (Kademeler: assets/css/sahne.css) -->
             <div class="hr-eylem">
-              <a :href="telHref" class="op-bag hr-bag--tel">{{ phone || 'Telefonla ara' }}</a>
+              <a :href="telHref" class="op-eylem hr-bag--tel">{{ phone || 'Telefonla ara' }}</a>
               <NuxtLink to="/iletisim" class="op-bag op-bag--sakin">{{ bolum.ctaLabel }}</NuxtLink>
             </div>
           </div>
@@ -203,8 +209,16 @@ const kapanisSatirlari = computed(() => String(props.bolum.closing || '').split(
 .hr-eylem {
   display: flex;
   flex-wrap: wrap;
+  /* İki eylem farklı puntoda; hizalanan şey METİN değil ÇİZGİ. Alt
+     çizgiler tek yatay hatta oturuyor, ağırlık farkı buna rağmen
+     okunuyor. (`.op-eylem` kendi `align-self`ini veriyor, burada
+     kapsayıcı ezmek zorunda.) */
+  align-items: flex-end;
   gap: 1rem 2rem;
   margin-top: 1.75rem;
+}
+.hr-eylem > * {
+  align-self: flex-end;
 }
 .hr-bag--tel {
   font-family: var(--f-mono);

@@ -107,7 +107,7 @@ const gonder = async () => {
     -->
     <output class="yf-durum" aria-live="polite">{{ durum }}</output>
 
-    <button v-if="!acik" type="button" class="yf-ac" @click="acik = true">
+    <button v-if="!acik" type="button" class="op-eylem yf-ac" @click="acik = true">
       {{ davet }}
     </button>
 
@@ -177,7 +177,7 @@ const gonder = async () => {
       </div>
 
       <div class="yf-dugmeler">
-        <button type="submit" class="yf-gonder" :disabled="gonderiliyor">
+        <button type="submit" class="op-eylem yf-gonder" :disabled="gonderiliyor">
           {{ gonderiliyor ? 'Gönderiliyor…' : 'Yorumu gönder' }}
         </button>
         <button type="button" class="yf-vazgec" @click="acik = false">Vazgeç</button>
@@ -208,30 +208,10 @@ const gonder = async () => {
   max-width: 52ch;
 }
 
-/* Açma eylemi: Kapanış'taki birincil eylemin sakin hâli — çerçeve yok,
-   altı çizgili. Hap düğme sayfanın hiçbir yerinde yok. */
-.yf-ac {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  font-weight: 600;
-  letter-spacing: -0.012em;
-  color: rgb(var(--c-ink));
-  background: none;
-  border: 0;
-  border-bottom: 2px solid rgb(var(--c-signal));
-  padding: 0 0 0.375rem;
-  cursor: pointer;
-  transition: border-color 0.15s ease-out;
-}
-.yf-ac:hover {
-  border-bottom-color: rgb(var(--c-ink));
-}
-.yf-ac:focus-visible {
-  outline: 2px solid rgb(var(--c-ink));
-  outline-offset: 6px;
-}
+/* Açma ve gönderme eylemleri BİRİNCİL kademede ve görünümlerini artık
+   `.op-eylem` kütüğünden alıyor (assets/css/sahne.css). Buradaki iki
+   blok, Kapanış'taki `.cl-birincil` ile birebir aynı kuralları
+   tekrarlıyordu. Kalan scoped kurallar yalnız YERLEŞİM. */
 
 .yf-govde {
   max-width: 40rem;
@@ -268,10 +248,12 @@ const gonder = async () => {
   color: rgb(var(--c-ink-soft));
 }
 
+/* `--c-measure` kâğıt üzerinde 3,51:1 — çizgi rengi, METİN rengi değil.
+   Bu iki parça da metin, `--c-ink-soft` ile 6,54:1. */
 .yf-ops {
   text-transform: none;
   letter-spacing: 0.04em;
-  color: rgb(var(--c-measure));
+  color: rgb(var(--c-ink-soft));
 }
 
 .yf-puan {
@@ -335,10 +317,12 @@ const gonder = async () => {
   margin-bottom: 1.75rem;
 }
 
-/* Alanlar kutu değil: yalnız alt çizgi. Odakta çizgi bakıra dönüyor. */
+/* Alanlar kutu değil: yalnız alt çizgi. Odakta çizgi bakıra dönüyor.
+   Dolgu 0,5rem → 0,625rem: 1,5 satır (24px) + 2 × 10px = 44px, yani
+   dokunma hedefi eşiğine çıkıyor (ölçüldü: eskisi 40px'ti). */
 .yf-girdi {
   width: 100%;
-  padding: 0.5rem 0;
+  padding: 0.625rem 0;
   border: 0;
   border-bottom: 1px solid rgb(var(--c-measure));
   border-radius: 0;
@@ -353,7 +337,7 @@ const gonder = async () => {
   outline: none;
   border-bottom-color: rgb(var(--c-signal));
   border-bottom-width: 2px;
-  padding-bottom: calc(0.5rem - 1px);
+  padding-bottom: calc(0.625rem - 1px);
 }
 .yf-girdi:focus-visible {
   outline: 2px solid rgb(var(--c-ink));
@@ -371,7 +355,7 @@ const gonder = async () => {
   font-family: var(--f-mono);
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
-  color: rgb(var(--c-measure));
+  color: rgb(var(--c-ink-soft));
 }
 
 .yf-kupu {
@@ -389,29 +373,9 @@ const gonder = async () => {
   margin-top: 2rem;
 }
 
-.yf-gonder {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: -0.012em;
-  color: rgb(var(--c-ink));
-  background: none;
-  border: 0;
-  border-bottom: 2px solid rgb(var(--c-signal));
-  padding: 0 0 0.375rem;
-  cursor: pointer;
-  transition: border-color 0.15s ease-out, opacity 0.15s ease-out;
-}
-.yf-gonder:hover:not(:disabled) {
-  border-bottom-color: rgb(var(--c-ink));
-}
-.yf-gonder:disabled {
-  opacity: 0.55;
-  cursor: progress;
-}
-.yf-gonder:focus-visible,
+/* Beklerken opaklık DÜŞÜRÜLMÜYOR: `.op-eylem:disabled` metni ikincil
+   mürekkebe, çizgiyi ölçü tonuna alıyor — kontrast AA'nın altına
+   inmiyor (6,54:1). Eski `opacity: 0.55` metni 3,1:1'e düşürüyordu. */
 .yf-vazgec:focus-visible {
   outline: 2px solid rgb(var(--c-ink));
   outline-offset: 6px;

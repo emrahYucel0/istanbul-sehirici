@@ -300,9 +300,26 @@ defineProps({
             <ErrorMessage id="note-error" name="note" as="p" class="if-hata" />
           </div>
 
-          <button type="submit" class="if-gonder" :disabled="isSubmitting">
-            {{ isSubmitting ? 'GÖNDERİLİYOR…' : 'GÖNDER' }}
-          </button>
+          <!-- DOLGULU DÜĞME KALKTI. Sitedeki tek dolu düğme buydu; her
+               yerde eylem = metin + alt çizgi. Şimdi birincil kademeyi
+               kütükten alıyor (`.op-eylem`, assets/css/sahne.css).
+               Metin de versal mono değil, diğer birincil eylemlerle aynı
+               dilde.
+
+               BEKLEME DURUMU: metin değişiyor ve düğmenin altındaki ölçü
+               çizgisi soldan sağa taranıyor. Yapısal bir işaret — dönen
+               ikon ya da opaklık değil; hareket azaltma isteyen kullanıcı
+               aynı çizgiyi DURAĞAN ve tam boyda görüyor, yani bilgi
+               kaybolmuyor.
+
+               METİN AYNEN KORUNDU ("GÖNDER" / "GÖNDERİLİYOR…"): bu tur
+               etkileşim turu, kopya turu değil. -->
+          <div class="if-gonder-kap">
+            <button type="submit" class="op-eylem if-gonder" :disabled="isSubmitting">
+              {{ isSubmitting ? 'GÖNDERİLİYOR…' : 'GÖNDER' }}
+            </button>
+            <span v-if="isSubmitting" class="if-tarama" aria-hidden="true" />
+          </div>
 
           <p class="if-kvkk tip-not">
             Formu göndererek paylaştığınız bilgilerin
@@ -379,64 +396,85 @@ defineProps({
   flex-direction: column;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   ALANLAR ARTIK KUTU DEĞİL ÇİZGİ
+   -----------------------------------------------------------------------
+   Bu form sitedeki TEK kutulu yüzeydi: dört alanın dördü de 1px'lik tam
+   çerçeve + dolgulu zemin taşıyordu. Oysa aynı sitedeki yorum formu
+   (`base/ReviewForm.vue`) zaten çizgi tabanlı ve o dil onaylıydı —
+   ortada iki ayrı form dili vardı. Burada YENİ bir dil kurulmadı;
+   mevcut ve onaylı olana hizalandı:
+
+     etiket      mono · versal · küçük punto      (künye katmanı)
+     alan        yalnız ALT çizgi, zemin yok
+     odak        çizgi 2px bakıra dönüyor + odak halkası
+     hata        çizgi 2px `--c-signal-deep` + alan altında METİN
+
+   Renk tek başına anlam taşımıyor (WCAG 1.4.1): hata durumunda hem
+   çizgi kalınlaşıyor hem yazı çıkıyor hem `aria-invalid` duyuruluyor.
+   ═══════════════════════════════════════════════════════════════════════ */
 .if-etiket {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: rgb(var(--c-ink));
-}
-/* Zorunluluk yalnız `*` ile anlatılmıyor: hem yazıyla görünüyor hem de
-   alanda `required` niteliği duruyor. */
-.if-zorunlu {
+  margin-bottom: 0.5rem;
   font-family: var(--f-mono);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  font-weight: 500;
+  color: rgb(var(--c-ink-soft));
+}
+/* Zorunluluk yalnız `*` ile anlatılmıyor: hem yazıyla görünüyor hem de
+   alanda `required` niteliği duruyor. Etiket de mono olduğu için ayrım
+   artık versallikten değil — bu parça küçük harfte kalıyor. */
+.if-zorunlu {
+  text-transform: none;
+  letter-spacing: 0.04em;
   color: rgb(var(--c-ink-soft));
 }
 
 .if-yardim {
-  margin: 0.375rem 0 0;
+  margin: 0 0 0.5rem;
   color: rgb(var(--c-ink-soft));
 }
 
 .if-girdi {
   width: 100%;
-  margin-top: 0.5rem;
-  padding: 0.75rem 0.875rem;
-  /* Köşe yarıçapı ve gölge YOK — V2 dilinde kutu değil, çizgi. */
-  border: 1px solid rgb(var(--c-rule));
+  /* Dokunma hedefi: 1,5 satır (24px) + 2 × 0,625rem = 44px. */
+  padding: 0.625rem 0;
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-measure));
   border-radius: 0;
-  background: rgb(var(--c-paper));
+  background: none;
   color: rgb(var(--c-ink));
   /* 16 px altı, mobil Safari'de odakta sayfayı yakınlaştırıyor. */
   font-size: 1rem;
   font-family: inherit;
   line-height: 1.5;
-  /* Dokunma hedefi: 0,75rem × 2 + 1,5 satır ≈ 48 px. */
-  min-height: 48px;
   transition: border-color 0.15s ease-out;
 }
 .if-girdi:hover {
-  border-color: rgb(var(--c-measure));
+  border-bottom-color: rgb(var(--c-ink));
 }
+/* Çizgi kalınlaşırken dolgu 1px azalıyor: alan YERİNDEN OYNAMIYOR. */
 .if-girdi:focus {
-  outline: 2px solid rgb(var(--c-ink));
-  outline-offset: 2px;
-  border-color: rgb(var(--c-ink));
+  outline: none;
+  border-bottom-color: rgb(var(--c-signal));
+  border-bottom-width: 2px;
+  padding-bottom: calc(0.625rem - 1px);
 }
-/* Hata yalnız renkle anlatılmıyor: alanın altında metin de var
-   (WCAG 1.4.1). Çizgi kalınlaşıyor ki renk körlüğünde de fark edilsin. */
+.if-girdi:focus-visible {
+  outline: 2px solid rgb(var(--c-ink));
+  outline-offset: 4px;
+}
 .if-girdi.is-hatali {
-  border-width: 2px;
-  border-color: rgb(var(--c-signal-deep));
+  border-bottom-width: 2px;
+  border-bottom-color: rgb(var(--c-signal-deep));
+  padding-bottom: calc(0.625rem - 1px);
 }
 .if-metin {
   resize: vertical;
-  min-height: 9rem;
+  min-height: 8rem;
 }
 
 .if-hata {
@@ -445,31 +483,38 @@ defineProps({
   color: rgb(var(--c-signal-deep));
 }
 
-.if-gonder {
+/* Görünüm `.op-eylem` kütüğünden; burada yalnız yerleşim ve versal
+   metnin harf aralığı. */
+.if-gonder-kap {
   align-self: flex-start;
-  min-height: 52px;
-  padding: 0.875rem 2.25rem;
-  border: 0;
-  border-radius: 0;
-  background: rgb(var(--c-ink));
-  color: rgb(var(--c-paper));
-  font-family: var(--f-mono);
-  font-size: 0.8125rem;
-  letter-spacing: 0.12em;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.15s ease-out;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
 }
-.if-gonder:hover:not(:disabled) {
-  background: rgb(var(--c-signal-deep));
+.if-gonder {
+  letter-spacing: 0.04em;
 }
-.if-gonder:focus-visible {
-  outline: 2px solid rgb(var(--c-ink));
-  outline-offset: 4px;
+
+/* BEKLEME TARAMASI — konum ve boyut değişmiyor, yalnız bir ölçü çizgisi
+   düğmenin altında soldan sağa geçiyor. Bakır çizginin 3px altında;
+   ikisi üst üste binmiyor. */
+.if-tarama {
+  display: block;
+  height: 1px;
+  margin-top: 3px;
+  background: rgb(var(--c-measure));
+  transform-origin: left center;
 }
-.if-gonder:disabled {
-  cursor: progress;
-  background: rgb(var(--c-ink-soft));
+@media (prefers-reduced-motion: no-preference) {
+  .if-tarama {
+    animation: if-tara 1.1s ease-in-out infinite;
+  }
+  @keyframes if-tara {
+    0%   { transform: scaleX(0); transform-origin: left center; }
+    50%  { transform: scaleX(1); transform-origin: left center; }
+    51%  { transform: scaleX(1); transform-origin: right center; }
+    100% { transform: scaleX(0); transform-origin: right center; }
+  }
 }
 
 .if-kvkk {
@@ -491,15 +536,16 @@ defineProps({
 }
 
 /* ---- Durum bildirimleri ------------------------------------------------ */
+/* Kutu değil, İŞARETLİ CÜMLE: yalnız solda bir çizgi. Dolgulu zemin
+   (`--c-paper-sunken`) kalktı — yorum formundaki durum satırıyla
+   (`.yf-durum`) aynı dil; iki formda iki farklı bildirim biçimi vardı. */
 .if-durum {
   margin-bottom: clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
-  padding: clamp(0.875rem, 0.75rem + 0.5vw, 1.125rem);
-  /* Kutu değil, işaretli blok: solda kalın bir çizgi. */
-  border-left: 3px solid rgb(var(--c-ink));
-  background: rgb(var(--c-paper-sunken));
+  padding: 0.875rem 0 0.875rem 1rem;
+  border-left: 2px solid rgb(var(--c-ink));
 }
 .if-durum--ok {
-  border-left-color: rgb(var(--c-ink));
+  border-left-color: rgb(var(--c-signal));
 }
 .if-durum--hata {
   border-left-color: rgb(var(--c-signal-deep));

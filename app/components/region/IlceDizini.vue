@@ -222,9 +222,14 @@ const olcumler = computed(() => [
 }
 /* Ayraç ÜSTTE değil ALTTA: yaka başlığının kalın çizgisi zaten ilk satırın
    üstünü kapatıyor, üstte olsaydı iki çizgi üst üste binerdi. */
+/* YOĞUNLUK ÖLÇÜLDÜ. 39 satır tek sütunda dizildiği için satır başına
+   düşen her piksel 39 kez tekrarlıyor; dizin 1440'ta 3.2 metreye yakın
+   sürüyordu. Dikey pay ve ad/durum arası daraltıldı — punto ve dokunma
+   hedefi (aşağıdaki `::after` kaplaması) korunarak. */
 .id-satir {
+  position: relative;
   border-bottom: 1px solid rgb(var(--c-rule));
-  padding-block: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
+  padding-block: clamp(0.875rem, 0.75rem + 0.45vw, 1.1875rem);
 }
 
 /* `--c-measure` METİN OLARAK KULLANILMIYOR: kâğıt üzerinde 3,51:1 veriyor,
@@ -245,13 +250,21 @@ const olcumler = computed(() => [
 }
 /* Bağlantı ilçe ADININ KENDİSİ — ok işareti değil, ok işaretleri hem küçük
    hem de ekran okuyucuda adsız kalıyor. */
+/* KALICI ALT ÇİZGİ KALKTI.
+   39 satırın 39'u da durağan hâlde altı çizili duruyordu; dizin bir
+   bağlantı listesinden çok işaretlenmiş bir metne benziyordu ve sayfanın
+   en yoğun görsel gürültüsü buydu. Hizmetler defteri (`.lg-bag`) aynı
+   soruyu zaten çözmüştü: durağan hâlde işaret yok, ayrım imleç ve klavye
+   ile geliyor. Dizin o dile hizalandı.
+
+   İŞARET RENKTEN İBARET DEĞİL (WCAG 1.4.1): hover/odakta hem adın altı
+   çiziliyor hem satır numarası bakıra dönüyor — iki ayrı sinyal. Satırın
+   tamamı zaten tıklanabilir (aşağıdaki kaplama), yani hedefi bulmak için
+   çizgiye ihtiyaç yok. */
 .id-bag {
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px solid rgb(var(--c-measure));
-  transition:
-    border-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
+  transition: color var(--dur-fast) var(--ease-out);
 }
 /*
   DOKUNMA HEDEFİ — ölçüldü: ad metni 390px'te 71×21px, yani parmak için
@@ -259,18 +272,33 @@ const olcumler = computed(() => [
   iç boşluk vermek çizgiyi metinden koparıyordu.
 
   Çözüm: bağlantının tıklanabilir alanı, adın ve mahalle sayısının
-  bulunduğu hücrenin TAMAMINA yayılıyor (yaklaşık 55px yüksekliğinde tam
-  genişlikte bir alan) — görünüş hiç değişmeden. Kaplama yalnız hücreyi
-  örtüyor, mahalle örneklerini değil: o metin seçilebilir kalıyor.
-  Pasif satırlarda `.id-bag` hiç basılmadığı için kaplama da yok.
+  bulunduğu hücrenin TAMAMINA yayılıyor — görünüş hiç değişmeden. Kaplama
+  yalnız hücreyi örtüyor, mahalle örneklerini değil: o metin seçilebilir
+  kalıyor. Pasif satırlarda `.id-bag` hiç basılmadığı için kaplama da yok.
+
+  DİKEY PAY EKLENDİ (`inset: -0.5rem 0`). Hücrenin kendisi her satırda
+  55px değil: 39 ilçenin 36'sında "N MAHALLE SAYFASI" satırı hiç
+  basılmıyor ve hücre yalnız addan ibaret kalıyor. Ölçüldü — kaplamasız
+  hâlde 1440'ta 34px, 390'da 28px. 8px'lik pay ikisini de 44px'in üstüne
+  çıkarıyor ve satırın kendi dikey payının (≥14px) içinde kaldığı için
+  komşu satırın metnini örtmüyor.
 */
 .id-bag::after {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -0.5rem 0;
 }
-.id-bag:hover {
-  border-bottom-color: rgb(var(--c-ink));
+.id-bag:hover,
+.id-bag:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+/* İkinci sinyal: satırın numarası. `:has()` desteklenmeyen bir tarayıcıda
+   yalnız bu vurgu düşer, alt çizgi yerinde kalır. */
+.id-satir:has(.id-bag:hover) .id-no,
+.id-satir:has(.id-bag:focus-visible) .id-no {
+  color: rgb(var(--c-signal));
 }
 .id-bag:focus-visible {
   outline: 2px solid rgb(var(--c-ink));
@@ -278,7 +306,7 @@ const olcumler = computed(() => [
 }
 
 .id-durum {
-  margin: 0.5rem 0 0;
+  margin: 0.25rem 0 0;
   display: flex;
   flex-wrap: wrap;
   gap: 0 0.75rem;
@@ -296,7 +324,7 @@ const olcumler = computed(() => [
 }
 
 .id-mahalle {
-  margin: 0.75rem 0 0;
+  margin: 0.5rem 0 0;
   color: rgb(var(--c-ink-soft));
 }
 

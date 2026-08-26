@@ -178,6 +178,8 @@ const satirlar = computed(() =>
 }
 
 .lg-ad {
+  /* Bağlantının dokunma hedefi kaplaması buradan konumlanıyor. */
+  position: relative;
   grid-column: 2;
   grid-row: 1;
   font-size: var(--lg-ad-punto);
@@ -202,6 +204,27 @@ const satirlar = computed(() =>
   text-decoration: underline;
   text-underline-offset: 0.18em;
   text-decoration-thickness: 1px;
+}
+
+/*
+  DOKUNMA HEDEFİ — ölçüldü: 390px'te hizmet adı satırı 22px yüksekliğinde,
+  yani parmak için gereken 44px'in yarısı. Yedi hizmetin yedisi de bu
+  durumdaydı.
+
+  Bağlantıya dikey iç boşluk vermek çözüm değil: `inline` bir öğede dikey
+  dolgu satır kutusunu büyütmüyor, üstelik hover'daki alt çizgiyi metinden
+  koparıyor. Bunun yerine tıklanabilir alan görünmez bir kaplamayla
+  büyütülüyor — /bolgelerimiz dizinindeki (`region/IlceDizini.vue`) çözümün
+  aynısı, GÖRÜNÜŞ HİÇ DEĞİŞMEDEN.
+
+  Pay asimetrik (üstte 16px, altta 6px): 16 + 22 + 6 = 44px. Aşağıya 12px
+  taşırsa satırın altındaki açıklama metninin (`.lg-acik`, 8px boşlukla
+  başlıyor) üstünü örter ve o metin seçilemez olurdu.
+*/
+.lg-bag::after {
+  content: '';
+  position: absolute;
+  inset: -1rem 0 -0.375rem 0;
 }
 
 .lg-acik {

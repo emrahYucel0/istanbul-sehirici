@@ -10,8 +10,11 @@
  * dördüncü görevini üstleniyor: AÇIKLAMA ÇİZGİSİ — etiketi değerine
  * bağlayan annotation.
  *
- * HAREKET YOK. Sayfanın motion yoğunluğu finale doğru düşüyor; üç
- * signature 01–03 bölümlerinde harcandı. Burası okunacak yer.
+ * HAREKET: YALNIZ AÇIKLAMA ÇİZGİSİ. Sayfanın motion yoğunluğu finale
+ * doğru düşüyor; üç signature 01–03 bölümlerinde harcandı. Burası
+ * okunacak yer — metin hiç kıpırdamıyor. Kıpırdayan tek şey bölümün
+ * kendi yapısal aracı, yani annotation çizgisinin çizilmesi
+ * (gerekçe ve ölçüler stil bloğunun sonunda).
  *
  * DOĞRULANMAMIŞ İDDİA YOK: "ücretsiz keşif", "sabit fiyat garantisi",
  * "gizli ücret yok", "en uygun fiyat" — hiçbiri geçmiyor. Metin yalnız
@@ -199,5 +202,47 @@ const faktorler = computed(() =>
      kalıyor. Kapanış cümlesi o boşluğun altına, sağ yarıya iniyor —
      alan tek parça okunuyor. */
   .fy-kapanis { grid-column: 7 / 13; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   AÇIKLAMA ÇİZGİSİ ÇİZİLİYOR — YAPIYI ANLATAN TEK HAREKET
+   -----------------------------------------------------------------------
+   Bu bölümün kendi aracı, etiketi metne bağlayan yatay çizgi. Hareket de
+   o aracın kendisi: satır görünüme girerken çizgi SOLDAN SAĞA çiziliyor,
+   yani "bu etiket şu açıklamaya bağlanıyor" cümlesi gözün önünde
+   kuruluyor.
+
+   NE YAPILMADI
+     · başlık/gövde reveal yok — metin hiç kıpırdamıyor
+     · opaklık kullanılmıyor (md.2)
+     · her satır için gecikme/stagger yok; her çizgi KENDİ satırının
+       görünürlüğüne bağlı, sıralı bir gösteri değil
+
+   MOTOR: native CSS scroll-driven animation. Zaman çizelgesi her `.fy-oge`
+   kendi görünürlüğü; JS, kaydırma dinleyicisi ve kütüphane yok.
+
+   YEDEK: `@supports` desteklemeyen tarayıcı ve hareket azaltma isteyen
+   kullanıcı çizgiyi TAM BOYDA ve durağan görüyor — yapı kaybolmuyor.
+   ═══════════════════════════════════════════════════════════════════════ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .fy-oge {
+      view-timeline-name: --fy-oge;
+      view-timeline-axis: block;
+    }
+    .fy-cizgi {
+      transform-origin: left center;
+      animation-name: fy-ciz;
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --fy-oge;
+      animation-range: entry 75% entry 100%;
+    }
+    @keyframes fy-ciz {
+      0%   { transform: scaleX(0); }
+      100% { transform: scaleX(1); }
+    }
+  }
 }
 </style>

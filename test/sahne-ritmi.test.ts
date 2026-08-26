@@ -65,7 +65,7 @@ describe('durağan bölümler payını kütükten alıyor', () => {
     ['Kapsam', '.kp-alan'],
     ['Hizmetler', '.lg-alan'],
     ['Fiyat', '.fy'],
-    ['Sorular', '.sr-alan'],
+    ['Sorular', '.ss-alan'],
     ['Yorumlar', '.yr-alan'],
     ['Kapanis', '.cl-alan'],
   ]

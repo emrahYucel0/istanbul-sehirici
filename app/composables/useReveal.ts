@@ -57,13 +57,18 @@ export interface RevealOptions {
   rootMargin?: string
   /**
    * true ise animasyon yalnızca ilk görünmede oynar ve eleman bir daha
-   * gizlenmez. VARSAYILAN false: kullanıcı yukarı kaydırıp bölüme geri
-   * döndüğünde animasyon tekrar oynar.
+   * gizlenmez.
    *
-   * Geri dönüşte tekrar oynatmanın maliyeti, öğenin ekrandan tamamen
-   * çıkınca yeniden gizlenmesidir. `threshold` düşük tutulduğu için bu
-   * gizlenme öğe zaten görüş alanının dışındayken olur, ekranda titreme
-   * yaratmaz.
+   * VARSAYILAN ARTIK true (eskiden false idi).
+   *
+   * Eski gerekçe "geri dönüşte tekrar oynatmanın maliyeti düşük" diyordu
+   * ama ölçüldüğünde maliyet düşük değil, YANLIŞ: bir belirme animasyonu
+   * "bu içerik yeni geldi" der. Kullanıcı yukarı kaydırıp geri döndüğünde
+   * içerik yeni değil, zaten okunmuş; tekrar oynayan animasyon sayfayı
+   * huzursuz gösteriyor ve okuma yerini kaybettiriyor.
+   *
+   * `once: false` isteyen çağıran açıkça verebilir; varsayılan davranış
+   * artık bir kez.
    */
   once?: boolean
 }
@@ -72,7 +77,7 @@ export function useReveal(
   root: Ref<HTMLElement | { $el?: HTMLElement } | null>,
   options: RevealOptions = {}
 ) {
-  const { threshold = 0.12, rootMargin = '0px 0px -8% 0px', once = false } = options
+  const { threshold = 0.12, rootMargin = '0px 0px -8% 0px', once = true } = options
 
   /** ref bir bileşene verilmişse DOM elemanı $el altındadır; sarmalayıcı
    *  bir <div> eklemek zorunda kalmadan doğrudan <ui-section> gibi

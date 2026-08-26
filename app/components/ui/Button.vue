@@ -3,14 +3,20 @@
  * UiButton — tek buton bileşeni; bağlantı mı düğme mi olduğuna prop'lardan
  * karar verir.
  *
- *   <ui-button to="/iletisim" variant="primary" magnetic>Teklif Al</ui-button>
+ *   <ui-button to="/iletisim" variant="primary">Teklif Al</ui-button>
  *   <ui-button href="tel:+90…" variant="outline" icon="phone">Ara</ui-button>
  *   <ui-button @click="submit" :loading="pending">Gönder</ui-button>
  *
  * Neden ayrı bir component: görsel stil zaten `.btn` sınıflarında (bkz.
  * assets/css/main.css) ama doğru ETİKETİ seçmek (NuxtLink / <a> / <button>),
- * ikon yerleşimi, yükleniyor durumu ve manyetik etkileşim her kullanımda
- * elle tekrarlanıyordu.
+ * ikon yerleşimi ve yükleniyor durumu her kullanımda elle tekrarlanıyordu.
+ *
+ * `magnetic` PROP'U KALDIRILDI. İmleci takip eden düğme, V2'nin ölçülü
+ * editoryal dilinde karşılığı olmayan bir efektti; sayfadaki hiçbir eylem
+ * artık düğme kutusu bile değil (bkz. `.op-eylem`, assets/css/sahne.css).
+ * Tek kullanıcısı bu bileşendi, bileşenin tek kullanıcısı da render
+ * edilmeyen `base/FinalCta.vue`; yani efekt hiçbir canlı sayfada
+ * çalışmıyordu. `composables/useMagnetic.ts` bu turda silindi.
  *
  * Erişilebilirlik: yükleniyor durumunda `aria-busy` ve `disabled`; dış
  * bağlantılarda otomatik `rel="noopener noreferrer"`.
@@ -38,7 +44,6 @@ const props = defineProps({
   /** UiIcon adı — metnin sağına yerleşir, hover'da hafifçe ilerler */
   trailingIcon: { type: String, default: '' },
   /** İmleci hafifçe takip etsin (yalnızca fare + reduced-motion kapalıysa) */
-  magnetic: { type: Boolean, default: false },
   block: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
@@ -98,10 +103,6 @@ const attrs = computed(() => {
     'aria-busy': props.loading ? 'true' : undefined,
   }
 })
-
-// Manyetik etkileşim yalnızca istendiğinde bağlanır; composable kendi
-// içinde pointer/reduced-motion kontrollerini de yapar.
-if (props.magnetic) useMagnetic(el, { strength: 6 })
 </script>
 
 <template>

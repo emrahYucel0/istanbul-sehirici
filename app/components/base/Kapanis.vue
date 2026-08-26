@@ -72,7 +72,9 @@ const telHref = computed(() => `tel:${String(phone.value).replace(/[^\d+]/g, '')
 <h2 id="kapanis-baslik" class="cl-h2">{{ bolum.heading }}</h2>
 
       <div class="cl-eylem">
-        <NuxtLink to="/iletisim" class="cl-birincil">{{ bolum.ctaLabel }}</NuxtLink>
+        <!-- Birincil ağırlık artık kütükten (`.op-eylem`); burada ikinci
+             kez tanımlanmıyor. Koyu yüzey için `--ters`. -->
+        <NuxtLink to="/iletisim" class="op-eylem op-eylem--ters">{{ bolum.ctaLabel }}</NuxtLink>
         <!-- Telefon girilmemişse hiç render edilmiyor: çalışmayan bir
              `tel:` bağlantısı göstermek yanlış bilgi olurdu. -->
         <a
@@ -125,29 +127,10 @@ const telHref = computed(() => `tel:${String(phone.value).replace(/[^\d+]/g, '')
   gap: clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
 }
 
-/* Birincil eylem: güç KUTUDAN değil ölçek, yerleşim ve kontrasttan geliyor.
-   Hero'nun çerçevesiz/altı çizgili dili, kapanışa yakışacak kadar büyük. */
-.cl-birincil {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
-  font-weight: 600;
-  letter-spacing: -0.012em;
-  color: rgb(var(--c-paper));
-  text-decoration: none;
-  border-bottom: 2px solid rgb(var(--c-signal));
-  padding-bottom: 0.375rem;
-  transition: border-color 0.15s ease-out, color 0.15s ease-out;
-}
-.cl-birincil:hover {
-  color: rgb(var(--c-paper));
-  border-bottom-color: rgb(var(--c-paper));
-}
-.cl-birincil:focus-visible {
-  outline: 2px solid rgb(var(--c-paper));
-  outline-offset: 6px;
-}
+/* BİRİNCİL EYLEM BURADA TANIMLANMIYOR.
+   `.cl-birincil` ile yorum formundaki `.yf-gonder` aynı görünümü iki ayrı
+   yerde yazıyordu; ikisi de `.op-eylem` kütüğüne taşındı
+   (assets/css/sahne.css). Koyu yüzey farkı `--ters` değişkesinde. */
 
 /* Telefon: karakter katmanının doğal yeri — gerçek teknik veri.
    Dekoratif mono etiket değil, numaranın kendisi. */

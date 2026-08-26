@@ -105,3 +105,36 @@
   --olcu-govde: 58ch;
   --olcu-dar: 46ch;
 }
+
+/* =============================================================================
+   ÇOK BÜYÜK EKRANLAR — KOMPOZİSYON BÜYÜR, IZGARA AÇILMAZ
+   -----------------------------------------------------------------------------
+   ÖLÇÜLEN SORUN
+   İçerik kabı sabit 1440px (`--container-wide: 90rem`). 3440px'lik bir
+   ekranda bu, kenarlarda 1000'er piksel boş kâğıt ve ekranın ortasında
+   duran küçük bir ada demekti; tipografi de fiziksel olarak küçücük
+   kalıyordu. 2560'ta durum daha ılımlı ama aynı yönde (560'ar piksel).
+
+   NEDEN KABI GENİŞLETMEK ÇÖZÜM DEĞİL
+   Kap 2500px'e açılsaydı ızgara gerilir, sütunlar birbirinden kopar ve
+   satır uzunlukları okunabilir bandın dışına çıkardı. Sorun kabın dar
+   olması değil, KOMPOZİSYONUN EKRANA GÖRE KÜÇÜK KALMASI.
+
+   ÇÖZÜM: kök punto ekranla birlikte büyüyor. Kap `rem` cinsinden
+   tanımlı olduğu için kompozisyonun tamamı — kap, ızgara boşlukları,
+   dikey ritim ve tipografi — aynı oranda ölçekleniyor. Metin blokları
+   `ch` ile sınırlı olduğundan SATIR UZUNLUĞU KARAKTER OLARAK DEĞİŞMİYOR;
+   yalnız fiziksel olarak büyüyor. Yani tasarım aynı, uzaktan bakılıyor.
+
+   ERİŞİLEBİLİRLİK: alt sınır `1rem`, yani KULLANICININ tarayıcı punto
+   tercihi. Sabit px yazılsaydı büyük punto ayarlamış kullanıcının tercihi
+   ezilirdi (WCAG 1.4.4). Üst sınır da kullanıcının tabanına göreli.
+
+   1920 ve altında değer TAM OLARAK 1rem — bu bandın altında hiçbir şey
+   değişmiyor, sorgu zaten 1920'den başlıyor.
+   ========================================================================== */
+@media (min-width: 1920px) {
+  :root {
+    font-size: clamp(1rem, 0.34rem + 0.55vw, 1.25rem);
+  }
+}
