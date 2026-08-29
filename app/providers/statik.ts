@@ -53,7 +53,10 @@ const uygunGenislik = (mevcut: number[], istenen?: number): number | null => {
  *   - kaydedilen adres EN BÜYÜK varyantı gösteriyor.
  * Dolayısıyla adresteki sayı bir tavan; onun altındaki basamaklar garanti var.
  */
-const YUKLEME_MERDIVENI = [320, 640, 1024, 2048]
+// 2560 basamağı, tavanı 3840 olan yüklemeler için gerekli: yoksa 2048'den
+// doğrudan 3840'a atlanır. Tavanı 2560 olan eski dosyalarda davranış aynı —
+// `filter(g < tavan)` onu zaten eliyor, tavan da sonda ekleniyor.
+const YUKLEME_MERDIVENI = [320, 640, 1024, 2048, 2560]
 const YUKLEME_DESENI = /^(.*)-(\d+)\.webp$/i
 
 export default defineProvider({

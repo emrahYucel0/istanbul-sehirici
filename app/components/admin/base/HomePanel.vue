@@ -216,8 +216,17 @@ onMounted(async () => {
             </label>
 
             <template v-if="gorselMi(alan)">
+              <!--
+                TAVAN YALNIZ HERO'DA 3840. Hero görseli `100vw` tam sahne
+                basılıyor; 2560'lık kaynak 3440'ta 1.34×, 3840'ta 1.50×
+                büyütülüyor ve ince çizgili teknik çizimde kenar keskinliği
+                gözle görülür kayboluyor (ölçüldü). Diğer bölümlerde görsel
+                hiçbir zaman tam sahne olmuyor; onlar 2560'ta kalıyor —
+                gereksiz disk ve bant harcamasın.
+              -->
               <FileUploader
                 :label="`${tanim(bolum.sectionKey).ad} görseli yükle`"
+                :azami-genislik="bolum.sectionKey === 'hero' ? 3840 : 2560"
                 @file-uploaded="(url) => (bolum[alan] = url)"
               />
               <input

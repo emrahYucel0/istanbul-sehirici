@@ -48,11 +48,12 @@ describe('eylem ağırlıkları tek kütükte', () => {
     expect(sahne).toContain('border-bottom: 2px solid rgb(var(--c-signal))')
   })
 
+  // Hero LİSTEDE DEĞİL: ilk sahnede eylem satırı yok (bkz. bir alttaki
+  // iddia). Kütük yalnız eylem GÖSTEREN yüzeyleri bağlar.
   it.each([
     ['Kapanis', kapanis],
     ['ReviewForm', yorum],
     ['TalepFormu', talep],
-    ['Hero', hero],
   ])('%s birincil eylemi kütükten alıyor', (_ad, kaynak) => {
     expect(kaynak).toContain('op-eylem')
   })
@@ -62,12 +63,17 @@ describe('eylem ağırlıkları tek kütükte', () => {
     expect(kodu(yorum)).not.toMatch(/\.yf-gonder\s*\{[^}]*border-bottom:\s*2px/)
   })
 
-  it('Hero iki eyleminin ağırlıkları FARKLI', () => {
-    const blok = kodu(hero).slice(kodu(hero).indexOf('hr-eylem'))
-    // Telefon birincil, form bağlantısı sakin kademede.
-    expect(hero).toMatch(/class="op-eylem hr-bag--tel"/)
-    expect(hero).toMatch(/class="op-bag op-bag--sakin"/)
-    expect(blok.length).toBeGreaterThan(0)
+  it('Hero eylemsiz — ilk sahnede rakip çağrı yok', () => {
+    // Hero'da bir zamanlar iki eylem vardı (birincil + telefon). Yeni
+    // koreografide ilk sahne yalnız görsel + başlık + açıklama; eylem
+    // hiyerarşisi Kapanış'ta ve formlarda kuruluyor. Kritik olan şu:
+    // Hero'ya EYLEM GERİ GELİRSE kütükten (`op-eylem` / `op-bag`) gelmeli,
+    // bileşen içinde yeni bir düğme dili doğmamalı.
+    const k = kodu(hero)
+    expect(k).not.toMatch(/<button/)
+    expect(k).not.toMatch(/<NuxtLink/)
+    expect(k).not.toMatch(/\.jr-eylem\s*\{/)
+    expect(k).not.toMatch(/\.jr-bag[^\s]*\s*\{/)
   })
 
   it('bekleme durumu opaklıkla anlatılmıyor — kontrast AA altına düşmesin', () => {
@@ -169,11 +175,17 @@ describe('Sorular sürekli hattı', () => {
     expect(kodu(sorular)).toContain('.ss-oge::before')
   })
 
-  it('sol eksen masaüstünde yapışkan', () => {
+  // Seçici `.ss-eksen` → `.ss-pafta` olarak yeniden adlandırıldı (bölüm
+  // dışarıda yeniden düzenlendi). Aranan davranış AYNI: sol sütun masaüstünde
+  // yapışkan. Test gevşetilmedi, adı güncellendi.
+  it('sol pafta masaüstünde yapışkan', () => {
     const k = kodu(sorular)
-    const i = k.indexOf('.ss-eksen {')
-    expect(i).toBeGreaterThan(-1)
-    expect(k.slice(i, k.indexOf('}', i))).toContain('position: sticky')
+    // `.ss-pafta` iki kez tanımlı: taban kural ve masaüstü kuralı. Aranan
+    // şey "en az bir tanesinde `position: sticky` var" — hangisinde
+    // olduğunu bir alttaki test (yalnız masaüstünde) zaten bağlıyor.
+    const govdeler = [...k.matchAll(/\.ss-pafta\s*\{([^}]*)\}/g)].map((m) => m[1])
+    expect(govdeler.length).toBeGreaterThan(0)
+    expect(govdeler.some((g) => g.includes('position: sticky'))).toBe(true)
   })
 
   it('mobilde omurga YOK — pin ve koreografi yok', () => {
@@ -204,10 +216,14 @@ describe('Sorular sürekli hattı', () => {
 // ═══════════════════════════════════════════ FİYAT: YAPISAL HAREKET
 
 describe('Fiyat hareketi yapıyı anlatıyor', () => {
-  it('kıpırdayan tek şey açıklama çizgisi', () => {
+  // Bölüm dışarıda yeniden düzenlendi: tek `fy-ciz` yerine üç yapısal
+  // hareket var (bağlantı, dikey bus, yatay sonuç çizgileri). Kural
+  // DEĞİŞMEDİ: kıpırdayan her şey bir ÇİZGİ, hiçbiri metin değil. Liste
+  // kapalı tutuluyor ki yeni bir hareket sessizce eklenemesin.
+  it('kıpırdayan her şey yapısal çizgi — metin değil', () => {
     const k = kodu(fiyat)
     const adlar = [...k.matchAll(/animation-name:\s*([\w-]+)/g)].map((m) => m[1])
-    expect(adlar).toEqual(['fy-ciz'])
+    expect(adlar).toEqual(['fy-baglanti', 'fy-bus', 'fy-yatay', 'fy-yatay'])
   })
 
   it('metin hareket etmiyor, opaklık kullanılmıyor', () => {
@@ -224,9 +240,11 @@ describe('Fiyat hareketi yapıyı anlatıyor', () => {
     expect(fiyat).toContain('@media (prefers-reduced-motion: no-preference)')
   })
 
-  it('stagger/gecikme yok — her çizgi kendi satırına bağlı', () => {
+  it('stagger/gecikme yok — hareket zaman eksenine bağlı', () => {
     expect(kodu(fiyat)).not.toMatch(/animation-delay/)
-    expect(kodu(fiyat)).toContain('view-timeline-name: --fy-oge')
+    // `--fy-oge` → `--fy-sistem`: sistem tek bir zaman ekseninden sürülüyor.
+    expect(kodu(fiyat)).toContain('view-timeline-name: --fy-sistem')
+    expect(kodu(fiyat)).toContain('animation-timeline: --fy-sistem')
   })
 })
 

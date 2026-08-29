@@ -103,6 +103,26 @@ describe('sahte yorum / uydurma puan yok', () => {
     expect(bolum).toContain('Bu bölümde henüz yayınlanmış yorum yok.')
   })
 
+  /**
+   * ANA SAYFADA BOŞ BÖLÜM BASILMIYOR.
+   *
+   * Yukarıdaki cümle bileşenin kendi savunması ve orada KALIYOR: bölüm bir
+   * gün başka bir yerden basılırsa uydurma yorum yerine dürüst bir cümle
+   * görünsün. Ama ana sayfada basılması ayrı bir hata: ziyaretçiye bitmemiş
+   * bir site gösteriyordu. Karar RENDER seviyesinde, bileşenin içinde değil.
+   *
+   * Koşul `items` uzunluğuna bağlı, `adet` sayacına değil — biri ekranda
+   * basılan liste, diğeri uygun kayıtların tamamı; render kararı render
+   * edilecek şeye bakmalı.
+   */
+  it('ana sayfa yorum bölümünü koşullu basıyor — yayınlanmış yorum yoksa hiç yok', () => {
+    const kod = kodu(anasayfa)
+    const i = kod.indexOf('<lazy-base-yorumlar')
+    expect(i).toBeGreaterThan(-1)
+    expect(kod.slice(i, kod.indexOf('/>', i))).toContain('v-if="yorumVar"')
+    expect(kod).toMatch(/const yorumVar = computed\(\(\) =>[^)]*items/)
+  })
+
   it('ortalama ve adet PROP olarak geliyor, bileşende hesaplanmıyor', () => {
     // İki yerde hesaplanan bir sayı zamanla ayrışır.
     expect(kodu(bolum)).not.toContain('reduce(')

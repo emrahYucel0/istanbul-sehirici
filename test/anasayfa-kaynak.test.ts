@@ -55,12 +55,21 @@ const TASINAN: Record<string, string[]> = {
     '/images/sahne-kat.webp',
     '/images/sahne-erisim.webp',
   ],
+  // Adım etiketleri M5'te güncellendi: "SÖKÜM VE YÜKLEME" → "SÖKÜM & HAZIRLIK"
+  // (yükleme 04'ün işi), "KAMYON" → "YÜKLEME & TAŞIMA" (araç bir nesne, adım
+  // bir operasyon). Değerler `ProcessStep.label` alanında; liste güncel
+  // etiketleri koruyor, eski etiketler de geri yazılmasın diye duruyor.
   'Surec.vue': [
     'Plan, operasyona böyle dönüşür.',
     'KEŞİF',
+    'PAKETLEME',
+    'SÖKÜM & HAZIRLIK',
+    'YÜKLEME & TAŞIMA',
     'SÖKÜM VE YÜKLEME',
+    'KAMYON',
     'YERLEŞİM',
     'Önce hareketi değil, koşulları çıkarırız.',
+    'Hizmet kapsamımız',
     '/images/sahne-paketleme.webp',
   ],
   'Hizmetler.vue': [
@@ -73,6 +82,13 @@ const TASINAN: Record<string, string[]> = {
   'Fiyat.vue': [
     'Fiyat tek rakamdan başlamaz.',
     'Telefonda verilen rakam bir tahmindir',
+    // Doğrulanmamış ticari/süreç iddiaları — geri yazılmasın.
+    'Keşif sonrası fiyat yazılı veriliyor.',
+    'yazılı olarak verilir',
+    'ücretsiz keşif',
+    'Ücretsiz keşif',
+    'sabit fiyat',
+    '%100',
     'ERİŞİM VE KAT',
     'SÖKÜM VE KURULUM',
     'Oda sayısı değil, gerçek hacim.',
@@ -92,7 +108,11 @@ const STATIK_KALAN: Record<string, string[]> = {
   'Kapsam.vue': ['AVRUPA YAKASI', 'ANADOLU YAKASI', 'TOPLAM İLÇE', 'Bölgelerimizi incele'],
   'UcIstanbul.vue': ['02 / ŞEHİR PLANI DEĞİŞTİRİR'],
   'Surec.vue': ['03 / TAŞIMANIN İÇİNDE NE OLUYOR?'],
-  'Fiyat.vue': ['04 / KARAR VERMEDEN ÖNCE', 'Keşif sonrası fiyat yazılı veriliyor.'],
+  // "Keşif sonrası fiyat yazılı veriliyor." BURADAN ÇIKARILDI, silinmedi:
+  // aşağıdaki TASINAN listesine geçti. Cümle doğrulanmamış bir süreç
+  // taahhüdüydü (teklifin her zaman YAZILI verildiği iddiası) ve bileşenden
+  // kaldırıldı; korunması gereken şey artık geri gelmemesi.
+  'Fiyat.vue': ['04 / KARAR VERMEDEN ÖNCE'],
 }
 
 describe('ana sayfa — taşınan içeriğin ikinci kopyası YOK', () => {
@@ -132,8 +152,17 @@ describe('ana sayfa — bileşenler kendi isteğini atmıyor', () => {
 
   it('yalnız Site Ayarları bileşen içinden okunuyor (telefon)', () => {
     // Telefon ikinci kez saklanmıyor; ayarlar isteği anahtarla paylaşılıyor.
-    expect(oku('Hero.vue')).toContain('useSiteSettings()')
     expect(oku('Kapanis.vue')).toContain('useSiteSettings()')
+  })
+
+  it('Hero telefon YÜZEYİ değil — numara ne okunuyor ne de gömülü', () => {
+    // Hero ilk sahnede sakin tutuluyor: eylem satırı yok. Kural şu ki
+    // numara BİR YERDEN gelmeli; Hero onu göstermediği için ayarları da
+    // okumuyor. Asıl korunan şey, numaranın koda kaçmaması.
+    const hero = oku('Hero.vue')
+    expect(hero).not.toContain('useSiteSettings()')
+    expect(hero).not.toMatch(/0\d{3}[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}/)
+    expect(hero).not.toContain('tel:')
   })
 })
 

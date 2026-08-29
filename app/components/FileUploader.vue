@@ -20,19 +20,32 @@ import { ref, computed } from 'vue'
 
 const emit = defineEmits(['file-uploaded'])
 
-/** Üretilecek genişlikler — statik boru hattıyla (scripts/gorsel-hazirla.mjs) uyumlu. */
-const GENISLIKLER = [320, 640, 1024, 2048]
+/**
+ * TAVAN ARTIK ALANA GÖRE AYARLANABİLİR — VARSAYILAN DEĞİŞMEDİ.
+ *
+ * Her yükleme alanı 2560'ta duruyordu. Bu, hero dışında doğru: bir hizmet
+ * kartı ya da yorum avatarı için 2560 zaten fazlasıyla yeterli ve daha
+ * büyüğü boşuna disk, boşuna bant.
+ *
+ * Hero başka: `100vw` tam sahne basılıyor. Ölçüldü — 2560'lık kaynak
+ * 3440'ta 1.34×, 3840'ta 1.50× büyütülüyor ve ince çizgili teknik çizimde
+ * kenar enerjisi 2560'a göre %25'e ve %17'ye düşüyor. Yalnız o alan 3840
+ * isteyebilsin diye tavan prop'a taşındı.
+ *
+ * Prop VERİLMEZSE davranış bugünküyle birebir aynı.
+ */
+const props = defineProps({
+  label: { type: String, default: '' },
+  azamiGenislik: { type: Number, default: 2560 },
+})
 
 /**
- * Kaynak merdivenin son basamağını aşıyorsa kendi genişliğinde de bir varyant
- * üretilir — bu sınır ona tavan koyar.
- *
- * NEDEN GEREKLİ: önceden yalnızca `g <= kaynakGenişlik` olan basamaklar
- * üretiliyordu. 1536px'lik bir görselde 2048 elenip en büyük varyant 1024'te
- * kalıyordu, yani elde olan 512 pikselin yarısı çöpe gidiyordu. Kahraman
- * görsel `100vw` ile gösterildiği için sonuç gözle görülür bulanıklıktı.
+ * Üretilecek genişlikler — statik boru hattıyla (scripts/gorsel-hazirla.mjs)
+ * uyumlu. 2560 basamağı listede: tavan 3840 olduğunda araya 2560 girmezse
+ * 2048'den doğrudan 3840'a atlanır ve 2560'lık ekranlar 3840 indirir.
  */
-const AZAMI_GENISLIK = 2560
+const GENISLIKLER = [320, 640, 1024, 2048, 2560]
+
 const WEBP_KALITE = 0.8
 
 const secilenDosya = ref(null)
@@ -128,12 +141,15 @@ const yukle = async () => {
     const img = await gorselYukle(dosya)
     const taban = tabanAd(dosya.name)
 
-    // Kaynaktan geniş varyant üretilmez (büyütmenin faydası yok).
-    let hedefler = GENISLIKLER.filter((g) => g <= img.naturalWidth)
+    // Kaynaktan geniş varyant üretilmez (büyütmenin faydası yok) ve
+    // alanın tavanını aşan basamak da üretilmez.
+    let hedefler = GENISLIKLER.filter(
+      (g) => g <= img.naturalWidth && g <= props.azamiGenislik,
+    )
 
     // Kaynak, seçilen en büyük basamaktan genişse kendi genişliğini de ekle —
-    // aksi hâlde elde olan çözünürlük boşa gider (bkz. AZAMI_GENISLIK notu).
-    const kaynakTavan = Math.min(img.naturalWidth, AZAMI_GENISLIK)
+    // aksi hâlde elde olan çözünürlük boşa gider (bkz. tavan notu).
+    const kaynakTavan = Math.min(img.naturalWidth, props.azamiGenislik)
     if (hedefler.length === 0 || kaynakTavan > hedefler[hedefler.length - 1]) {
       hedefler.push(kaynakTavan)
     }

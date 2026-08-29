@@ -316,9 +316,14 @@ const gorselAlt = computed(
               </tbody>
             </table>
           </div>
+          <!-- "yazılı veriliyor" ÇIKARILDI — doğrulanmamış süreç iddiası.
+               Teklifin her zaman yazılı verildiğini gösteren bir iş kaydı
+               yok; cümle bir taahhüt gibi okunuyordu. Anlam korundu:
+               tablodaki aralık bir yön, kesin tutar adres görülmeden
+               çıkmıyor. -->
           <p class="ilc-tablo-not tip-not">
             Tablodaki koşullar yönü gösteriyor, tutar değil. Rakam adres
-            görüldükten sonra yazılı veriliyor.
+            görüldükten sonra netleşiyor.
           </p>
         </div>
       </div>

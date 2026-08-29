@@ -91,7 +91,7 @@ useReveal(sectionRef)
       -->
       <p data-reveal class="mt-5 text-pretty text-lead text-white/75">
         Keşifte eşyalarınızı yerinde görüyor, taşıma planını ve fiyatı
-        yazılı olarak paylaşıyoruz.
+        birlikte netleştiriyoruz.
       </p>
 
       <div data-reveal-group class="mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4">

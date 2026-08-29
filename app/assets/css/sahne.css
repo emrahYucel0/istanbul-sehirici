@@ -223,3 +223,32 @@
   color: rgb(var(--c-ink));
   border-bottom-color: rgb(var(--c-ink));
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   YOL İZİ — DOKUNMA HEDEFİ
+   -----------------------------------------------------------------------
+   Yol izi bağlantıları künye katmanında: mono, 11px, satır yüksekliğiyle
+   birlikte 15px. Ölçüldü (gerçek isabet testi, 390px): 15px — WCAG 2.5.8
+   AA'nın 24px eşiğinin altında.
+
+   Punto BÜYÜTÜLMEDİ: yol iz sayfanın en sessiz katmanı, büyütmek
+   hiyerarşiyi bozardı. Bunun yerine görünmez bir kaplama tıklama alanını
+   genişletiyor — hizmet defteri ve ilçe dizininde kullanılan çözümün
+   aynısı (PASS B).
+
+   SEÇİCİ NEDEN NİTELİK: on ayrı bileşende on ayrı sınıf öneki var
+   (`blg-yol`, `hz-yol`, `mh-yol` …) ama hepsi aynı `aria-label`i
+   taşıyor. Nitelikten gitmek tek kaynak veriyor; yeni bir sayfa yol izi
+   eklediğinde ayrıca bir şey yapmak gerekmiyor.
+
+   Yatay pay 0,25rem: öğeler arası boşluk 0,5rem, yani kaplamalar
+   birbirine değmiyor. */
+nav[aria-label='Yol izi'] a {
+  position: relative;
+  display: inline-block;
+}
+nav[aria-label='Yol izi'] a::after {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.25rem;
+}

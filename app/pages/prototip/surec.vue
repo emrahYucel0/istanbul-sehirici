@@ -63,6 +63,9 @@ const teshisDurumu = computed(() => {
 // diyordu. Bu sayfa `noindex` ve sitemap dışında ama adresi bilen herkese
 // açık; doğrulanmamış bir ücret taahhüdünün burada durmasının bir sebebi
 // yok. Sayfa bir HAREKET referansı, metin onun konusu değil.
+//
+// AYNI GEREKÇEYLE 04'TEKİ "hasarsız" ÇIKARILDI: teslimde neyin kontrol
+// edildiğini anlatmak başka, hasarsız geldiğini taahhüt etmek başka.
 const adimlar = [
   {
     no: '01',
@@ -86,7 +89,7 @@ const adimlar = [
     no: '04',
     baslik: 'Teslimat ve Yerleştirme',
     metin:
-      'Yeni adresinize ulaşıldığında eşyalar etiketlere göre ilgili odalara taşınır, demonte edilen mobilyalar tekrar monte edilir. Eksiksiz ve hasarsız geldiğini birlikte kontrol ederiz.',
+      'Yeni adresinize ulaşıldığında eşyalar etiketlere göre ilgili odalara taşınır, demonte edilen mobilyalar tekrar monte edilir. Teslimde eşyaların sayımı ve durumu birlikte kontrol edilir.',
   },
 ]
 </script>

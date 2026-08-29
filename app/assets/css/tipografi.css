@@ -135,6 +135,14 @@
    ========================================================================== */
 @media (min-width: 1920px) {
   :root {
-    font-size: clamp(1rem, 0.34rem + 0.55vw, 1.25rem);
+    font-size: clamp(1rem, 0.34rem + 0.55vw, 1.375rem);
   }
 }
+
+/* TAVAN 1.25rem → 1.375rem (PASS C, 4K kontrolü).
+   3840'ta kap 1800px'te kalıyordu, yani ekranın %47'si; kenarlarda
+   1020'şer piksel. Tavan bir kademe yükselince kap 1980px'e (%52),
+   3440'ta da 1800 → 1980'e çıkıyor. 2560 ve altı DEĞİŞMİYOR — orada
+   clamp'in orta terimi (0,34rem + 0,55vw = 19,5px) zaten tavanın
+   altında. Satır uzunluğu yine `ch` ile sınırlı olduğu için karakter
+   olarak sabit; büyüyen tek şey fiziksel ölçek. */

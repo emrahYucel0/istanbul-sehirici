@@ -157,7 +157,7 @@ const ozet = computed(() => {
 const uyari = computed(
   () =>
     ayar.value?.not ||
-    'Bu bir ön tahmindir, teklif değildir. Kesinleşen tutar, iki adres görüldükten sonra yazılı olarak paylaşılır.'
+    'Bu bir ön tahmindir, teklif değildir. Kesinleşen tutar, iki adres görüldükten sonra netleşir.'
 )
 
 /** `InternalPageSection('fiyat', 'arac')` — YALNIZ başlık. */

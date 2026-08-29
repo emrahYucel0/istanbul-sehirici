@@ -208,12 +208,22 @@ defineProps({
   font-size: 1.0625rem;
   line-height: 1.6;
 }
+/* Gerçek isabet testiyle ölçüldü (390px): satır yüksekliğiyle 20px, yani
+   WCAG 2.5.8'in 24px eşiğinin altında. Punto büyütülmedi; görünmez bir
+   kaplama tıklama alanını 44px'e çıkarıyor. Yatay pay YOK — e-posta
+   satırı tam genişlikte, yandaki hiçbir şeyi örtmemeli. */
 .ik-deger-bag {
+  position: relative;
   color: rgb(var(--c-ink));
   text-decoration: none;
   border-bottom: 1px solid rgb(var(--c-measure));
   /* Uzun e-posta dar ekranda satır sonunu zorlamasın. */
   overflow-wrap: anywhere;
+}
+.ik-deger-bag::after {
+  content: '';
+  position: absolute;
+  inset: -0.75rem 0;
 }
 .ik-deger-bag:hover {
   border-bottom-color: rgb(var(--c-ink));

@@ -197,18 +197,21 @@ if (import.meta.client) {
         <span class="nb-tel-no">{{ phone }}</span>
       </a>
 
-      <!-- Erişilebilir ad GÖRÜNEN metni İÇERMELİ (WCAG 2.5.3 "Label in
-           Name"): sesle kontrol eden kullanıcı "WP"ye tıkla der ama
-           erişilebilir ad "WhatsApp üzerinden yazın" idi ve içinde "WP"
-           geçmiyordu. Lighthouse bunu `label-content-name-mismatch`
-           olarak işaretledi. -->
+      <!-- Görünen metin "WP" kısaltmasıydı; kimsenin sesli okumadığı ve
+           ilk bakışta çözülmeyen bir rozet gibi duruyordu. Artık açık:
+           "WhatsApp".
+
+           Erişilebilir ad GÖRÜNEN metni İÇERMELİ (WCAG 2.5.3 "Label in
+           Name") — sesle kontrol eden kullanıcı gördüğü kelimeyi söyler.
+           Yeni ad "WhatsApp" ile başlıyor, o yüzden eşleşme sağlanıyor.
+           `href`, `target` ve `rel` DEĞİŞMEDİ. -->
       <a
         :href="whatsAppHref"
         target="_blank"
         rel="noopener"
         class="nb-wp"
-        aria-label="WP — WhatsApp üzerinden yazın"
-      >WP</a>
+        aria-label="WhatsApp üzerinden yazın"
+      >WhatsApp</a>
 
       <button
         ref="acmaDugmesi"

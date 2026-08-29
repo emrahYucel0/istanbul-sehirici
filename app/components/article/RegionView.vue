@@ -337,7 +337,7 @@ const imageAlt = computed(() => {
           Anlam korundu — çıkarılan tek şey ücret iddiası.
         -->
         <p class="mt-4 text-sm text-ink-muted">
-          Tablodaki değerler tahminidir. Kesin fiyat, adres keşfinden sonra yazılı olarak verilir.
+          Tablodaki değerler tahminidir. Kesin fiyat, adres görüldükten sonra netleşir.
         </p>
 
       </section>

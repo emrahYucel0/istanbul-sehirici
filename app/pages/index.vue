@@ -106,6 +106,30 @@ const yorumlar = computed(
   () => icerik.value?.yorumlar ?? { items: [], ortalama: null, adet: 0 }
 );
 
+/**
+ * YORUM BÖLÜMÜ YAYINLANMIŞ YORUM YOKKEN HİÇ BASILMIYOR.
+ *
+ * Bölümün kendi boş durumu var ("Bu bölümde henüz yayınlanmış yorum yok.")
+ * ve o cümle bileşende KALIYOR — uydurma yoruma karşı savunma o. Ama ana
+ * sayfada basılması yanlıştı: ziyaretçiye bitmemiş bir site gösteriyordu.
+ * Boş bir bölüm, olmayan bir bölümden daha kötü.
+ *
+ * KOŞUL LİSTEYE BAĞLI, SAYACA DEĞİL. `adet` public'e uygun kayıtların
+ * TAMAMI; `items` ekranda basılan liste. Bugün ikisi de aynı `where`den
+ * geliyor ama karar RENDER kararı, o yüzden render edilecek şeye bakıyor.
+ *
+ * Şu an veri tabanında üç yorum var, üçü de `isActive: false` (M5 örnek
+ * kayıtları) — yani yayınlanabilir yorum sıfır ve bölüm çıkmıyor. İlk
+ * gerçek yorum onaylandığında koşul kendiliğinden dönüyor; kodda bir şey
+ * değişmesi gerekmiyor.
+ *
+ * DİKKAT: yorum formu bu bölümün içinde. Bölüm gizliyken ziyaretçinin
+ * ana sayfadan yorum gönderebileceği bir kapı da yok. Herkese açık POST
+ * ucu ve moderasyon paneli yerinde duruyor; ilk yorum panelden girilip
+ * onaylandığında bölüm ve formu birlikte geri geliyor.
+ */
+const yorumVar = computed(() => (yorumlar.value.items?.length ?? 0) > 0);
+
 /** Serbest metin çalışma saatlerinin schema.org karşılığı; çözülemezse boş. */
 const acilisSaatleri = computed(() => calismaSaatleriSemasi(settings.value?.workingHours));
 
@@ -321,8 +345,15 @@ useHead(
     <lazy-base-sorular :sorular="sorular" hydrate-never />
     <!-- Yorumlar TEK HİDRATE EDİLEN geç bölüm: içindeki form etkileşimli.
          `hydrate-never` verilseydi düğme hiç çalışmazdı. Liste yine SSR'da
-         basılı geliyor; hidrasyon yalnız formu canlandırıyor. -->
+         basılı geliyor; hidrasyon yalnız formu canlandırıyor.
+
+         `v-if`: yayınlanabilir yorum yoksa bölüm HİÇ basılmıyor — boş
+         durum, örnek yorum ya da yer tutucu gösterilmiyor. Gerekçe
+         script'te (`yorumVar`). Bölüm kendi dikey boşluğunu taşıdığı için
+         çıkınca dikiş kalmıyor: Sorular (kâğıt) doğrudan Kapanış'a
+         (mürekkep) bağlanıyor. -->
     <lazy-base-yorumlar
+      v-if="yorumVar"
       :bolum="bolum('yorumlar')"
       :yorumlar="yorumlar"
       :hydrate-on-visible="{ rootMargin: '300px' }"

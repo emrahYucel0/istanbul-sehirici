@@ -108,44 +108,36 @@ describe('durağan bölümler payını kütükten alıyor', () => {
 
 // ═══════════════════════════════════════════ HERO RAY ARİTMETİĞİ
 
-describe('Hero metin rayı: yuva oranı ile keyframe değerleri tutuyor', () => {
+describe('Hero sahne uzunluğu', () => {
   const hero = kodu(bilesen('Hero'))
 
-  const oran = Number.parseFloat(hero.match(/grid-auto-rows:\s*(\d+)%/)?.[1] ?? '0')
-  const adimlar = [
-    ...hero
-      .slice(hero.indexOf('@keyframes hr-ray-kay'))
-      .slice(0, 260)
-      .matchAll(/translateY\((-?\d+)%\)/g),
-  ].map((m) => Number.parseInt(m[1], 10))
-
-  it('yuva oranı ve üç durak okundu', () => {
-    expect(oran).toBeGreaterThan(100)
-    expect(adimlar).toHaveLength(3)
+  // PASS C2'de Hero, yan projedeki onaylı koreografiye taşındı. Orada
+  // METİN RAYI YOK: duraklar tek bir kolonda kaymıyor, her öğe kendi
+  // yuvasında ve kendi keyframe'iyle sahneye girip çıkıyor. Bu yüzden
+  // eski ray aritmetiği iddiaları kaldırıldı; yerlerini
+  // `test/signature-sozlesmesi.test.ts` içindeki perde sözleşmesi aldı.
+  // Sahne 390vh'ten 440vh'e uzatıldı ve koreografi `contain 0% contain 88%`
+  // aralığına sıkıştırıldı: 440 × %88 ≈ 387vh, yani HIZ referanstakiyle aynı.
+  // Kalan %12 final HOLD'dur — ölçüm paneli tam yerleşmeden sonraki bölüm
+  // sahneye giremiyor. İki sayı BİRLİKTE doğrulanıyor; biri tek başına
+  // değişirse tempo referanstan ayrılır.
+  it('sahne uzunluğu ve koreografi aralığı birlikte tutuyor', () => {
+    const h = Number.parseFloat(hero.match(/height:\s*(\d+)vh/)?.[1] ?? '0')
+    const oran = Number.parseFloat(hero.match(/contain 0% contain ([\d.]+)%/)?.[1] ?? '0')
+    expect(h).toBe(420)
+    expect(oran).toBe(93.5)
+    // ASIL DEĞİŞMEZ BU: koreografinin MUTLAK uzunluğu. 440×0.88 = 387.2vh
+    // idi, 420×0.935 = 392.7vh — ilk kare ve artwork-only sahnesi aynı
+    // mutlak kaydırma noktasında kalıyor. Kısalan şey sondaki donmuş hold.
+    expect(Math.round(h * (oran / 100))).toBeGreaterThanOrEqual(380)
+    expect(Math.round(h * (oran / 100))).toBeLessThanOrEqual(400)
+    // Sondaki bekleme yarıdan fazla olmamalı.
+    expect(h - h * (oran / 100)).toBeLessThan(30)
   })
 
-  it('başlangıç, yuvanın taşan payının yarısı', () => {
-    expect(adimlar[0]).toBe(-(oran - 100) / 2)
-  })
-
-  it('her adım tam bir yuva', () => {
-    expect(adimlar[1] - adimlar[0]).toBe(-oran)
-    expect(adimlar[2] - adimlar[1]).toBe(-oran)
-  })
-
-  it('alan yüksekliği ekrandan DEĞİL kütükten ölçülüyor', () => {
-    // `minmax(0, 1fr)` geri gelirse kolon yine pencereyi doldurur ve
-    // ölçülen 230–278px'lik boşluk geri gelir.
-    expect(hero).toContain('--hr-alan:')
-    expect(hero).toContain('minmax(0, var(--hr-alan))')
-  })
-
-  it('md.5 payı korunuyor — yuva, en uzun içerik + pencereyi taşıyor', () => {
-    // En uzun durak ölçüldü: 1920'de 375px, pencere en dar hâlinde 422px.
-    // Kural: oran/100 × pencere − içerik ≥ pencere
-    const pencere = 422
-    const icerik = 375
-    expect((oran / 100) * pencere - icerik).toBeGreaterThanOrEqual(pencere)
+  it('metin rayı GERİ GELMEDİ — referans kolon kaydırma kullanmıyor', () => {
+    expect(hero).not.toContain('hr-ray-kay')
+    expect(hero).not.toContain('grid-auto-rows')
   })
 })
 

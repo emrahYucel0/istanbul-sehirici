@@ -27,9 +27,12 @@ defineProps({
 
       <div class="fs-govde">
         <p v-if="bolum.lead" class="fs-metin tip-govde">{{ bolum.lead }}</p>
+        <!-- "yazılı olarak veriliyor" ÇIKARILDI: teklifin biçimi
+             (yazılı/sözlü) hakkında doğrulanmamış bir taahhüt. Kalan
+             cümle süreci anlatıyor, garanti vermiyor. -->
         <p class="fs-metin tip-govde">
           Bu ayrıntıları paylaşırsanız keşif için gün ayırıyoruz; kapsam
-          netleştikten sonra tutar yazılı olarak veriliyor.
+          netleştikten sonra tutar paylaşılıyor.
         </p>
       </div>
 
