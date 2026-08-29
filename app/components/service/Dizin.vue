@@ -63,8 +63,16 @@ const satirlar = computed(() =>
             <h3 class="hd-h3 tip-alt">{{ s.baslik }}</h3>
             <p v-if="s.ustBaslik" class="hd-etiket op-kunye">{{ s.ustBaslik }}</p>
             <p v-if="s.ozet" class="hd-ozet tip-not">{{ s.ozet }}</p>
+            <!-- Ok DEKORATİF (`aria-hidden`): erişilebilir ad "<hizmet>
+                 ayrıntıları" olarak kalıyor. Yeni bir dil değil — Kapsam
+                 bölümündeki `kp-ok` ile aynı öğe, aynı 3px kayma, aynı
+                 hareket-azaltma korumasi. Gerekçe: bağlantı ölçüldüğünde
+                 zaten 44px dokunma alanına ve görünür odak halkasına
+                 sahipti, eksik olan tek şey "buradan bir yere gidiliyor"
+                 işaretiydi. Düğme/pill/kart yapılmadı; ölçü çizgisi ve
+                 mürekkep rengi aynen duruyor. -->
             <NuxtLink v-if="s.yol" :to="s.yol" class="op-bag op-bag--sakin hd-bag">
-              {{ s.baslik }} ayrıntıları
+              {{ s.baslik }} ayrıntıları<span class="hd-ok" aria-hidden="true">→</span>
             </NuxtLink>
           </div>
 
@@ -128,6 +136,21 @@ const satirlar = computed(() =>
 }
 .hd-bag {
   margin-top: 1rem;
+  gap: 0.5rem;
+}
+.hd-ok {
+  transition: transform 0.15s ease-out;
+}
+.hd-bag:hover .hd-ok {
+  transform: translateX(3px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hd-ok {
+    transition: none;
+  }
+  .hd-bag:hover .hd-ok {
+    transform: none;
+  }
 }
 
 .hd-maddeler {

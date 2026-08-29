@@ -23,7 +23,7 @@
  * Bölümler ayrı ayrı istek atmıyor: içerik sayfa seviyesinde TEK istekle
  * alınıp prop olarak geçiliyor (M4'teki ana sayfa deseni).
  */
-const [response, icerikYanit] = await Promise.all([
+const [hizmetYanit, icerikYanit] = await Promise.all([
   useFetch('/api/services', { key: 'services-section' }),
   useFetch('/api/ic-sayfa?page=hizmetler', { key: 'ic-hizmetler' }),
 ])
@@ -31,7 +31,26 @@ const [response, icerikYanit] = await Promise.all([
 /** Bölüm anahtarına göre kontrollü içerik; kayıt yoksa boş nesne. */
 const bolum = (anahtar) => icerikYanit.data.value?.data?.[anahtar] ?? {}
 
-const section = computed(() => response.value?.data || null)
+/**
+ * `useFetch` bir REF DEĞİL, `AsyncData` nesnesi döndürüyor: `{ data, pending,
+ * error, refresh, ... }`. Yani gövdeye `yanit.data.value` ile inilir.
+ *
+ * Burada `response.value?.data` yazılıydı — `AsyncData.value` diye bir alan
+ * olmadığı için sonuç HER ZAMAN `undefined`, `section` her zaman `null` ve
+ * `services` her zaman boş diziydi. Sayfa hata vermiyordu: dizin `<ol>`u
+ * basılıyor, içine hiç satır girmiyordu. `hd-satir` sayısı SSR çıktısında
+ * 0 ölçüldü, JSON-LD `ItemList` de boş çıkıyordu.
+ *
+ * Hatayı saklayan şey isimlendirme asimetrisiydi: hemen üstteki satır
+ * (`icerikYanit`) doğru yazılmışken bu değişkenin adı `response` idi ve iki
+ * satır yan yana okunduğunda aynı şeyi yaptıkları görünmüyordu. Ad da
+ * `hizmetYanit` olarak hizalandı; artık ikisi aynı kalıpta.
+ *
+ * Uç noktanın gövdesi `{ success, data: { ...bölüm, services: [...] } }` —
+ * o yüzden `.data.value?.data`. Veri kaynağı, şekil ve bileşen sözleşmesi
+ * değişmedi; yalnız erişim düzeltildi.
+ */
+const section = computed(() => hizmetYanit.data.value?.data || null)
 const services = computed(() => section.value?.services || [])
 
 /** Yalnızca kendi sayfası olan hizmetler yapısal veriye giriyor. */
