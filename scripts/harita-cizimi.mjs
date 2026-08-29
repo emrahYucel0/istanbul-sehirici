@@ -82,9 +82,38 @@ for (let i = 0, j = 0; i < data.length; i += info.channels, j += 4) {
   if (o > 0) yazilan++
 }
 
-await sharp(cikti, { raw: { width: info.width, height: info.height, channels: 4 } })
-  .webp({ quality: 82, alphaQuality: 92, effort: 6 })
-  .toFile(HEDEF)
+const ham = sharp(cikti, { raw: { width: info.width, height: info.height, channels: 4 } })
+await ham.clone().webp({ quality: 82, alphaQuality: 92, effort: 6 }).toFile(HEDEF)
+
+/**
+ * RESPONSIVE VARYANTLAR — ölçülen bir mobil maliyetin karşılığı.
+ *
+ * Kare `NuxtImg` DEĞİL (gerekçe Kapsam.vue'da: IPX bu saydam WebP'yi
+ * yeniden kodlarken çizgileri bulanıklaştırıyor). Ama tek dosya olarak
+ * kalınca 390px'lik bir ekrana 1448px'lik 253 KB'lık görsel iniyordu —
+ * Lighthouse mobil koşusunda sayfanın EN BÜYÜK kaynağı, hero'nun on
+ * katı. Ölçüldü, tahmin değil.
+ *
+ * Çözüm boru hattını değiştirmiyor: varyantlar da BURADA, aynı mürekkep
+ * tamponundan, aynı webp ayarlarıyla üretiliyor. Çalışma anında yeniden
+ * kodlama yok; `<img>` yalnız hazır dosyalar arasından seçiyor.
+ *
+ * Basamaklar render ölçümünden: mobil 360–390, tablet 834, masaüstü
+ * 1440, 2560+ ekranda 1980 (kaynak 1448 olduğu için orada zaten taban
+ * dosya kullanılıyor).
+ */
+const VARYANTLAR = [480, 768, 1024]
+const uretilen = []
+for (const g of VARYANTLAR) {
+  if (g >= info.width) continue
+  const yol = HEDEF.replace(/\.webp$/, `-${g}.webp`)
+  await ham
+    .clone()
+    .resize({ width: g, kernel: 'lanczos3', withoutEnlargement: true })
+    .webp({ quality: 82, alphaQuality: 92, effort: 6 })
+    .toFile(yol)
+  uretilen.push([g, yol, readFileSync(yol).length])
+}
 
 const bayt = readFileSync(HEDEF)
 const ozet = createHash('sha256').update(bayt).digest('hex').slice(0, 12)
@@ -93,6 +122,9 @@ console.log('kaynak :', KAYNAK, `${info.width}×${info.height}`)
 console.log('hedef  :', HEDEF, (bayt.length / 1024).toFixed(0) + 'KB', 'sha256:' + ozet)
 console.log('mürekkep taşıyan piksel: %' + ((yazilan / (info.width * info.height)) * 100).toFixed(1))
 console.log('eğri   : eşik', ESIK, '· kazanç', KAZANC, '· gama', GAMA, '· tavan', TAVAN)
+for (const [g, yol, b] of uretilen) {
+  console.log('varyant:', String(g).padStart(4), yol, (b / 1024).toFixed(0) + 'KB')
+}
 
 // Önizleme yalnız `--onizleme` ile üretiliyor: karenin kâğıt zemine
 // bindirilmiş hâli, yani sayfada nasıl görüneceği. Varsayılan olarak

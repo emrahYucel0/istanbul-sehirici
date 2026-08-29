@@ -66,14 +66,39 @@ const kapanisSatirlari = computed(() =>
       -->
       <figure class="jr-gorsel">
         <div class="jr-kadraj">
+          <!--
+            `preload` — ÖLÇÜLEN BİR GECİKMENİN KARŞILIĞI, süs değil.
+
+            Lighthouse mobil koşusunda LCP bu görsel ve dökümü şöyleydi:
+            TTFB %12 · YÜKLEME GECİKMESİ %38 (1387 ms) · indirme %25 ·
+            render %25. En büyük dilim, tarayıcının görseli ancak HTML'i
+            ayrıştırıp bu etikete gelince keşfetmesi.
+
+            `preload`, `srcset`/`sizes` ile BİREBİR aynı bağlantıyı başa
+            koyuyor; ikinci bir istek doğurmuyor (ölçüldü). `eager` ve
+            `fetchpriority` zaten vardı — onlar sıraya girdikten SONRAKİ
+            önceliği belirliyor, keşfi öne almıyor.
+
+            `sizes` SONUNDAKİ `xxl:100vw` DE ÖLÇÜMDEN GELİYOR. Aday
+            listesi her kırılım noktasının 1x ve 2x katından üretiliyor;
+            en büyük kırılım `xl` (1280) olduğu için tavan 2560w'de
+            kalıyordu ve 3440/3840 ekranlarda 2560'lık dosya 1,5 kat
+            büyütülerek gösteriliyordu (ölçüldü). `xxl` (1536) eklenince
+            liste 3072w kazanıyor ve o da yüklenmiş 3840 varyantına
+            düşüyor. Küçük ekranlarda seçim DEĞİŞMİYOR: 390 hâlâ 640,
+            1920 hâlâ 2048, 2560 hâlâ 2560 — tek tek doğrulandı.
+            Değer yalnız hangi DOSYANIN indirileceğini söylüyor; düzen,
+            kadraj ve kompozisyon aynı.
+          -->
           <NuxtImg
             :src="bolum.imagePath"
             :alt="bolum.imageAlt"
             class="jr-foto"
             format="webp"
-            sizes="xs:94vw sm:94vw md:92vw lg:100vw xl:100vw"
+            sizes="xs:94vw sm:94vw md:92vw lg:100vw xl:100vw xxl:100vw"
             loading="eager"
             fetchpriority="high"
+            preload
             decoding="async"
             width="1588"
             height="893"

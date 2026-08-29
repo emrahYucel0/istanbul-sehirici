@@ -130,10 +130,28 @@ const yakalar = computed(() => [
           DÜZ `<img>` — `NuxtImg` DEĞİL. Ölçüldü: IPX bu saydam WebP'yi
           yeniden kodlarken 1440px'lik kutuya 814px'lik render veriyor ve
           çizgiler bulanıklaşıyor.
+
+          VARYANTLAR YİNE DE VAR. Tek dosya kalınca 390px'lik ekrana
+          1448px'lik 253 KB iniyordu ve Lighthouse mobil koşusunda sayfanın
+          EN BÜYÜK kaynağıydı — hero'nun on katı. Basamaklar çalışma anında
+          değil, `scripts/harita-cizimi.mjs` içinde aynı mürekkep
+          tamponundan üretiliyor; yani IPX gerekçesi bozulmadan bayt
+          düşüyor. `sizes` ölçülen render genişliklerinden: 1440'a kadar
+          tam genişlik, üstünde kutu 1980px'te duruyor.
+
+          `width`/`height` DEĞİŞMEDİ — oran aynı, CLS payı aynı. Görünen
+          kompozisyon birebir aynı dosyayla aynı.
         -->
         <figure class="kp-harita" aria-hidden="true">
           <img
             src="/images/istanbul-harita-cizim.webp"
+            srcset="
+              /images/istanbul-harita-cizim-480.webp   480w,
+              /images/istanbul-harita-cizim-768.webp   768w,
+              /images/istanbul-harita-cizim-1024.webp 1024w,
+              /images/istanbul-harita-cizim.webp      1448w
+            "
+            sizes="(max-width: 1440px) 100vw, 1980px"
             alt=""
             class="kp-harita-foto"
             loading="lazy"
