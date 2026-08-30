@@ -412,6 +412,38 @@ const serviceNav = computed(() => {
  * sitenin İstanbul konumlandırmasıyla çelişiyordu; üstelik 24 rozet bir
  * bağlantı çiftliğiydi. İl sayfaları silinmedi — `/bolgelerimiz` hub'ından
  * erişilebilir kalıyorlar; hizmet detayından yalnız ilçelere bağlanıyoruz.
+ *
+ * `.slice(0, 12)` KALDIRILDI — ölçülmüş bir kusurdu.
+ * ─────────────────────────────────────────────────────────────────────
+ * Liste alfabetik sıralanıp ilk 12'si alınıyordu. Sonuç: YEDİ hizmet
+ * sayfası da AYNI on iki ilçeyi bağlıyordu (Adalar → Beylikdüzü) ve geri
+ * kalan 27 ilçe — Kadıköy, Üsküdar, Şişli, Beyoğlu, Maltepe, Pendik
+ * dahil — hiçbir hizmet sayfasından bağlantı almıyordu. Yani kesme
+ * noktası bir seçim değil, alfabenin yan etkisiydi.
+ *
+ * NEDEN "DAHA İYİ 12" SEÇİLMEDİ
+ * Kontrollü bir sıralama alanı YOK: `Region` modelinde `order`,
+ * `priority` ya da `featured` bulunmuyor (ölçüldü). Var olan sinyaller de
+ * seçim için kullanılamadı:
+ *   · içerik derinliği — 39 ilçenin 39'u da aynı (content + facts + faqs
+ *     + routes + priceFactors tamamı dolu)
+ *   · `createdAt` sırası — öncelik değil COĞRAFYA (önce Anadolu yakası,
+ *     sonra Avrupa); ilk 12'si tek yakadan çıkıyordu
+ *   · `routes` (gerçek talep sinyali) — liste yükünde bilerek YOK,
+ *     `light` modunda atılan ağır sütunlardan biri
+ * Uydurulmuş bir sıra ya da hizmet slug'ına göre döndürme, olmayan bir iş
+ * kuralını varmış gibi göstermek olurdu.
+ *
+ * BUNUN YERİNE: SEÇİM YOK, TAM DİZİN.
+ * Bölümün kendi işi zaten "kendi ilçenizi bulun" — bunun için doğru
+ * arayüz keyfi bir on iki değil, var olan sayfaların eksiksiz listesi.
+ * Sınırı veri çiziyor: yalnız AKTİF İstanbul ilçeleri; il sayfaları ve
+ * İstanbul dışı kayıtlar filtrede eleniyor. Yani liste büyüyen bir
+ * bağlantı yığını değil, kapalı ve doğrulanabilir bir dizin.
+ *
+ * Küratörlü bir "öne çıkan 12" istenirse gereken şey `Region` modeline
+ * kontrollü bir sıralama alanı eklemek; bu tur şablon turu olduğu için
+ * yapılmadı.
  */
 const serviceRegions = computed(() => {
   if (!service.value) return []
@@ -419,7 +451,6 @@ const serviceRegions = computed(() => {
   return allRegions.value
     .filter((item) => item.isActive && !isProvincePage(item))
     .sort((a, b) => collator.compare(a.subtitle || a.title || '', b.subtitle || b.title || ''))
-    .slice(0, 12)
 })
 
 /**

@@ -68,6 +68,90 @@ const bolumler = computed(() => {
 const imageAlt = computed(
   () => props.service?.imageAlt?.trim() || `${props.service?.title || 'Hizmet'} çalışması`
 )
+
+/**
+ * 02 BÖLÜMÜNÜN SAĞ TEKNİK MARJI — adım künyesi.
+ *
+ * ÖLÇÜLEN SORUN (1920, /evden-eve-nakliyat)
+ * "NASIL YAPILIYOR" bölümü sayfanın %31'i (1858px) ve sağ yarısında SIFIR
+ * öğe vardı. Diğer beş bölümün hepsinde D ekseni doluydu (giriş 384px
+ * fotoğraf, kapsam 3 öğe, İstanbul 5, sorular 769px cevap kolonu). Yani
+ * sayfanın kendi ızgarası yalnız bu bölümde çalışmıyordu; blok "tasarım
+ * burada bitti, içerik başladı" diye okunuyordu.
+ *
+ * ÇÖZÜM: METNİN KENDİ İSKELETİ
+ * Marj UYDURULMUŞ bir şey taşımıyor — panelden gelen gövdenin KENDİ <h3>
+ * başlıklarını okuyor. Sahte ölçü, sahte rakam, doğrulanmamış süreç
+ * iddiası yok; içerik değişirse marj kendiliğinden değişiyor, ayrıca
+ * doldurulacak bir alan açılmıyor.
+ *
+ * NEDEN BAŞLIKLARI TEKRARLAMAK "İÇİNDEKİLER" DEĞİL
+ * Bu bileşenden daha önce sayfa düzeyinde bir "Bu sayfada" menüsü
+ * KALDIRILMIŞTI: dört bölümlük bir sayfada gezinme yardımı değil gürültü
+ * üretiyordu. Buradaki farklı: tek bir bölümün 1858px'lik gövdesinin
+ * iskeleti, ve BAĞLANTI DEĞİL. Tıklanmıyor, odak almıyor, `aria-hidden`
+ * — başlıklar zaten belgede h3 olarak var, ekran okuyucuya iki kez
+ * okutmanın anlamı yok. Görevi görsel: okurun içinde bulunduğu bloğun
+ * kaç adımdan oluştuğunu bir bakışta göstermek.
+ *
+ * Üçten az adımda basılmıyor: iki satırlık bir marj boşluğu doldurmaz,
+ * yalnız yeni bir hizalama sorunu üretirdi.
+ *
+ * `content` sunucuda `sanitizeHtml`den geçmiş olarak geliyor (bkz.
+ * server/utils/sanitizeHtml.ts); burada yalnız düz metin çıkarılıyor,
+ * hiçbir HTML yeniden basılmıyor.
+ */
+const adimlar = computed(() => {
+  // Düz dilim/indexOf ile çıkarılıyor, düzenli ifadeyle DEĞİL: iç içe
+  // yıldızlı bir kalıp ("<h3[^>]*>([\s\S]*?)</h3>") uzun gövdelerde geri
+  // izleme yüzünden süper-doğrusal çalışabiliyor. Bu tarama doğrusal.
+  const html = String(props.service?.content || '')
+  const bulunan = []
+  let i = html.indexOf('<h3')
+  while (i !== -1) {
+    const acilisSonu = html.indexOf('>', i)
+    const kapanis = acilisSonu === -1 ? -1 : html.indexOf('</h3', acilisSonu)
+    if (acilisSonu === -1 || kapanis === -1) break
+    const metin = html
+      .slice(acilisSonu + 1, kapanis)
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (metin) bulunan.push(metin)
+    i = html.indexOf('<h3', kapanis)
+  }
+  return bulunan.length >= 3 ? bulunan : []
+})
+
+/**
+ * SAYFA SONU İLETİŞİM — panelden, koda gömülmeden.
+ *
+ * ÖLÇÜLEN SORUN: 1920'de sayfa 5970px. Altı ekran okuyup "sonraki adım"
+ * bölümüne varan ziyaretçi orada telefon ya da WhatsApp bulamıyordu;
+ * numara 5000px yukarıda navbar'da ve en altta footer'daydı.
+ *
+ * ÇÖZÜM YENİ BİR CTA DEĞİL: mevcut kapanış CÜMLESİNİN içine, yanındaki
+ * iki bağlantıyla aynı `op-bag` dilinde iki yol daha ekleniyor. Dolu
+ * düğme, pill, yüzen WhatsApp ya da yapışkan çubuk YOK.
+ *
+ * Değerler `useSiteSettings` üzerinden geliyor — Navbar ve Footer ile
+ * AYNI `site-settings` anahtarını paylaşıyor, yani ek istek yok. Biçim
+ * (ham numara da tam URL de kabul) Footer'daki davranışın aynısı.
+ */
+const { settings } = await useSiteSettings()
+
+const telefon = computed(
+  () => settings.value?.phone?.trim() || settings.value?.mobilePhone?.trim() || ''
+)
+const telefonYolu = computed(() => `tel:${telefon.value.replace(/[^\d+]/g, '')}`)
+
+const whatsApp = computed(() => {
+  const ham = (settings.value?.whatsAppNumber || '').trim()
+  if (!ham) return ''
+  if (/^https?:\/\//i.test(ham)) return ham
+  const rakam = ham.replace(/\D/g, '')
+  return rakam ? `https://wa.me/${rakam}` : ''
+})
 </script>
 
 <template>
@@ -75,20 +159,18 @@ const imageAlt = computed(
     <!-- ══ GİRİŞ ══════════════════════════════════════════════════════ -->
     <section class="hz-giris-kap" aria-labelledby="hizmet-baslik">
       <div class="hz-giris sahne-alan">
+        <!-- YOL İZİ — GÖRÜNÜR VE ERİŞİLEBİLİR; YAPISAL VERİ BURADA DEĞİL.
+             Aynı BreadcrumbList iki kez bildiriliyordu: burada microdata
+             (itemscope/itemprop) olarak, bir de sayfanın JSON-LD @graph'ında.
+             İkisi aynı şeyi söylüyordu; tek yetkili kaynak JSON-LD'de
+             bırakıldı çünkü orada `@id` ile Service ve FAQPage düğümleriyle
+             aynı grafiğin parçası. Görünen yol izi ve `aria-label` /
+             `aria-current` semantiği DEĞİŞMEDİ. -->
         <nav class="hz-yol" aria-label="Yol izi">
-          <ol class="hz-yol-liste" itemscope itemtype="https://schema.org/BreadcrumbList">
-            <li class="hz-yol-oge" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-              <NuxtLink to="/" itemprop="item"><span itemprop="name">Ana sayfa</span></NuxtLink>
-              <meta itemprop="position" content="1" />
-            </li>
-            <li class="hz-yol-oge" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-              <NuxtLink to="/hizmetlerimiz" itemprop="item"><span itemprop="name">Hizmetlerimiz</span></NuxtLink>
-              <meta itemprop="position" content="2" />
-            </li>
-            <li class="hz-yol-oge" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-              <span itemprop="name" aria-current="page">{{ service.title }}</span>
-              <meta itemprop="position" content="3" />
-            </li>
+          <ol class="hz-yol-liste">
+            <li class="hz-yol-oge"><NuxtLink to="/">Ana sayfa</NuxtLink></li>
+            <li class="hz-yol-oge"><NuxtLink to="/hizmetlerimiz">Hizmetlerimiz</NuxtLink></li>
+            <li class="hz-yol-oge"><span aria-current="page">{{ service.title }}</span></li>
           </ol>
         </nav>
 
@@ -97,6 +179,18 @@ const imageAlt = computed(
         <p v-if="service.subtitle" class="hz-etiket op-kunye">{{ service.subtitle }}</p>
         <p v-if="service.excerpt" class="hz-giris-metin tip-giris">{{ service.excerpt }}</p>
 
+        <!-- GİRİŞ GÖRSELİ = LCP ELEMENTİ.
+             `preload` EKLENDİ. Ölçüldü (390 mobil, üretim yapısı): LCP
+             3030ms ve bunun %36'sı (1079ms) Load Delay idi — tarayıcı
+             görseli ancak HTML çözümlenip düzen kurulduktan sonra
+             görüyordu. `fetchpriority` bulunduktan SONRAKİ sırayı
+             düzeltiyor, bulunma anını değil.
+
+             `width`/`height` BİLEREK VERİLMİYOR. Yedi hizmet görselinin
+             en-boy oranı aynı değil (ölçüldü: 1.491 · 1.833 · 0.806);
+             şablona tek bir oran yazmak beş kayıtta YANLIŞ veri olurdu.
+             Yer ayırma zaten CSS'te: ≤1023'te `aspect-ratio: 16/10`,
+             ≥1024'te ızgara satırı + `min-height`. Ölçülen CLS: 0. -->
         <figure v-if="service.imagePath" class="hz-gorsel">
           <NuxtImg
             :src="service.imagePath"
@@ -106,6 +200,7 @@ const imageAlt = computed(
             sizes="xs:90vw sm:90vw md:90vw lg:44vw xl:44vw"
             loading="eager"
             fetchpriority="high"
+            preload
             decoding="async"
           />
         </figure>
@@ -129,10 +224,28 @@ const imageAlt = computed(
     <!-- ══ NASIL YAPILIYOR ════════════════════════════════════════════
          Panelden gelen HTML. Ölçü 58ch'de sabit; 1920'de satır uzamıyor. -->
     <section v-if="service.content" class="hz-bolum hz-bolum--cukur" aria-labelledby="nasil">
-      <div class="hz-alan sahne-alan">
+      <div class="hz-alan hz-alan--marjli sahne-alan">
         <p class="hz-no op-kunye">{{ bolumler.nasil.no }} / {{ bolumler.nasil.etiket }}</p>
         <h2 id="nasil" class="hz-h2 tip-anlati">{{ service.title }} nasıl planlanıyor?</h2>
         <article-prose :html="service.content" class="hz-govde" />
+
+        <!-- SAĞ TEKNİK MARJ — bkz. `adimlar` hesaplaması.
+             Dekoratif değil ama BAĞLANTI da değil: gövdenin kendi h3
+             iskeleti. `aria-hidden` çünkü aynı başlıklar zaten belgede
+             h3 olarak var. Yalnız ≥1024'te basılıyor. -->
+        <aside v-if="adimlar.length" class="hz-marj" aria-hidden="true">
+          <div class="hz-marj-ic">
+            <p class="hz-marj-kunye op-kunye">İŞ SIRASI</p>
+            <ol class="hz-marj-liste">
+              <!-- Numara BASILMIYOR: bazı hizmetlerin h3'leri kendi
+                   numarasını taşıyor ("1. Keşif"), bazılarınınki
+                   taşımıyor. Şablon numara eklerse ilkinde "01 1. Keşif"
+                   çıkardı. Sayım işini ölçü çizgisi görüyor — sayfanın
+                   kapsam kütüğündeki madde işaretinin aynısı. -->
+              <li v-for="adim in adimlar" :key="adim" class="hz-marj-oge">{{ adim }}</li>
+            </ol>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -189,6 +302,23 @@ const imageAlt = computed(
           <NuxtLink to="/iletisim" class="op-bag op-bag--sakin hz-satirbag">keşif talebi</NuxtLink>
           bırakabilirsiniz.
         </p>
+        <!-- Doğrudan yollar — aynı cümlenin devamı, ayrı bir çağrı bloğu
+             değil. Numara ve WhatsApp panelden geliyor; ikisi de boşsa
+             bu satır hiç basılmıyor (boş "bize ulaşın" cümlesi üretmiyor). -->
+        <p v-if="telefon || whatsApp" class="hz-kapanis hz-kapanis--iletisim tip-govde">
+          Konuşarak ilerlemek isterseniz
+          <a v-if="telefon" :href="telefonYolu" class="op-bag op-bag--sakin hz-satirbag">{{ telefon }}</a>
+          <template v-if="telefon && whatsApp"> numarasını arayabilir ya da </template>
+          <a
+            v-if="whatsApp"
+            :href="whatsApp"
+            target="_blank"
+            rel="noopener"
+            class="op-bag op-bag--sakin hz-satirbag"
+          >WhatsApp'tan</a>
+          <template v-if="whatsApp"> yazabilirsiniz.</template>
+          <template v-else> numarasını arayabilirsiniz.</template>
+        </p>
 
         <div v-if="related.length" class="hz-ilgili">
           <p class="hz-ilgili-baslik op-kunye">BİRLİKTE SIK GEREKEN HİZMETLER</p>
@@ -237,6 +367,7 @@ const imageAlt = computed(
   color: rgb(var(--c-measure));
 }
 .hz-yol a {
+  position: relative;
   color: rgb(var(--c-ink-soft));
   text-decoration: none;
   border-bottom: 1px solid transparent;
@@ -244,6 +375,17 @@ const imageAlt = computed(
 .hz-yol a:hover {
   color: rgb(var(--c-ink));
   border-bottom-color: rgb(var(--c-ink));
+}
+/* DOKUNMA ALANI — ölçüldü: 390'da yol izi bağlantıları 20px yüksekliğindeydi
+   (WCAG 2.2 · 2.5.8 eşiği 24px). Punto ve satır aralığı DEĞİŞMEDİ; yalnız
+   görünmez bir hedef büyütücü eklendi, böylece yol izinin optik ağırlığı
+   aynı kalıyor. `-3px` üstte ve altta 20 + 6 = 26px veriyor; eşiğin tam
+   üstünde durmak yerine bir piksel pay bırakılıyor (kutu yüksekliği
+   kesirli olduğunda yuvarlama 24'ün altına düşürebiliyordu — ölçüldü). */
+.hz-yol a::after {
+  content: '';
+  position: absolute;
+  inset: -3px -4px;
 }
 .hz-yol [aria-current='page'] { color: rgb(var(--c-ink)); }
 
@@ -354,11 +496,20 @@ const imageAlt = computed(
   max-width: var(--olcu-govde);
 }
 
+/* ---- 02'nin sağ teknik marjı ------------------------------------------- */
+/* Mobil ve tablette HİÇ BASILMIYOR: dar ekranda gövdenin altına inen bir
+   başlık listesi, aynı başlıkları iki kez okutmaktan başka bir şey
+   yapmazdı. Yapışkanlık, çizgi ve tırnakların tamamı ≥1024 kuralında. */
+.hz-marj { display: none; }
+
 /* ---- Sonraki adım ------------------------------------------------------ */
 .hz-kapanis {
   margin: clamp(1.5rem, 1.25rem + 1vw, 2.25rem) 0 0;
   max-width: var(--olcu-govde);
 }
+/* Doğrudan iletişim satırı kapanış cümlesinin DEVAMI; yeni bir blok değil,
+   bu yüzden aralık bölümler arası değil paragraflar arası ölçüde. */
+.hz-kapanis--iletisim { margin-top: 0.85rem; }
 .hz-satirbag {
   min-height: 0;
   font-size: inherit;
@@ -433,6 +584,73 @@ const imageAlt = computed(
   .hz-ilgili { grid-column: 1 / 13; }
   .hz-govde,
   .hz-kapanis { grid-column: 2 / 9; }
+
+  /* ---- 02'nin sağ teknik marjı (yalnız masaüstü) ----------------------
+     Marj D ekseninde (10–13) ve bölümün ÜÇ satırını birden kaplıyor:
+     künye · başlık · gövde. Satır sayısı bu bölümde sabit, o yüzden
+     `1 / 4` deterministik — ölçüm ya da JS gerekmiyor.
+
+     İki katman:
+       · dikey çizgi bölümün TAMAMI boyunca iniyor (fiziksel doluluk)
+       · künye + adım listesi yapışkan, okurla birlikte geliyor (algısal)
+     Yapışkanlık bir "pin sahnesi" DEĞİL: bölüm kaymaya devam ediyor,
+     yalnız marj kendi ızgara alanı içinde kalıyor. Kaydırma zaman
+     çizelgesi, animasyon ya da JS yok; `prefers-reduced-motion`
+     davranışı değişmiyor çünkü hareket eden bir şey yok. */
+  .hz-alan--marjli .hz-govde { grid-row: 3; }
+  .hz-marj {
+    display: block;
+    grid-column: 10 / 13;
+    grid-row: 1 / 4;
+    align-self: stretch;
+    border-left: 1px solid rgb(var(--c-rule));
+    padding-left: clamp(1rem, 0.75rem + 0.8vw, 1.75rem);
+  }
+  .hz-marj-ic {
+    position: sticky;
+    /* navbar + bir nefes: künye başlığın altına girmiyor */
+    top: calc(var(--sahne-navbar) + 3.5rem);
+  }
+  /* Tek bakır vurgu: marjın başladığı yeri işaretleyen datum başlığı.
+     Sayfanın geri kalanında bakır yok; burada da tek bir çizgi kadar. */
+  .hz-marj-kunye {
+    position: relative;
+    padding-bottom: 0.75rem;
+  }
+  .hz-marj-kunye::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1.25rem;
+    height: 1px;
+    background: rgb(var(--c-signal));
+  }
+  .hz-marj-liste {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.7rem;
+  }
+  /* Madde işareti nokta değil ölçü çizgisi — kapsam kütüğündekiyle aynı. */
+  .hz-marj-oge {
+    position: relative;
+    padding-left: 1.75rem;
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: rgb(var(--c-ink-soft));
+  }
+  .hz-marj-oge::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 1rem;
+    height: 1px;
+    background: rgb(var(--c-measure));
+  }
 
   /* Kapsam maddeleri iki sütun: altı madde tek sütunda gereksiz uzuyordu. */
   .hz-kapsam {

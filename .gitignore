@@ -52,3 +52,10 @@ dagitim
 
 # Yazı tiplerinin tam (alt kümelenmemiş) kaynakları. public/fonts altındaki
 # dosyalar bunlardan `npm run font-altkume` ile üretiliyor. Depoda kalmaları
+
+# CMS düzeltme betiklerinin GERİ ALMA yedekleri (scripts/*.mjs --geri).
+# Bunlar bir veritabanının O ANKİ durumunun anlık görüntüsü: makineye ve
+# ortama özel, başka bir kurulumda geçersiz. Depoya girerlerse hem eski
+# metinleri sürüm geçmişine sabitler hem de yanlış ortamda çalıştırılıp
+# içeriği geriye döndürebilirler.
+scripts/.*-onceki.json
