@@ -84,6 +84,7 @@ const YAZILAR = {
   // ortaya çıkardı.
   // ══════════════════════════════════════════════════════════════════
   'evden-eve-nakliyat-fiyatlari-neye-gore-belirlenir': {
+    title: "Taşıma Fiyatını Hangi Koşullar Değiştiriyor?",
     subtitle: 'Aynı ev, iki farklı teklif: aradaki farkı yapan koşullar',
     metaTitle: 'Nakliyat Fiyatını Ne Belirler? Koşulların Etkisi',
     metaDescription:
@@ -118,6 +119,7 @@ const YAZILAR = {
   // metin kalmadı.
   // ══════════════════════════════════════════════════════════════════
   'tasinma-oncesi-yapilacaklar-listesi': {
+    title: "Taşınma Öncesi Dört Hafta: Hangi Karar Ne Zaman?",
     subtitle: 'Erişim ve eşya kararlarını dört haftaya yayan hazırlık planı',
     metaTitle: 'Taşınma Öncesi Hazırlık: Dört Haftalık Plan',
     metaDescription:
@@ -155,6 +157,7 @@ const YAZILAR = {
   // yerine hangi parçanın üstündeki yükü taşıyabildiği anlatılıyor.
   // ══════════════════════════════════════════════════════════════════
   'kirilacak-esyalar-nasil-paketlenir': {
+    title: "Kırılacak Eşya Kutunun İçinde Neden Kırılır?",
     subtitle: 'Malzeme, yön ve kutu seçimini kırılma sebebine göre kurmak',
     metaTitle: 'Kırılacak Eşya Paketleme: Boşluk Neden Kırar?',
     metaDescription:
@@ -196,6 +199,7 @@ const YAZILAR = {
   // netleştiriyoruz").
   // ══════════════════════════════════════════════════════════════════
   'nakliyat-sigortasi-neyi-kapsar': {
+    title: "Nakliyat Sigortası: Teklif Alırken Ne Sorulmalı?",
     subtitle: 'Genel bilgilendirme: teklif alırken sorulması gereken başlıklar',
     metaTitle: 'Nakliyat Sigortası: Poliçede Neye Bakmalı?',
     metaDescription:
@@ -290,6 +294,7 @@ const YAZILAR = {
   // atılmaz" genel bir kural, bir toplama hizmeti vaadi değil.
   // ══════════════════════════════════════════════════════════════════
   'tasinirken-esyalardan-nasil-kurtulunur': {
+    title: "Taşınmadan Önce Eleme: Eşya Nereye Gidiyor?",
     subtitle: 'Hacmi ve yeni evdeki düzeni birlikte belirleyen dört sonuç',
     metaTitle: 'Taşınmadan Önce Eşya Elemesi Nasıl Yapılır?',
     metaDescription:
@@ -382,6 +387,7 @@ const YAZILAR = {
   // zorlanmadı.
   // ══════════════════════════════════════════════════════════════════
   'evcil-hayvanla-tasinmak': {
+    title: "Taşınma Günü Evcil Hayvan Nerede Durmalı?",
     subtitle: 'Kabın alıştırılmasından yeni evde kademeli geçişe kadar',
     metaTitle: 'Evcil Hayvanla Taşınmak: Gün Nasıl Planlanır?',
     metaDescription:
@@ -465,6 +471,7 @@ const YAZILAR = {
   // yanınızda kalsın" deniyor, hangi ilaç/doz/koşul denmiyor.
   // ══════════════════════════════════════════════════════════════════
   'tasinma-gunu-ilk-gece-kutusu': {
+    title: "İlk Gece Kutusuna Ne Girer, Ne Girmez?",
     subtitle: 'Hiçbir koliyi açmadan ilk saatleri geçirmek için ayrılan kutu',
     metaTitle: 'İlk Gece Kutusu: Taşınma Akşamı İçin Liste',
     metaDescription:
@@ -511,24 +518,42 @@ if (process.argv.includes('--geri')) {
   }
   console.log('\nOn kayıt M11B öncesi hâline döndürüldü.')
 } else {
-  const yedek = []
+  /*
+   * YEDEK BİRİKEREK TAMAMLANIYOR — M11B2'de gerekti.
+   *
+   * İlk koşumda `title` yalnız üç kayıtta değişmişti (#10, #12, #14);
+   * kalan yedi kaydın yedeğinde `title` alanı YOKTU. M11B2 o yedinin de
+   * başlığını değiştiriyor ve yedeğe eklenmezse `--geri` onları geri
+   * getiremezdi.
+   *
+   * Kural: yedekte ZATEN VAR OLAN hiçbir alan ezilmiyor. Yalnız ilk kez
+   * değişen bir alan için o alanın ŞU ANKİ değeri ekleniyor — bu alanlar
+   * daha önce hiç dokunulmadığı için o değer M11B ÖNCESİ değerin ta
+   * kendisi. Yani dosya hâlâ "orijinal hâl" anlamını taşıyor.
+   */
+  const yedek = existsSync(YEDEK) ? JSON.parse(readFileSync(YEDEK, 'utf8')) : []
+  let yedekDegisti = !existsSync(YEDEK)
+
   for (const [slug, yeni] of Object.entries(YAZILAR)) {
     const kayit = await db.post.findUnique({ where: { slug } })
     if (!kayit) throw new Error(`Kayıt bulunamadı: ${slug}`)
 
-    const eski = {}
+    let girdi = yedek.find((y) => y.slug === slug)
+    if (!girdi) { girdi = { id: kayit.id, slug, eski: {} }; yedek.push(girdi); yedekDegisti = true }
+
     const yaz = {}
+    const yeniAlan = []
     for (const alan of ALANLAR) {
       if (yeni[alan] === undefined) continue
       if (kayit[alan] === yeni[alan]) continue // yeniden çalıştırmada atlanır
-      eski[alan] = kayit[alan]
+      if (!(alan in girdi.eski)) { girdi.eski[alan] = kayit[alan]; yedekDegisti = true; yeniAlan.push(alan) }
       yaz[alan] = yeni[alan]
     }
     if (!Object.keys(yaz).length) {
       console.log(`ATLANDI #${kayit.id} ${slug} — alanlar zaten güncel`)
       continue
     }
-    yedek.push({ id: kayit.id, slug, eski })
+    if (yeniAlan.length) console.log(`   yedeğe eklendi: ${yeniAlan.join(', ')}`)
     await db.post.update({ where: { id: kayit.id }, data: yaz })
     const kelime = (s) => String(s || '').replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean).length
     console.log(
@@ -538,13 +563,14 @@ if (process.argv.includes('--geri')) {
     )
   }
 
-  // Yedek YALNIZ BİR KEZ yazılır: script yeniden çalıştırıldığında özgün
-  // değerlerin üstüne yazılmaz.
-  if (!existsSync(YEDEK)) {
+  // Yedek yalnız YENİ ALAN eklendiğinde yazılır; var olan değerler
+  // hiçbir koşulda güncellenmez (yukarıdaki `if (!(alan in girdi.eski))`).
+  if (yedekDegisti) {
     writeFileSync(YEDEK, JSON.stringify(yedek, null, 1), 'utf8')
-    console.log(`\nM11B öncesi değerler ${YEDEK} içine yazıldı (${yedek.length} kayıt).`)
+    const n = yedek.reduce((a, y) => a + Object.keys(y.eski).length, 0)
+    console.log(`\nYedek güncellendi: ${YEDEK} (${yedek.length} kayıt, ${n} alan).`)
   } else {
-    console.log(`\nYedek zaten var, KORUNUYOR: ${YEDEK}`)
+    console.log(`\nYedek değişmedi, olduğu gibi duruyor: ${YEDEK}`)
   }
   console.log('Geri almak için: node --env-file=.env scripts/blog-istanbul-authority.mjs --geri')
 }
