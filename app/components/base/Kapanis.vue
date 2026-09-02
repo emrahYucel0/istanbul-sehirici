@@ -41,21 +41,41 @@
  * HAREKET YOK: nabız, zıplama, kayan ok, parlayan buton — hiçbiri.
  */
 /**
- * ICERIK KAYNAGI — `HomeSection('kapanis')` + Site Ayarlari.
+ * ICERIK KAYNAGI — cagiran sayfa + Site Ayarlari.
  *
- * Baslik ve dugme etiketi panelden. Telefon ve hedef adres IKINCI KEZ
- * SAKLANMIYOR: telefon Site Ayarlarindan, `/iletisim` ise rota yapisinin
- * kendisinden geliyor.
+ * ─────────────────────────────────────────────────────────────────────────
+ * ARTIK YALNIZ ANA SAYFANIN DEGIL: ORTAK KAPANIS.
+ *
+ * Bu blok once yalnizca ana sayfada vardi ve `HomeSection('kapanis')`
+ * kaydini kendisi okuyordu. Simdi hizmet detaylari, blog yazilari, blog
+ * dizini, bolge ailesi, hakkimizda ve fiyat sayfasi da ayni blogu
+ * kullaniyor — yani bilesen artik BIR SAYFANIN bolumu degil, sitenin
+ * kapanis imzasi.
+ *
+ * Degisen tek sey KAYNAK: baslik ve eylem etiketi artik prop. Ana sayfa
+ * onlari panelden okuyup geciriyor (davranis aynen korundu), diger
+ * aileler `utils/kapanis.ts` icindeki sabit varyanti veriyor. Bilesen
+ * kendi icinde HICBIR istek atmiyor; tek istisna telefon.
+ *
+ * Telefon ve hedef adres IKINCI KEZ SAKLANMIYOR: telefon Site
+ * Ayarlarindan, `/iletisim` ise rota yapisinin kendisinden geliyor.
  */
-defineProps({
-  bolum: { type: Object, required: true },
+const props = defineProps({
+  /** Kapanış cümlesi. Ana sayfada panelden, diğer ailelerde sabit. */
+  baslik: { type: String, required: true },
+  /** Birincil eylemin etiketi; boşsa kütükteki varsayılan basılıyor. */
+  eylem: { type: String, default: '' },
 })
+
+/** Panel alanı boş bırakılırsa düğme etiketsiz kalmasın. */
+const eylemMetni = computed(() => props.eylem?.trim() || KAPANIS_EYLEMI)
 
 const { settings } = await useSiteSettings()
 
 /** Telefon SABİT YAZILMIYOR; Site Ayarları'ndan geliyor. */
 const phone = computed(() => settings.value?.phone || settings.value?.mobilePhone || '')
-const telHref = computed(() => `tel:${String(phone.value).replace(/[^\d+]/g, '')}`)
+/** E.164'e çeviren tek kütük — bkz. `utils/kapanis.ts`. */
+const telHref = computed(() => telefonYolu(phone.value))
 </script>
 
 <template>
@@ -69,12 +89,12 @@ const telHref = computed(() => `tel:${String(phone.value).replace(/[^\d+]/g, '')
        Gelecekte başka bir koyu bölüm eklenirse yalnız bu nitelik yeter. -->
   <section class="cl" data-yuzey="koyu" aria-labelledby="kapanis-baslik">
     <div class="cl-alan">
-<h2 id="kapanis-baslik" class="cl-h2">{{ bolum.heading }}</h2>
+<h2 id="kapanis-baslik" class="cl-h2">{{ baslik }}</h2>
 
       <div class="cl-eylem">
         <!-- Birincil ağırlık artık kütükten (`.op-eylem`); burada ikinci
              kez tanımlanmıyor. Koyu yüzey için `--ters`. -->
-        <NuxtLink to="/iletisim" class="op-eylem op-eylem--ters">{{ bolum.ctaLabel }}</NuxtLink>
+        <NuxtLink to="/iletisim" class="op-eylem op-eylem--ters">{{ eylemMetni }}</NuxtLink>
         <!-- Telefon girilmemişse hiç render edilmiyor: çalışmayan bir
              `tel:` bağlantısı göstermek yanlış bilgi olurdu. -->
         <a

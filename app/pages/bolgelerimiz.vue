@@ -90,6 +90,9 @@ const { data: icerikYanit } = await useFetch('/api/ic-sayfa?page=bolgeler', {
 /** Bölüm anahtarına göre kontrollü içerik; kayıt yoksa boş nesne. */
 const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
 
+/** Ortak kapanış imzasının bu ailedeki cümlesi — bkz. utils/kapanis.ts. */
+const kapanisMetni = KAPANIS_METNI.ana
+
 </script>
 
 <template>
@@ -101,5 +104,9 @@ const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
       :bolum="bolum('dizin')"
     />
     <region-bolge-aciklama :bolum="bolum('aciklama')" />
+    <!-- Bölge ailesinin kapanışı: ilçe ve mahalle sayfalarıyla aynı blok,
+         aynı cümle. Sayfanın kendi kapanış paragrafı (`bolge-aciklama`)
+         iletişime değil `/` ve `/hizmetlerimiz`e bağlanıyor; çakışma yok. -->
+    <lazy-base-kapanis :baslik="kapanisMetni" :hydrate-on-visible="{ rootMargin: '300px' }" />
   </main>
 </template>

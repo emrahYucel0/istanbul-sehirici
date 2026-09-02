@@ -414,10 +414,11 @@ const gorselAlt = computed(
           </li>
         </ul>
 
+        <!-- "Keşif talebi" bağlantısı BURADAN ÇIKTI: sayfanın sonundaki
+             ortak kapanış imzası aynı yere, telefonuyla birlikte
+             bağlanıyor. Fiyat aracı farklı bir hedef, kalıyor. -->
         <p class="ilc-kapanis tip-govde">
-          Adres koşullarını birlikte çıkaralım:
-          <NuxtLink to="/iletisim" class="op-bag op-bag--sakin ilc-bag">keşif talebi</NuxtLink>
-          bırakabilir ya da
+          Adres koşullarını birlikte çıkaralım: kaba bir aralık için
           <NuxtLink to="/fiyat-hesaplama" class="op-bag op-bag--sakin ilc-bag">
             fiyat hesaplama aracını
           </NuxtLink>

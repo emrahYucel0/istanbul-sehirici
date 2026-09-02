@@ -27,9 +27,17 @@
     <slot />
   </div>
 
-  <div class="ft-perde">
-    <fixed-footer />
-  </div>
+  <!--
+    ALT BİLGİ NORMAL AKIŞTA — SARMALAYICI YOK.
+
+    Sayfa yapısı: #icerik → (içeriğin son bloğu: ortak kapanış imzası) →
+    alt bilgi. Alt bilgiye ancak sayfanın sonuna gerçekten kaydırılarak
+    ulaşılıyor; içeriğin arkasından "açılan" bir perde YOK.
+
+    Buraya sarmalayıcı bir <div> EKLEMEYİN. İki kez denendi, ikisinde de
+    aynı hatayı üretti; gerekçe ve ölçümler stil bloğunda.
+  -->
+  <fixed-footer />
 </template>
 
 <style scoped>
@@ -63,55 +71,62 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   ALT BİLGİ PERDESİ
+   ALT BİLGİ PERDESİ KALDIRILDI — İKİ KEZ. Ölçülmüş sebep.
    -----------------------------------------------------------------------
-   NE YAPIYOR
-   Alt bilgi pencerenin dibine yapışıyor ve içerik onun ÜSTÜNDEN kayıyor;
-   sayfanın sonuna gelindiğinde içeriğin alt kenarı yükselip alt bilgiyi
-   açığa çıkarıyor. Perde etkisi buradan geliyor — hiçbir şey animasyonla
-   belirmiyor, yalnız iki katman birbirinin önünden geçiyor.
+   Burada, yalnız ≥1024px için, şu kural vardı:
 
-   KAPANIŞ İLE UYUMU
-   Kapanış bloğu sayfanın tek koyu yüzeyi ve `#icerik`in son elemanı;
-   yani açılan şey mürekkep bir perdenin altındaki kâğıt. Navbar'ın koyu
-   tonu (PASS A) bundan etkilenmiyor: bar `<header>` içinde, `#icerik`in
-   KARDEŞİ — yeni yığın bağlamının dışında kalıyor ve z-index 50 ile
-   ikisinin de üstünde.
+       .ft-perde { position: sticky; bottom: 0; z-index: 0 }
+       #icerik   { position: relative; z-index: 1; background: paper }
 
-   ÜÇ ÇİT
-   1. `#icerik` OPAK OLMAK ZORUNDA. Bölümler kendi zeminlerini veriyor ama
-      aralarında kalan 1px'lik yuvarlama farkları bile alttaki alt bilgiyi
-      sızdırırdı.
-   2. KLAVYE ODAĞI. Alt bilgi kaydırma boyunca pencerenin dibinde duruyor
-      ama içeriğin ARKASINDA; oradaki bir bağlantıya Tab'la gelindiğinde
-      tarayıcı "zaten görünür" sayıp sayfayı kaydırmaz ve odak görünmez
-      kalırdı. `:focus-within` odak alt bilgiye girdiği anda onu öne
-      alıyor. JS gerekmiyor.
-   3. YALNIZ ≥1024px. Mobilde pin yok (hareket sözleşmesi md.7); ayrıca
-      iOS Safari'de adres çubuğu daralıp genişlerken yapışkan alt kenar
-      titriyor. Dar ekranda alt bilgi normal akışta, bugünkü gibi.
+   Alt bilgi pencerenin dibine yapışıyor, içerik onun üstünden kayıyor ve
+   sayfanın sonunda "perde açılıyordu".
 
-   KISA SAYFA
-   `sticky` bir öğeyi doğal konumunun YUKARISINA taşımaz. İçerik pencereden
-   kısaysa alt bilgi olduğu yerde kalıyor; boşluk da bugünküyle aynı.
+   İKİNCİ DENEME de kaldırıldı. Mekanizma bir kez `.footer-reveal` adıyla,
+   breakpoint sınırı olmadan geri getirildi. Ölçüldü: davranış birebir
+   aynıydı — 1920'de footer.top=381 / vh=960, 390'da 138 / 844, yani alt
+   bilgi yine her sayfada ve her an viewport'un içindeydi. O turda piksel
+   sızıntısı 0 çıkmıştı (13.824 nokta), ama SIFIR OLMASININ SEBEBİ her
+   sayfanın ilk bölümünün kendi opak zeminiydi; zeminsiz tek bir bölüm
+   eklendiği gün sessizce bozulacaktı. Ada bakılmaz, mekanizmaya bakılır:
+   viewport'a bağlı alt bilgi bu düzende kullanılmıyor.
+
+   NEDEN KALDIRILDI
+   Yapışkan alt bilgi HER SAYFADA, HER AN viewport'un içindeydi; yalnızca
+   opak `#icerik` onu örttüğü için görünmüyordu. Ölçüldü (1920×960,
+   /bolgelerimiz, TAM SAYFA YÜKLEME, scrollY = 0):
+
+       footer.getBoundingClientRect().top = 381
+       innerHeight                        = 960
+       viewport ile kesişim               = 579 px
+
+   Yani sayfanın en başındayken bile alt bilgi ekranın alt yarısındaydı.
+   Rota değişiminde yeni sayfanın `#icerik` kutusu bir an pencereden kısa
+   kaldığında örtü kalkıyor ve alt bilgi doğrudan görünüyordu — kullanıcının
+   videoda gördüğü davranış buydu.
+
+   NEDEN scrollY TESTİ BUNU KAÇIRDI
+   Kaydırma gerçekten 0'a iniyordu; sorun kaydırmada değil YERLEŞİMDE ve
+   boyama sırasındaydı. `scrollY === 0` tek başına geçerli bir ölçüt değil;
+   artık `footerRect.top >= innerHeight` de ölçülüyor.
+
+   ŞİMDİ
+   Alt bilgi normal akışta: içerik → ortak kapanış imzası → alt bilgi. Ona
+   ancak sayfanın sonuna gerçekten kaydırıldığında ulaşılıyor. Sayfanın
+   koyu kapanışı zaten alt bilgiden önce net bir sınır çiziyor; perdenin
+   anlatmaya çalıştığı "anlatı bitti" duygusunu o taşıyor.
+
+   BİRLİKTE GİDENLER — hepsi YALNIZ perdeyi beslemek için vardı
+   · `#icerik { position: relative; z-index; background }`. Zemin de
+     gereksiz: gövde zemini zaten `--c-surface-muted` ve o
+     `var(--c-paper)`a bağlı (tokens.css). Perde yokken `#icerik`in
+     örtme görevi de yok.
+   · `:focus-within { z-index }` — klavye odağının perdenin ARKASINDA
+     kalmasını önlüyordu. Alt bilgi artık hiçbir şeyin arkasında değil,
+     odak doğal olarak görünür. Erişilebilirlik geriye gitmiyor: bu kural
+     perdenin açtığı bir yarayı kapatıyordu, kendi başına bir kazanım
+     değildi.
+   · `#icerik` id'si ve `tabindex="-1"` DURUYOR — atlama bağlantısının
+     hedefi ve Navbar.vue:88 mobil menüde `inert` için onu seçiyor.
+     `#icerik:focus { outline: none }` de duruyor, o skip-link'e ait.
    ═══════════════════════════════════════════════════════════════════════ */
-@media (min-width: 1024px) {
-  #icerik {
-    position: relative;
-    z-index: 1;
-    background: rgb(var(--c-paper));
-  }
-  .ft-perde {
-    position: sticky;
-    bottom: 0;
-    z-index: 0;
-  }
-  /* `:focus-within` — `:has(:focus-visible)` DEĞİL. İkincisi yalnız klavye
-     odağında tetikleniyor; fare ile tıklanan bir bağlantı da odak alıyor ve
-     o an perde öne gelmezse tıklanan öğe içeriğin arkasında kalabiliyor.
-     `:focus-within` ikisini de kapsıyor ve `:has()` gerektirmiyor. */
-  .ft-perde:focus-within {
-    z-index: 2;
-  }
-}
 </style>

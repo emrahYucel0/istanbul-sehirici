@@ -53,6 +53,9 @@ const { data: icerikYanit } = await useFetch('/api/ic-sayfa?page=fiyat', {
 
 const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
 
+/** Ortak kapanış imzasının bu ailedeki cümlesi — bkz. utils/kapanis.ts. */
+const kapanisMetni = KAPANIS_METNI.fiyat
+
 </script>
 
 <template>
@@ -61,5 +64,15 @@ const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
     <price-hesaplayici :bolum="bolum('arac')" />
     <price-faktorler :girenler="bolum('girenler')" :disarida="bolum('disarida')" />
     <price-sonraki-adim :bolum="bolum('sonraki')" />
+    <!--
+      DUPLICATION AUDIT — bu sayfada üç ayrı çağrı vardı:
+        · hesap sonucu panelindeki `.fh-cta` (02. bölüm, YALNIZ sonuç
+          çıktığında görünür) — bağlamsal, sayfanın ortasında, KALIYOR
+        · `price-sonraki-adim` son paragrafındaki iletişim bağlantısı
+          → ortak imzaya devredildi, oradan çıkarıldı
+        · kapanış — artık bu blok
+      Sayfa sonunda tek ana iletişim kapanışı var.
+    -->
+    <lazy-base-kapanis :baslik="kapanisMetni" :hydrate-on-visible="{ rootMargin: '300px' }" />
   </main>
 </template>

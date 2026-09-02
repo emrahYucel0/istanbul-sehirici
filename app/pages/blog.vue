@@ -76,12 +76,23 @@ const { data: icerikYanit } = await useFetch('/api/ic-sayfa?page=blog', {
 /** Bölüm anahtarına göre kontrollü içerik; kayıt yoksa boş nesne. */
 const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
 
+/** Ortak kapanış imzasının bu ailedeki cümlesi — bkz. utils/kapanis.ts. */
+const kapanisMetni = KAPANIS_METNI.yazi
+
 </script>
 
 <template>
   <main>
     <blog-index-giris :yazi-sayisi="(yazilar || []).length" :bolum="bolum('giris')" />
     <blog-index-yazi-listesi :yazilar="yazilar || []" :hata="Boolean(error)" />
-    <blog-index-kapanis />
+    <!--
+      `blog-index-kapanis` YERİNİ ORTAK İMZAYA BIRAKTI.
+      O bileşen tek bir paragraftı ve tek işi iletişim sayfasına
+      yönlendirmekti — yani sitenin geri kalanında artık ortak blokla
+      yapılan iş. Cümlesi de yeni başlıkta yaşıyor: yazılar genel
+      durumları anlatıyor, koşullar konuşulunca netleşiyor.
+      Dosya silinmedi, yalnız render edilmiyor.
+    -->
+    <lazy-base-kapanis :baslik="kapanisMetni" :hydrate-on-visible="{ rootMargin: '300px' }" />
   </main>
 </template>

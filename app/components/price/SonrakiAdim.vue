@@ -36,14 +36,16 @@ defineProps({
         </p>
       </div>
 
+      <!-- İLETİŞİM BAĞLANTISI BURADAN ÇIKTI: bu bölümün hemen altında ortak
+           kapanış imzası duruyor ve "taşınmayı konuşalım" çağrısını
+           telefonla birlikte o taşıyor. Kalan bağlantı hizmet dizini —
+           farklı hedef, farklı soru. -->
       <p class="fs-yollar tip-govde">
-        Taşınmanızı anlatmak için
-        <NuxtLink to="/iletisim" class="op-bag op-bag--sakin fs-bag">iletişim</NuxtLink>
-        sayfasını, hangi hizmetin kapsamına girdiğinizden emin değilseniz
+        Hangi hizmetin kapsamına girdiğinizden emin değilseniz
         <NuxtLink to="/hizmetlerimiz" class="op-bag op-bag--sakin fs-bag"
           >nakliyat hizmetleri</NuxtLink
         >
-        sayfasını kullanabilirsiniz.
+        sayfasına bakabilirsiniz.
       </p>
     </div>
   </section>

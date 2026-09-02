@@ -31,6 +31,9 @@ const [hizmetYanit, icerikYanit] = await Promise.all([
 /** Bölüm anahtarına göre kontrollü içerik; kayıt yoksa boş nesne. */
 const bolum = (anahtar) => icerikYanit.data.value?.data?.[anahtar] ?? {}
 
+/** Ortak kapanış imzasının bu ailedeki cümlesi — bkz. utils/kapanis.ts. */
+const kapanisMetni = KAPANIS_METNI.ana
+
 /**
  * `useFetch` bir REF DEĞİL, `AsyncData` nesnesi döndürüyor: `{ data, pending,
  * error, refresh, ... }`. Yani gövdeye `yanit.data.value` ile inilir.
@@ -121,5 +124,11 @@ useHead({
     />
 
     <service-birlikte :bolum="bolum('birlikte')" :sahne="bolum('sahne')" />
+    <!-- Hizmet dizini de ortak kapanış imzasını alıyor: altındaki yedi
+         hizmet detayının hepsinde aynı blok var, hub'ın dışarıda kalması
+         sistemi yarım bırakıyordu. `service-birlikte`nin son cümlesindeki
+         keşif talebi bağlantısı buraya devredildi; fiyat aracı bağlantısı
+         farklı bir hedef olduğu için orada kaldı. -->
+    <lazy-base-kapanis :baslik="kapanisMetni" :hydrate-on-visible="{ rootMargin: '300px' }" />
   </main>
 </template>

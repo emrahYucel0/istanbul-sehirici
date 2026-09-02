@@ -253,12 +253,12 @@ const sonrakiYazi = computed(() =>
 
         <!-- Dönüşüm hero'su YOK: yazıyı bitiren okuyucu ikinci bir hero
              değil, sakin bir yön görüyor. -->
+        <!-- İLETİŞİM CÜMLESİ BURADAN ÇIKTI: sayfanın en sonunda ortak
+             kapanış imzası duruyor ve aynı işi telefonuyla birlikte
+             yapıyor. Kalan yön okuma niyetine ait — dizine dönüş. -->
         <p class="yz-kapanis tip-govde">
           Diğer yazılar
           <NuxtLink to="/blog" class="op-bag op-bag--sakin yz-bag">blog dizininde</NuxtLink>.
-          Kendi taşınmanızı konuşmak isterseniz
-          <NuxtLink to="/iletisim" class="op-bag op-bag--sakin yz-bag">iletişim</NuxtLink>
-          sayfasını kullanabilirsiniz.
         </p>
       </div>
     </section>

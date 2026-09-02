@@ -132,6 +132,9 @@ const { data: icerikYanit } = await useFetch('/api/ic-sayfa?page=hakkimizda', {
 
 const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
 
+/** Ortak kapanış imzasının bu ailedeki cümlesi — bkz. utils/kapanis.ts. */
+const kapanisMetni = KAPANIS_METNI.ana
+
 </script>
 
 <template>
@@ -142,5 +145,9 @@ const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
     <about-saha :bolum="bolum('saha')" />
     <about-kapsam :hizmetler="hizmetler || []" :bolum="bolum('kapsam')" />
     <about-odak :bolum="bolum('odak')" />
+    <!-- `about-odak` içindeki "SONRAKİ ADIM" kutusunun iletişim cümlesi
+         buraya devredildi; orada kalan fiyat aracı bağlantısı farklı bir
+         hedef, tekrar değil. -->
+    <lazy-base-kapanis :baslik="kapanisMetni" :hydrate-on-visible="{ rootMargin: '300px' }" />
   </main>
 </template>

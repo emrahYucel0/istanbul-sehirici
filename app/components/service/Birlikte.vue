@@ -66,13 +66,14 @@ const gorseller = computed(() => props.sahne.items || [])
         </figure>
       </div>
 
+      <!-- KEŞİF TALEBİ BAĞLANTISI BURADAN ÇIKTI: bu bölümün hemen altında
+           sitenin ortak kapanış imzası duruyor ve aynı çağrıyı telefonuyla
+           birlikte o taşıyor. Fiyat aracı farklı bir hedef, kalıyor. -->
       <p class="sb-kapanis tip-govde">
         Hangi hizmetlerin birleşeceği adres görülmeden netleşmiyor. Kaba bir
         aralık için
         <NuxtLink to="/fiyat-hesaplama" class="op-bag op-bag--sakin sb-bag">fiyat hesaplama aracını</NuxtLink>
-        kullanabilir, kapsamı birlikte çıkarmak için
-        <NuxtLink to="/iletisim" class="op-bag op-bag--sakin sb-bag">keşif talebi</NuxtLink>
-        bırakabilirsiniz.
+        kullanabilirsiniz.
       </p>
     </div>
   </section>

@@ -250,32 +250,77 @@ describe('Fiyat hareketi yapıyı anlatıyor', () => {
 
 // ═══════════════════════════════════════════ ALT BİLGİ PERDESİ
 
-describe('alt bilgi perdesi', () => {
+/*
+ * ALT BİLGİ NORMAL AKIŞTA — eski "perde" sözleşmesinin yerini alan testler.
+ *
+ * Buradaki dört test daha önce `.ft-perde { position: sticky; bottom: 0 }`
+ * kuralının VARLIĞINI şart koşuyordu. O kural kaldırıldı: yapışkan alt bilgi
+ * her sayfada, her an viewport'un içindeydi (1920×960'ta scrollY=0 iken
+ * footer.top = 381, kesişim 579 px) ve rota değişiminde içerik örtüsü bir an
+ * kalktığında doğrudan görünüyordu.
+ *
+ * Testler silinmedi, TERSİNE ÇEVRİLDİ: artık alt bilginin viewport'a
+ * bağlanmadığını kilitliyorlar. Kural geri gelirse bu testler kırılır.
+ */
+describe('alt bilgi normal akışta', () => {
   const k = kodu(duzen)
 
-  it('içerik OPAK ve üstte', () => {
-    const i = k.indexOf('#icerik {', k.indexOf('@media (min-width: 1024px)'))
+  // TARİHÇE — İDDİALAR NEDEN ADA DEĞİL MEKANİZMAYA BAKIYOR.
+  // Yapışkan alt bilgi perdesi iki kez kaldırıldı: önce `.ft-perde`,
+  // sonra aynı mekanizma `.footer-reveal` adıyla geri gelince yeniden.
+  // Sınıf adını yasaklamak yetmiyor; üçüncü bir ad her şeyi baştan
+  // kırardı. Bu yüzden aşağıdaki iddialar KURALLARA bakıyor.
+
+  it('düzende yapışkan/sabit konumlu öğe yok — skip-link dışında', () => {
+    // `.skip-link` fixed olmak ZORUNDA (klavye atlama bağlantısı ekranın
+    // dışında bekliyor); onun dışında düzen katmanında konumlandırma
+    // kalmamalı. Ad ne olursa olsun kural yakalanıyor.
+    const kurallar = k.split('}').filter((b) => /position:\s*(sticky|fixed)/.test(b))
+    for (const kural of kurallar) expect(kural).toContain('.skip-link')
+  })
+
+  it('alt bilgi sarmalayıcısız — doğrudan düzenin çocuğu', () => {
+    // Perde her iki denemede de `<fixed-footer />`i bir <div> içine
+    // almıştı. Sarmalayıcı yoksa ona kural da yazılamaz.
+    expect(duzen).toMatch(/<fixed-footer\s*\/>/)
+    expect(duzen).not.toMatch(/<div[^>]*>\s*<fixed-footer/)
+    // Ada KODDA bakılıyor: yorumdaki tarihçe iki ismi de anıyor ve
+    // silinmemeli — kaldırma gerekçesi orada yazılı.
+    expect(k).not.toContain('ft-perde')
+    expect(k).not.toContain('footer-reveal')
+  })
+
+  it('#icerik perde için opaklaştırılmıyor', () => {
+    // `#icerik {` KURALINI arıyoruz — şablondaki `href="#icerik"` değil.
+    // Bu üçlü (position/z-index/background) yalnız perdeyi örtmek için
+    // vardı; perde yokken üçü de gereksiz.
+    const i = k.indexOf('#icerik {')
+    if (i === -1) return // kural hiç yoksa zaten geçer
     const govde = k.slice(i, k.indexOf('}', i))
-    expect(govde).toContain('z-index: 1')
-    expect(govde).toContain('background: rgb(var(--c-paper))')
+    expect(govde).not.toContain('z-index')
+    expect(govde).not.toContain('background')
+    expect(govde).not.toContain('position')
   })
 
-  it('perde yapışkan ve altta', () => {
-    const i = k.indexOf('.ft-perde {')
-    const govde = k.slice(i, k.indexOf('}', i))
-    expect(govde).toContain('position: sticky')
-    expect(govde).toContain('bottom: 0')
-    expect(govde).toContain('z-index: 0')
+  it('katman kurgusu yok — düzen z-index dağıtmıyor', () => {
+    // Tek istisna skip-link'in modal katmanı.
+    const zKurallari = k.split('}').filter((b) => /z-index/.test(b))
+    for (const kural of zKurallari) expect(kural).toContain('.skip-link')
   })
 
-  it('klavye odağı perdeyi öne alıyor', () => {
-    expect(k).toContain('.ft-perde:focus-within')
+  it('alt bilgi şablonda içerikten SONRA geliyor', () => {
+    const icerik = duzen.indexOf('id="icerik"')
+    const footer = duzen.indexOf('<fixed-footer')
+    expect(icerik).toBeGreaterThan(-1)
+    expect(footer).toBeGreaterThan(icerik)
   })
 
-  it('YALNIZ masaüstü — mobilde pin yok', () => {
-    const m = k.indexOf('@media (min-width: 1024px)')
-    expect(m).toBeGreaterThan(-1)
-    expect(k.indexOf('.ft-perde {')).toBeGreaterThan(m)
+  it('atlama bağlantısının hedefi korunuyor', () => {
+    // Perde temizliği erişilebilirliği geri götürmemeli.
+    expect(duzen).toContain('href="#icerik"')
+    expect(duzen).toContain('id="icerik"')
+    expect(duzen).toContain('tabindex="-1"')
+    expect(k).toContain('#icerik:focus')
   })
 
   it('eski yorum satırındaki deneme kaldırıldı', () => {

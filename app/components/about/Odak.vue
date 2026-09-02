@@ -54,6 +54,10 @@ defineProps({
         sayfasında ilçe ilçe yazılı.
       </p>
 
+      <!-- İLETİŞİM CÜMLESİ BURADAN ÇIKTI. Bu kutunun hemen altında artık
+           sitenin ortak kapanış imzası var ve adresleri konuşma çağrısını
+           o taşıyor; ikisi birlikte kalsaydı aynı sayfa sonunda iki kez
+           "iletişim sayfasını kullanın" yazacaktı. -->
       <div class="ho-adim">
         <p class="ho-adim-kunye op-kunye">SONRAKİ ADIM</p>
         <p class="ho-adim-metin tip-govde">
@@ -62,8 +66,6 @@ defineProps({
           <NuxtLink to="/fiyat-hesaplama" class="op-bag op-bag--sakin ho-bag"
             >fiyat hesaplama</NuxtLink
           >
-          sayfasını, adresleri ve tarihi paylaşıp keşif planlamak için
-          <NuxtLink to="/iletisim" class="op-bag op-bag--sakin ho-bag">iletişim</NuxtLink>
           sayfasını kullanabilirsiniz.
         </p>
       </div>

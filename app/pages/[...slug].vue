@@ -207,6 +207,22 @@ const mahalle = computed(() => {
 })
 
 /**
+ * ORTAK KAPANIŞ — hangi ailelerde ve hangi cümleyle.
+ *
+ * Şablonda değil burada hesaplanıyor: koşul dört dalı birden okuyor ve
+ * `final-cta`nın koşuluyla TAM TERS olmak zorunda; ikisi tek yerde yan
+ * yana dursun.
+ *
+ * İstanbul DIŞI bölge sayfaları (`region` var, `istanbulIlcesi` yok)
+ * bilerek dışarıda: onların kapanışı hâlâ eski `final-cta` bloğu ve o
+ * kayıtların hepsi bugün yayından çekili.
+ */
+const kapanisVar = computed(() =>
+  Boolean(post.value || service.value || istanbulIlcesi.value || mahalle.value)
+)
+const kapanisMetni = computed(() => (post.value ? KAPANIS_METNI.yazi : KAPANIS_METNI.ana))
+
+/**
  * Aynı ilçedeki mahalleler — kardeş gezinme listesi.
  *
  * Pasif kabuklar DAHİL: bu liste mahalle sayfasında duruyor ve o sayfalar
@@ -919,6 +935,27 @@ useHead({
          dille çelişiyordu. Bileşen silinmedi. -->
     <lazy-base-final-cta
       v-if="!post && !service && !istanbulIlcesi && !mahalle"
+      :hydrate-on-visible="{ rootMargin: '300px' }"
+    />
+
+    <!--
+      ORTAK KAPANIŞ İMZASI — dört aile, tek blok.
+
+      Yukarıdaki `final-cta` ile BİRLİKTE ÇIKAMAZ: onun koşulu bu dördünün
+      hepsinin YOK olması, buranınki en az birinin VAR olması. İki koyu
+      kapanış üst üste binmiyor.
+
+      METİN AİLEYE GÖRE. Yazı sayfasında okur bilgi almaya geldi; hizmet ve
+      bölge sayfalarında adres zaten konuşuluyor. `utils/kapanis.ts`.
+
+      Bu dört ailenin kendi kapanış paragrafları DURUYOR ama iletişim
+      cümleleri onlardan çıkarıldı: sayfa sonunda tek ana iletişim kapanışı
+      var. Kalan bağlantılar (fiyat aracı, blog dizini, komşu sayfalar)
+      farklı hedefler, tekrar değil.
+    -->
+    <lazy-base-kapanis
+      v-if="kapanisVar"
+      :baslik="kapanisMetni"
       :hydrate-on-visible="{ rootMargin: '300px' }"
     />
   </main>

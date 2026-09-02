@@ -123,35 +123,22 @@ const adimlar = computed(() => {
   return bulunan.length >= 3 ? bulunan : []
 })
 
-/**
- * SAYFA SONU İLETİŞİM — panelden, koda gömülmeden.
+/*
+ * SAYFA SONU İLETİŞİM — BU BİLEŞENDEN ÇIKTI, KAYBOLMADI.
  *
- * ÖLÇÜLEN SORUN: 1920'de sayfa 5970px. Altı ekran okuyup "sonraki adım"
- * bölümüne varan ziyaretçi orada telefon ya da WhatsApp bulamıyordu;
- * numara 5000px yukarıda navbar'da ve en altta footer'daydı.
+ * Burada `useSiteSettings` okunuyor, telefon ve WhatsApp türetiliyor ve
+ * kapanış cümlesinin altına ikinci bir paragraf olarak basılıyordu.
+ * Çözdüğü sorun gerçekti (1920'de sayfa 5970px; sona varan ziyaretçi
+ * numarayı bulamıyordu) ama artık sitenin ORTAK kapanış imzası aynı işi
+ * yapıyor ve o blok sayfanın en sonunda, telefonuyla birlikte duruyor
+ * (bkz. components/base/Kapanis.vue, pages/[...slug].vue).
  *
- * ÇÖZÜM YENİ BİR CTA DEĞİL: mevcut kapanış CÜMLESİNİN içine, yanındaki
- * iki bağlantıyla aynı `op-bag` dilinde iki yol daha ekleniyor. Dolu
- * düğme, pill, yüzen WhatsApp ya da yapışkan çubuk YOK.
+ * İkisi birlikte kalsaydı sayfa sonunda iki iletişim kapanışı üst üste
+ * binerdi: aynı numara iki satır arayla, biri cümle içinde biri koyu
+ * bantta. Bu bileşende kalan tek şey KAPSAM cümlesi.
  *
- * Değerler `useSiteSettings` üzerinden geliyor — Navbar ve Footer ile
- * AYNI `site-settings` anahtarını paylaşıyor, yani ek istek yok. Biçim
- * (ham numara da tam URL de kabul) Footer'daki davranışın aynısı.
+ * WhatsApp yolu da onunla gitti; navbar'da kalıcı olarak duruyor.
  */
-const { settings } = await useSiteSettings()
-
-const telefon = computed(
-  () => settings.value?.phone?.trim() || settings.value?.mobilePhone?.trim() || ''
-)
-const telefonYolu = computed(() => `tel:${telefon.value.replace(/[^\d+]/g, '')}`)
-
-const whatsApp = computed(() => {
-  const ham = (settings.value?.whatsAppNumber || '').trim()
-  if (!ham) return ''
-  if (/^https?:\/\//i.test(ham)) return ham
-  const rakam = ham.replace(/\D/g, '')
-  return rakam ? `https://wa.me/${rakam}` : ''
-})
 </script>
 
 <template>
@@ -294,30 +281,14 @@ const whatsApp = computed(() => {
       <div class="hz-alan sahne-alan">
         <p class="hz-no op-kunye">{{ bolumler.adim.no }} / {{ bolumler.adim.etiket }}</p>
         <h2 id="adim" class="hz-h2 tip-anlati">Kapsamı birlikte çıkaralım.</h2>
+        <!-- İLETİŞİM CÜMLESİ BURADAN ÇIKTI, sayfanın ortak kapanış
+             imzasına devredildi. Kalan tek bağlantı fiyat aracı: başka bir
+             hedef, tekrar değil. -->
         <p class="hz-kapanis tip-govde">
           Bu hizmetin sizin adresinizde ne kadarını gerektirdiği keşifte
           netleşiyor. Kaba bir aralık için
           <NuxtLink to="/fiyat-hesaplama" class="op-bag op-bag--sakin hz-satirbag">fiyat hesaplama aracını</NuxtLink>
-          kullanabilir, kesin kapsam için
-          <NuxtLink to="/iletisim" class="op-bag op-bag--sakin hz-satirbag">keşif talebi</NuxtLink>
-          bırakabilirsiniz.
-        </p>
-        <!-- Doğrudan yollar — aynı cümlenin devamı, ayrı bir çağrı bloğu
-             değil. Numara ve WhatsApp panelden geliyor; ikisi de boşsa
-             bu satır hiç basılmıyor (boş "bize ulaşın" cümlesi üretmiyor). -->
-        <p v-if="telefon || whatsApp" class="hz-kapanis hz-kapanis--iletisim tip-govde">
-          Konuşarak ilerlemek isterseniz
-          <a v-if="telefon" :href="telefonYolu" class="op-bag op-bag--sakin hz-satirbag">{{ telefon }}</a>
-          <template v-if="telefon && whatsApp"> numarasını arayabilir ya da </template>
-          <a
-            v-if="whatsApp"
-            :href="whatsApp"
-            target="_blank"
-            rel="noopener"
-            class="op-bag op-bag--sakin hz-satirbag"
-          >WhatsApp'tan</a>
-          <template v-if="whatsApp"> yazabilirsiniz.</template>
-          <template v-else> numarasını arayabilirsiniz.</template>
+          kullanabilirsiniz.
         </p>
 
         <div v-if="related.length" class="hz-ilgili">
@@ -509,7 +480,8 @@ const whatsApp = computed(() => {
 }
 /* Doğrudan iletişim satırı kapanış cümlesinin DEVAMI; yeni bir blok değil,
    bu yüzden aralık bölümler arası değil paragraflar arası ölçüde. */
-.hz-kapanis--iletisim { margin-top: 0.85rem; }
+/* `.hz-kapanis--iletisim` KALDIRILDI: taşıdığı paragraf ortak kapanış
+   imzasına devredildi (yukarıdaki gerekçe). */
 .hz-satirbag {
   min-height: 0;
   font-size: inherit;

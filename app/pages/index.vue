@@ -358,6 +358,15 @@ useHead(
       :yorumlar="yorumlar"
       :hydrate-on-visible="{ rootMargin: '300px' }"
     />
-    <lazy-base-kapanis :bolum="bolum('kapanis')" :hydrate-on-visible="{ rootMargin: '300px' }" />
+    <!-- Kapanış artık sitenin ORTAK imzası (bkz. components/base/Kapanis.vue).
+         Ana sayfa için değişen bir şey yok: başlık ve düğme etiketi yine
+         panelden (`HomeSection('kapanis')`) geliyor, yalnız bileşenin
+         içinden okunmak yerine prop olarak veriliyor. Panel boşsa düğme
+         etiketi kütükteki varsayılana düşüyor — eskiden boş kalıyordu. -->
+    <lazy-base-kapanis
+      :baslik="bolum('kapanis').heading ?? ''"
+      :eylem="bolum('kapanis').ctaLabel ?? ''"
+      :hydrate-on-visible="{ rootMargin: '300px' }"
+    />
   </main>
 </template>
