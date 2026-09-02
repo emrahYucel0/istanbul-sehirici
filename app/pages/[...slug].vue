@@ -102,9 +102,13 @@ const [
   // "İlgili bölgeler" / gezinme listeleri için sadece slug/başlık/görsel
   // gibi hafif alanlar gerekiyor — ?light=true ağır `content` sütununu
   // sorgudan tamamen çıkarır.
-  useAsyncData('posts-light', () =>
-    mahalleAdayi.value ? Promise.resolve(null) : $fetch('/api/posts?light=true')
-  ),
+  //
+  // İSTEK ORTAK SÖZLEŞMEDEN. Burada ham `useAsyncData('posts-light', …)`
+  // vardı ve `pages/blog.vue` aynı anahtarı transform'lu kullanıyordu; iki
+  // imza tutmayınca Nuxt önbelleği ikinci çağırana yabancı şekli veriyor ve
+  // blog dizini boşalıyordu (NUXT_E3004). Gerekçe ve ölçüm:
+  // composables/useLightPosts.ts. Sonuç artık HER İKİ tarafta da HafifYazi[].
+  useLightPosts(() => mahalleAdayi.value),
   // Hizmetler tek bir bölüm kaydında toplu geliyor; slug ile ayrı bir uç
   // nokta yok. Kayıt sayısı tek haneli olduğu için tamamını çekip burada
   // eşleştirmek, yeni bir API rotası açmaktan daha sade.
@@ -269,11 +273,24 @@ const { data: gecListeler } = await useAsyncData('gec-listeler', async () => {
     $fetch('/api/regions?light=true'),
     $fetch('/api/posts?light=true'),
   ])
-  return { bolgeler, yazilar }
+  // Yazı listesi AYNI kanonik şekle indirgeniyor: bu ikinci tur, yukarıdaki
+  // ortak sözleşmenin dışından geliyor ve ham `{ success, data }` bırakırsa
+  // aşağıdaki tüketici iki farklı şekille uğraşmak zorunda kalırdı.
+  return { bolgeler, yazilar: normalizeLightPosts(yazilar) }
 })
 
 const allRegionsData = computed(() => ilkAllRegions.value || gecListeler.value?.bolgeler || null)
-const allPostsData = computed(() => ilkAllPosts.value || gecListeler.value?.yazilar || null)
+
+/**
+ * Hafif yazı listesi — HER ZAMAN DİZİ.
+ *
+ * Eskiden `allPostsData` ham yanıt nesnesiydi ve tüketici `.data` ile
+ * açıyordu. Artık ilk tur boş dizi döndüğünde (mahalle kabuğu) ikinci turun
+ * listesine düşülüyor; iki kaynak da aynı şekli veriyor.
+ */
+const tumYazilar = computed(() =>
+  ilkAllPosts.value.length ? ilkAllPosts.value : gecListeler.value?.yazilar || []
+)
 
 // ---- Bölge yardımcıları --------------------------------------------------
 const allRegions = computed(() => allRegionsData.value?.data || [])
@@ -323,7 +340,7 @@ const adjacent = (currentSlug, items) => {
 }
 
 const postNav = computed(() =>
-  post.value ? adjacent(post.value.slug, byDate(allPostsData.value?.data)) : {}
+  post.value ? adjacent(post.value.slug, byDate(tumYazilar.value)) : {}
 )
 const regionNav = computed(() =>
   region.value ? adjacent(region.value.slug, byDate(allRegions.value)) : {}

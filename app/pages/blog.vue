@@ -41,27 +41,40 @@
  */
 await usePageSeo('blog', sayfaMetasi('blog'), { skipCanonical: true })
 
-const { data: yazilar, error } = await useFetch('/api/posts?light=true', {
-  key: 'posts-light',
-  transform: (cevap) =>
-    (cevap?.success ? cevap.data || [] : [])
-      .filter((y) => String(y?.title ?? '').trim() && String(y?.slug ?? '').trim())
-      .map((y) => ({
-        id: y.id,
-        slug: String(y.slug).trim(),
-        baslik: String(y.title).trim(),
-        ozet: String(y.excerpt ?? '').trim(),
-        gorsel: String(y.image ?? '').trim(),
-        gorselAlt: String(y.imageAlt ?? '').trim(),
-        // Modelde ayrı bir yayın tarihi alanı YOK; `createdAt` kaydın
-        // oluşturulma anı ve bu iş akışında yayın tarihine karşılık geliyor
-        // (bkz. rapor: tarih anlamı).
-        tarih: y.createdAt ?? null,
-        // Alan modelde var ama on kaydın hiçbirinde dolu değil. Boşsa
-        // satır hiç basılmıyor — eskisi gibi "{marka} Ekibi" uydurulmuyor.
-        yazar: String(y.author ?? '').trim(),
-      })),
-})
+/*
+ * İSTEK ORTAK SÖZLEŞMEDEN — `composables/useLightPosts.ts`.
+ *
+ * Burada `useFetch('/api/posts?light=true', { key: 'posts-light', transform })`
+ * vardı. Aynı anahtarı `pages/[...slug].vue` transform'suz kullanıyordu;
+ * Nuxt önbelleği anahtar başına tek kayıt tuttuğu için bir hizmet ya da
+ * yazı sayfasından buraya SPA ile gelindiğinde bu transform HİÇ çalışmıyor,
+ * liste bileşenine dizi yerine ham `{ success, data }` nesnesi gidiyor ve
+ * dizin boşalıyordu (NUXT_E3004). Ayrıntı ve ölçüm composable'ın başında.
+ *
+ * GÖRÜNÜM MODELİ ARTIK `transform` DEĞİL, TÜRETME. Kanonik şekil ham hafif
+ * kayıt dizisi; aşağıdaki Türkçe eşleme yalnız bu dizine ait bir sunum
+ * kararı ve prev/next gezinmesinin okuduğu alanları (shortTitle, subtitle,
+ * createdAt) listede bırakıyor.
+ */
+const { data: hamYazilar, error } = await useLightPosts()
+
+const yazilar = computed(() =>
+  hamYazilar.value.map((y) => ({
+    id: y.id,
+    slug: y.slug,
+    baslik: y.title,
+    ozet: String(y.excerpt ?? '').trim(),
+    gorsel: String(y.image ?? '').trim(),
+    gorselAlt: String(y.imageAlt ?? '').trim(),
+    // Modelde ayrı bir yayın tarihi alanı YOK; `createdAt` kaydın
+    // oluşturulma anı ve bu iş akışında yayın tarihine karşılık geliyor
+    // (bkz. rapor: tarih anlamı).
+    tarih: y.createdAt ?? null,
+    // Alan modelde var ama on kaydın hiçbirinde dolu değil. Boşsa
+    // satır hiç basılmıyor — eskisi gibi "{marka} Ekibi" uydurulmuyor.
+    yazar: String(y.author ?? '').trim(),
+  }))
+)
 
 /**
  * SAYFANIN EDİTORYAL ÇERÇEVESİ — TEK İSTEK.
@@ -83,8 +96,10 @@ const kapanisMetni = KAPANIS_METNI.yazi
 
 <template>
   <main>
-    <blog-index-giris :yazi-sayisi="(yazilar || []).length" :bolum="bolum('giris')" />
-    <blog-index-yazi-listesi :yazilar="yazilar || []" :hata="Boolean(error)" />
+    <!-- `|| []` yedeklerine gerek kalmadı: sözleşme her durumda dizi
+         döndürüyor (istek atlansa da, yanıt boş gelse de). -->
+    <blog-index-giris :yazi-sayisi="yazilar.length" :bolum="bolum('giris')" />
+    <blog-index-yazi-listesi :yazilar="yazilar" :hata="Boolean(error)" />
     <!--
       `blog-index-kapanis` YERİNİ ORTAK İMZAYA BIRAKTI.
       O bileşen tek bir paragraftı ve tek işi iletişim sayfasına
