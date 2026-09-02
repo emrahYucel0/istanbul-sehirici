@@ -9,7 +9,7 @@
  * VERİ SÖZLEŞMESİ KORUNDU
  *   uç nokta   GET /api/posts?light=true  (istek sayfa dosyasında)
  *   sıralama   `createdAt` azalan — sunucudaki sıra AYNEN kullanılıyor
- *   sayfalama  `?sayfa=N`, sayfa başına 9 (değişmedi)
+ *   sayfalama  `?sayfa=N`, sayfa başına 10 (bkz. SAYFA_BOYU gerekçesi)
  *   detay yolu `/{slug}` — blog yazıları KÖK seviyede yaşıyor
  *              (`/blog/{slug}` diye bir rota yok, ölçüldü: 404)
  *
@@ -43,8 +43,42 @@
  */
 import { computed } from 'vue'
 
-/** Sayfa başına yazı — mevcut sözleşme, değiştirilmedi. */
-const SAYFA_BOYU = 9
+/**
+ * SAYFA BAŞINA YAZI — 9 İDİ, 10 OLDU.
+ *
+ * ÖLÇÜLEN SORUN: envanterde on yayındaki yazı var. 9'da birinci sayfa dolu,
+ * İKİNCİ SAYFADA TEK BİR YAZI kalıyordu. Ziyaretçi "Sonraki →" diyip bir
+ * satır görüyor; sayfalama, taşıdığı bilgiden fazlasını vaat ediyordu.
+ *
+ * A/B ÖLÇÜMÜ (7 genişlik, aynı içerik):
+ *
+ *              sayfa yük.(1920)  satır  sayfalama  son öğe → kapanış
+ *    9              4229           9       var          189 px
+ *   10              4398          10       yok          105 px
+ *   12              4398          10       yok          105 px
+ *
+ * · 12, BUGÜN 10 ile birebir aynı çıktıyı veriyor (on kayıt tek sayfaya
+ *   sığdığı için). Ayırt edici tek fark gelecekte: 12, mobilde her sayfayı
+ *   iki satır (≈900 px) daha uzun yapıyor, karşılığında bugün hiçbir şey
+ *   kazandırmıyor.
+ * · 10'da liste kütüğün kendi kapanış çizgisiyle bitiyor ve altındaki
+ *   boşluk artık bölümün KENDİ dikey payı (105 px / 1920, 57 px / 390) —
+ *   yani sitenin geri kalanıyla aynı ritim. 9'daki 189 px, sayfalama
+ *   çubuğunun payıydı.
+ * · Satır yükseklikleri değişmedi (masaüstü 253/276, mobil 457): kütük
+ *   ritmi aynı, yalnız kütük tamamlanıyor.
+ *
+ * SAYFALAMA ALTYAPISI DURUYOR. On birinci yazı eklendiğinde `toplamSayfa`
+ * kendiliğinden 2 oluyor; `rel=prev/next`, sayfalı canonical, `?sayfa=N`
+ * ve numaralı bağlantılar olduğu gibi çalışmaya devam ediyor.
+ *
+ * NOT — GELECEK: on birinci yazıda "ikinci sayfada tek öğe" durumu geri
+ * gelir. Kalıcı çözümü sayfa boyunu büyütmek değil, "son sayfada tek öğe
+ * kalıyorsa onu bir öncekine ekle" kuralıdır; o kural sayfa SAYISINI ve
+ * dolayısıyla canonical/prev/next zincirini etkilediği için ayrı bir tur
+ * konusu (bkz. M12 raporu).
+ */
+const SAYFA_BOYU = 10
 
 const props = defineProps({
   /**
@@ -213,12 +247,30 @@ useHead({
                 Görseli olmayan yazı boş çerçeve ya da yer tutucu ALMAZ:
                 satır metin olarak zaten tamam.
 
-                HEPSİ TEMBEL YÜKLENİYOR — ölçülmüş sebep. Önce ilk satırın
-                kapağı `eager` + `fetchpriority="high"` idi; "listenin ilk
-                görseli LCP olur" varsayımıyla. 412×823 mobil görünümde
-                ÖLÇÜLDÜ: ilk kapak KATLAMANIN ALTINDA kalıyor, LCP öğesi
-                giriş paragrafı (36.057 px²). Yüksek öncelikli istek, LCP'yi
-                belirleyen yazı tipiyle boşuna yarışıyordu.
+                YALNIZ İLK SATIRIN KAPAĞI ÖNCELİKLİ — ölçülmüş, dar kapsamlı.
+
+                TARİHÇE. Bir dönem ilk kapak `eager` + `fetchpriority="high"`
+                idi ("listenin ilk görseli LCP olur" varsayımıyla), sonra
+                412×823 ölçümüyle HEPSİ tembele çekildi: o görünümde ilk
+                kapak katlamanın altında kalıyor ve LCP giriş paragrafı
+                oluyordu. O ölçüm doğruydu — ama tek bir genişlikteydi.
+
+                YENİDEN ÖLÇÜLDÜ (kısıtlı ağ: 1,6 Mbps / 150 ms RTT, 3 tekrar,
+                medyan). Tablet genişliğinde tablo başka:
+
+                    390 × 844    LCP p.bg-giris    7544 ms
+                    834 × 1112   LCP img.by-foto   8552 ms   ← kapak LCP
+                    1024 × 960   LCP p.bg-giris    7504 ms
+                    1440 × 960   LCP h1.bg-h1      7544 ms
+
+                834'te ilk kapağın üst kenarı 746 px, yani 1112 px'lik
+                pencerede KATLAMANIN ÜSTÜNDE ve gerçekten LCP öğesi; tembel
+                yükleme onu ~1 sn geciktiriyordu.
+
+                Öncelik YALNIZ ilk satıra ve YALNIZ ilk sayfaya veriliyor.
+                Diğer dokuz kapak tembel kalıyor — hepsini eager yapmak
+                kısıtlı ağda LCP'yi belirleyen yazı tipiyle yarışan dokuz
+                istek demekti.
 
                 `width`/`height` her görselde duruyor: oran baştan bilindiği
                 için tembel yükleme düzen kaymasına yol açmıyor (CLS 0).
@@ -231,7 +283,8 @@ useHead({
                   format="webp"
                   quality="70"
                   sizes="xs:320px sm:320px md:40vw lg:20vw xl:18vw"
-                  loading="lazy"
+                  :loading="i === 0 && sayfa === 1 ? 'eager' : 'lazy'"
+                  :fetchpriority="i === 0 && sayfa === 1 ? 'high' : undefined"
                   decoding="async"
                   width="640"
                   height="400"
