@@ -46,16 +46,52 @@ const whatsAppHref = computed(() => {
  * "Bölgeler" yalnız coğrafi ağ AÇIKKEN basılıyor. Kapalıyken o rota 404
  * döndüğü için menüde durması kırık bağlantı olurdu
  * (bkz. composables/useRegionPages.ts).
+ *
+ * BLOG KOŞULSUZ. Yarışma sürümünde blog, içerik üretimini gösteren tek
+ * yüzey ve daha önce YALNIZ alt bilgiden ulaşılabiliyordu; ana gezinmede
+ * yoktu. Coğrafi ağ bayrağıyla ilgisi yok — her iki modda da duruyor.
+ *
+ * SIRA "Fiyat"tan sonra: ilk üç girdi ziyaretçinin karar sırasını izliyor
+ * (ne yapıyoruz → ne tutar → nasıl çalışıyoruz), kurumsal iki girdi sonda.
+ *
+ * MASAÜSTÜ VE MOBİL AYNI DİZİDEN. Aşağıdaki iki `v-for` de bunu okuyor;
+ * ikinci bir liste tutulmuyor, mobil paneldeki `01..05` numaraları da
+ * dizinin kendi sırasından üretiliyor.
  */
 const NAV_LINKS = [
   { yol: '/hizmetlerimiz', ad: 'Hizmetler' },
   ...(useRegionPages() ? [{ yol: '/bolgelerimiz', ad: 'Bölgeler' }] : []),
   { yol: '/fiyat-hesaplama', ad: 'Fiyat' },
+  { yol: '/blog', ad: 'Blog' },
   { yol: '/hakkimizda', ad: 'Hakkımızda' },
   { yol: '/iletisim', ad: 'İletişim' },
 ]
 
 const route = useRoute()
+/**
+ * AKTİF DURUM — DEĞİŞMEDİ, ve bu bilinçli.
+ *
+ * Kural yalnız adresin kendisini ve alt yollarını eşliyor. Site kök-düz
+ * adres mimarisi kullandığı için hiçbir DETAY sayfası bölümünü
+ * işaretlemiyor — ölçüldü:
+ *
+ *     /hizmetlerimiz            → "Hizmetler" aktif
+ *     /evden-eve-nakliyat       → aktif link YOK   (hizmet detayı)
+ *     /blog                     → "Blog" aktif
+ *     /nakliyat-sigortasi-…     → aktif link YOK   (blog yazısı)
+ *
+ * Yani Blog'un davranışı Hizmetler'inkiyle BİREBİR AYNI; yeni bir
+ * tutarsızlık doğmuyor. Yazıyı bölümüne bağlamak için bar'ın "bu rota bir
+ * yazıdır" bilgisine ihtiyacı olurdu ve bunun iki yolu da bu turda
+ * kabul edilemez:
+ *   · Paylaşılan durum (`useState`) — bar, düzende `<slot/>`ten ÖNCE
+ *     render ediliyor; sayfanın setup'ı henüz çalışmamış oluyor. Sunucu
+ *     çıktısı "pasif", istemci yükü "aktif" olur ve doğrudan hidrasyon
+ *     uyuşmazlığı üretir.
+ *   · Yazı listesini bar'a getirmek — her sayfaya yeni bir istek ekler.
+ * Sabit slug listesi ise zaten yasak. Detay seviyesi aktif durum
+ * BİLİNÇLİ BORÇ olarak bırakıldı (bkz. M14B raporu).
+ */
 const aktifMi = (yol) => route.path === yol || route.path.startsWith(`${yol}/`)
 
 // ---- Mobil menü ----------------------------------------------------------

@@ -189,3 +189,62 @@ describe('kalite kapıları aynı kelimeleri engellemeye devam ediyor', () => {
     }
   })
 })
+
+// ═══════════════════════════════════════════ CMS METNİNİN KAYNAĞI
+
+/**
+ * FİYAT UYARISININ CANLI METNİ VERİ TABANINDA — ama KAYNAĞI burada.
+ *
+ * Bu dosyanın başlığı "TARAMA VERİ TABANINI KAPSAMIYOR" diyor ve o hâlâ
+ * doğru: birim testine gerçek bir DB bağlantısı sokmak test paketini
+ * kırılgan yapar. Ama `PriceEstimator.note` metninin KANONİK hâli
+ * `prisma/fiyat-notu-tohum.mjs` içinde yazılı ve o dosya depoda —
+ * yani iddia oraya geri sızarsa burada yakalanır.
+ *
+ * M14 denetiminde sayfanın görünen metnindeki tek doğrulanmamış iddia
+ * ("yazılı olarak paylaşılıyor") tam olarak bu boşluktan geçmişti:
+ * koddan çıkarılmış, CMS'te kalmıştı.
+ *
+ * TARİHSEL KUŞAKLAR MUAF. `ESKI_KUSAKLAR` dizisi eski metinleri BİLEREK
+ * saklıyor — tohum, üzerine yazmanın güvenli olduğu metinleri onlardan
+ * tanıyor. Silinirlerse birinci kuşakta kalmış bir kurulum "elle
+ * yazılmış" sanılır ve iddia sessizce ekranda kalır.
+ */
+describe('fiyat uyarısının kanonik metni', () => {
+  const tohum = oku('prisma', 'fiyat-notu-tohum.mjs')
+  // Yalnız YAZILACAK metin: `const YENI = '…'` atamasının değeri.
+  const yeni = (tohum.match(/const YENI\s*=\s*\n?\s*'([\s\S]*?)'\s*\n/) || [])[1] ?? ''
+
+  it('yazılacak metin okunabildi', () => {
+    // Atama yeniden biçimlendirilirse bu iddia sessizce boşalmasın.
+    expect(yeni.length).toBeGreaterThan(80)
+    expect(yeni).toContain('ön tahmindir, teklif değildir')
+  })
+
+  it('iletişim biçimi hakkında taahhüt yok', () => {
+    expect(yeni).not.toMatch(/yazılı\s+olarak/i)
+    expect(yeni).not.toMatch(/sözlü/i)
+  })
+
+  it('genel iddia listesinden hiçbiri geçmiyor', () => {
+    for (const [kalip, ad] of IDDIALAR) {
+      expect(yeni, ad).not.toMatch(kalip)
+    }
+    expect(yeni).not.toMatch(/ücretsiz/i)
+    expect(yeni).not.toMatch(/kesin\s+fiyat/i)
+  })
+
+  it('eski kuşaklar tanınmaya devam ediyor', () => {
+    expect(tohum).toContain('ESKI_KUSAKLAR')
+    // İki tarihsel metin de listede: biri "ücretsiz keşif", biri
+    // "yazılı olarak" taşıyor ve ikisi de üzerine yazılabilir olmalı.
+    expect(tohum).toMatch(/ücretsiz keşif sonrasında netleşir/)
+    expect(tohum).toMatch(/yazılı olarak paylaşılıyor/)
+  })
+
+  it('katsayılara dokunmadığı hâlâ yazılı', () => {
+    expect(tohum).toContain('KATSAYILARA DOKUNULMUYOR')
+    expect(tohum).not.toMatch(/data:\s*\{[^}]*floorFee/)
+    expect(tohum).not.toMatch(/data:\s*\{[^}]*basePrice/)
+  })
+})

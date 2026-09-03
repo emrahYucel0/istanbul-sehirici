@@ -113,6 +113,38 @@ const katiDuzelt = (alan) => {
   form.value[alan] = guvenli
 }
 
+/**
+ * KAT ALANININ İKİ SESSİZ DAVRANIŞI ARTIK YAZILI.
+ *
+ * ─────────────────────────────────────────────────────────────────────
+ * 1. SINIRLAMA SESSİZDİ. `katiDuzelt` alandan çıkıldığında 999'u 30'a,
+ *    −5'i 0'a, 3,7'yi 3'e çekiyor — doğru davranış ve KORUNUYOR, ama
+ *    ölçüldüğünde hiçbir açıklama yoktu: kullanıcı yazdığı sayının neden
+ *    değiştiğini göremiyordu. Aralık artık alanın altında yazılı.
+ *
+ * 2. ASANSÖR VARKEN ALAN ETKİSİZDİ. Formül gereği asansör varsa kat
+ *    tutarı değiştirmiyor (bkz. utils/fiyat.ts → `katEki`). Ölçüldü:
+ *    kat 2 → 20 yapıldığında tutar birebir aynı kalıyordu ve kontrol
+ *    bunu hiçbir biçimde söylemiyordu.
+ *
+ * NEDEN `disabled` DEĞİL: alan devre dışı bırakılsaydı klavye sırasından
+ * çıkardı ve kullanıcı asansör kutusunu kaldırdığında geri gelen alanın
+ * odağı kaybolurdu. Değer ayrıca hâlâ anlamlı — kutu kaldırıldığı anda
+ * hesaba giriyor. `readonly` de aynı sebeple kullanılmadı.
+ *
+ * HESAP KURALI DEĞİŞMEDİ. Buradaki her şey yalnız sunum.
+ */
+const KAT_ARALIGI_METNI = `Kat ${KAT_EN_AZ}–${KAT_EN_COK} arasında kullanılır.`
+const ASANSOR_ETKISIZ_METNI = 'Asansör varken kat, tutarı değiştirmiyor.'
+
+/**
+ * Alanın `aria-describedby` listesi. Asansör notu yalnız ekrandayken
+ * listeye giriyor: var olmayan bir `id`ye işaret eden `aria-describedby`
+ * geçersiz olurdu.
+ */
+const katYardimId = (yer, asansorVar) =>
+  [`fh-${yer}-aralik`, asansorVar ? `fh-${yer}-asansor` : null].filter(Boolean).join(' ')
+
 const sonuc = computed(() => {
   if (!ayar.value || !seciliOda.value || !seciliMesafe.value) return null
   return tahminiAralik(
@@ -201,10 +233,15 @@ defineProps({
             </select>
           </div>
 
+          <!--
+            İKİ ADRES AYNI DESENİ KULLANIYOR ama `id`ler ayrı olmak
+            zorunda: her kat alanı KENDİ yardımcı metnine bağlanıyor.
+            Çıkışta asansör varken varış alanının notu değişmiyor.
+          -->
           <fieldset class="fh-grup">
             <legend class="fh-legend op-kunye">ÇIKIŞ ADRESİ</legend>
             <div class="fh-ikili">
-              <div class="fh-alan fh-alan--dar">
+              <div class="fh-alan fh-alan--dar" :class="{ 'fh-alan--pasif': form.cikisAsansor }">
                 <label for="fh-cikis-kat" class="fh-etiket">Kat</label>
                 <input
                   id="fh-cikis-kat"
@@ -215,6 +252,7 @@ defineProps({
                   :min="KAT_EN_AZ"
                   :max="KAT_EN_COK"
                   step="1"
+                  :aria-describedby="katYardimId('cikis', form.cikisAsansor)"
                   @blur="katiDuzelt('cikisKat')"
                 />
               </div>
@@ -223,12 +261,21 @@ defineProps({
                 <span>Asansör var</span>
               </label>
             </div>
+            <!-- CANLI BÖLGE DEĞİL. `role="alert"` ya da `aria-live`
+                 konmuyor: sayfadaki tek canlı bölge `<output>` ve iç içe
+                 duyuru aynı değişikliği iki kez okutur. Bu metinler
+                 `aria-describedby` ile alana bağlı; ekran okuyucu onları
+                 alana ODAKLANDIĞINDA okuyor. -->
+            <p class="fh-yardim tip-not">
+              <span id="fh-cikis-aralik">{{ KAT_ARALIGI_METNI }}</span>
+              <span v-if="form.cikisAsansor" id="fh-cikis-asansor">{{ ASANSOR_ETKISIZ_METNI }}</span>
+            </p>
           </fieldset>
 
           <fieldset class="fh-grup">
             <legend class="fh-legend op-kunye">VARIŞ ADRESİ</legend>
             <div class="fh-ikili">
-              <div class="fh-alan fh-alan--dar">
+              <div class="fh-alan fh-alan--dar" :class="{ 'fh-alan--pasif': form.varisAsansor }">
                 <label for="fh-varis-kat" class="fh-etiket">Kat</label>
                 <input
                   id="fh-varis-kat"
@@ -239,6 +286,7 @@ defineProps({
                   :min="KAT_EN_AZ"
                   :max="KAT_EN_COK"
                   step="1"
+                  :aria-describedby="katYardimId('varis', form.varisAsansor)"
                   @blur="katiDuzelt('varisKat')"
                 />
               </div>
@@ -247,6 +295,10 @@ defineProps({
                 <span>Asansör var</span>
               </label>
             </div>
+            <p class="fh-yardim tip-not">
+              <span id="fh-varis-aralik">{{ KAT_ARALIGI_METNI }}</span>
+              <span v-if="form.varisAsansor" id="fh-varis-asansor">{{ ASANSOR_ETKISIZ_METNI }}</span>
+            </p>
           </fieldset>
 
           <fieldset class="fh-grup">
@@ -277,7 +329,14 @@ defineProps({
         <div class="fh-sonuc">
           <p class="fh-sonuc-etiket op-kunye">TAHMİNİ ARALIK</p>
 
-          <output v-if="sonuc" class="fh-tutar">
+          <!-- TUTAR ↔ UYARI BAĞI.
+               Ekran okuyucu tutarı duyuyordu ama "teklif değildir"
+               cümlesi bağlantısız ayrı bir paragraftı; kullanıcı rakamı
+               bağlamı olmadan alabiliyordu. `aria-describedby` ikisini
+               bağlıyor. YENİ CANLI BÖLGE YOK: `<output>`un örtük
+               `aria-live`ı olduğu gibi duruyor, uyarı metni onun İÇİNE
+               taşınmadı — her seçimde tekrar okunması gürültü olurdu. -->
+          <output v-if="sonuc" class="fh-tutar" aria-describedby="fh-uyari">
             {{ tlYaz(sonuc.alt) }} – {{ tlYaz(sonuc.ust) }}
             <span class="fh-birim">TL</span>
           </output>
@@ -290,7 +349,8 @@ defineProps({
             </div>
           </dl>
 
-          <p class="fh-uyari tip-not">{{ uyari }}</p>
+          <!-- `id` KARARLI: yukarıdaki `<output>` buna bağlanıyor. -->
+          <p id="fh-uyari" class="fh-uyari tip-not">{{ uyari }}</p>
 
           <NuxtLink to="/iletisim" class="fh-cta">Taşıma ayrıntılarını paylaşın</NuxtLink>
         </div>
@@ -348,12 +408,41 @@ defineProps({
   font-weight: 600;
   color: rgb(var(--c-ink));
 }
+
+/* ---- Kat alanı asansör varken İKİNCİL ----------------------------------
+   Alan devre dışı DEĞİL — yalnız vurgusu düşüyor, çünkü o an hesaba
+   girmiyor (bkz. script bloğu). Geri çekilen şey ETİKET; girdinin kendi
+   çizgisi `--c-measure` tonunda kalıyor, yani WCAG 1.4.11 sınırı hiçbir
+   durumda gevşemiyor. `opacity` kullanılmadı: kontrolün metnini de
+   soldururdu ve kontrastı ölçülemez hâle getirirdi. */
+.fh-alan--pasif .fh-etiket {
+  /* Kâğıt üzerinde 6,54:1 — ikincil ama AA metin eşiğinin üstünde. */
+  color: rgb(var(--c-ink-soft));
+  font-weight: 500;
+}
+
+/* ---- Alan altı yardımcı metin ------------------------------------------
+   Punto kütükten (`tip-not`); burada yalnız yerleşim ve ayrım var.
+   İki cümle yan yana dizilebiliyor, dar ekranda alt alta iniyor. */
+.fh-yardim {
+  margin: 0.625rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  max-width: var(--olcu-govde);
+}
 .fh-girdi {
   width: 100%;
   margin-top: 0.5rem;
   padding: 0.75rem 0.875rem;
-  /* Köşe yarıçapı ve gölge YOK — V2 dilinde kutu değil, çizgi. */
-  border: 1px solid rgb(var(--c-rule));
+  /* Köşe yarıçapı ve gölge YOK — V2 dilinde kutu değil, çizgi.
+     TON `--c-rule` DEĞİL. Ölçüldü: dekoratif ayraç tonu bu çukur zeminde
+     1,42:1 veriyor ve kontrolün nerede başlayıp bittiğini gösteren TEK
+     işaret bu çizgi — WCAG 2.1 SC 1.4.11 kullanıcı arayüzü bileşeninin
+     sınırı için 3:1 istiyor. `tokens.css` zaten aynı şeyi söylüyor:
+     "bilgi taşıyan her çizgi `--c-measure` kullanır". Aynı çözüm sitede
+     `contact/TalepFormu.vue` girdilerinde de var. */
+  border: 1px solid rgb(var(--c-measure));
   border-radius: 0;
   background: rgb(var(--c-paper));
   color: rgb(var(--c-ink));
@@ -363,8 +452,12 @@ defineProps({
   line-height: 1.5;
   min-height: 48px;
 }
+/* Üç kademeli çizgi: durağan `--c-measure`, hover `--c-ink-soft`, odak
+   `--c-ink`. Hover eskiden `--c-measure`ydı; taban o tona çıkınca hover
+   ile durağan hâl aynı olurdu ve affordance kaybolurdu. Yeni renk
+   üretilmedi, aynı mürekkep ailesinde bir kademe yukarı çıkıldı. */
 .fh-girdi:hover {
-  border-color: rgb(var(--c-measure));
+  border-color: rgb(var(--c-ink-soft));
 }
 .fh-girdi:focus {
   outline: 2px solid rgb(var(--c-ink));
@@ -508,6 +601,35 @@ defineProps({
 /* ===========================================================================
    MASAÜSTÜ — form B ekseninde, sonuç D alanında (aynı anda görünüyorlar)
    ======================================================================== */
+/* ===========================================================================
+   TABLET BANDI — ARAÇ EKRANIN TAMAMINA YAYILMIYOR
+   ───────────────────────────────────────────────────────────────────────
+   ÖLÇÜLEN SORUN (834×1112)
+   Masaüstü ızgarası 1024'te açılıyor; altında her şey tek sütun ve kabın
+   tam genişliğinde. 834'te bu, altı seçenekli bir açılır listenin 768px
+   olması demekti — masaüstündeki karşılığının (1024'te 381px) iki katı.
+   Araç tablet ölçeğinde "gerilmiş mobil" okunuyordu.
+
+   ÇÖZÜM YENİ BİR SİSTEM DEĞİL: tek sütun KALIYOR, yalnız ölçüsü
+   sınırlanıyor. 30rem (480px) keyfi değil — masaüstü ızgarasının kendi
+   ürettiği aralığın (1024'te 381px, 1920'de 528px) içinde duruyor, yani
+   sayfa zaten bu genişlikte bir form sütununu doğru sayıyor.
+
+   SINIR YALNIZ 1024'ÜN ALTINDA: mevcut breakpoint sözleşmesinin
+   tamamlayıcısı, yeni bir kırılım noktası icat edilmedi. 520px'in
+   altındaki ekranlarda hiçbir etkisi yok (390'da sütun zaten 350px).
+
+   SONUÇ PANELİ DE AYNI ÖLÇÜDE. Yalnız form sınırlansaydı sonucun üst
+   çizgisi formun 288px sağına taşar ve iki blok hizasız kalırdı; ikisi
+   aynı sütunda duruyor. Masaüstü ızgarası (aşağıda) bu kuralın dışında —
+   orada ikisi zaten ayrı kolonlarda. */
+@media (max-width: 1023px) {
+  .fh-form,
+  .fh-sonuc {
+    max-width: 30rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .fh {
     display: grid;
