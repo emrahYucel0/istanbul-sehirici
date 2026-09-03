@@ -152,9 +152,44 @@ describe('iki form da ÇİZGİ tabanlı', () => {
 
   it('lead akışı DEĞİŞMEDİ — uç nokta, gövde ve bal küpü aynı', () => {
     expect(talep).toContain("'/api/leads'")
-    expect(talep).toContain('sourcePage: route.path')
     expect(talep).toContain('website: website.value')
     expect(yorum).toContain("'/api/reviews'")
+  })
+
+  /**
+   * KAYNAK ALANINI M14C2'DE SUNUCU BELİRLİYOR.
+   *
+   * M14C'de alan istemcide iki sabitten birini alıyordu. Artık istemci
+   * yalnız bulunduğu yolu bildiriyor; hesaplayıcıdan gelindiği kararı
+   * sunucuda, ham seçimler GERÇEKTEN doğrulandıktan sonra veriliyor.
+   * Çivi bu yüzden daha da daraldı: bu dosyada kaynak alanına
+   * `route.path` DIŞINDA bir şey yazılamaz.
+   */
+  it('kaynak alanı istemcide yalnız route.path — kararı sunucu veriyor', () => {
+    expect(talep).toContain('sourcePage: route.path')
+    // `route.query` bu dosyada hiç okunmuyor: doğrulama sayfada ve
+    // sunucuda, tek sözleşmeden.
+    expect(talep).not.toContain('route.query')
+  })
+
+  /**
+   * MESAJ KUTUSU ÖN DOLDURULMUYOR.
+   *
+   * Kutu düzenlenebilir olduğu için ön dolgu, kaydın doğruluğunu
+   * kullanıcının silme kararına bağlıyordu. Kayda giren kanonik özeti
+   * artık sunucu üretiyor; kutu kullanıcının kendi notuna ait.
+   */
+  it('mesaj kutusuna hesaplayıcı metni yazılmıyor', () => {
+    expect(talep).not.toContain('initial-values')
+    expect(talep).not.toContain('devirMesaji')
+  })
+
+  it('ham seçimler gövdeye ekleniyor — metin değil', () => {
+    expect(talep).toContain('hesap: props.hesapAlanlari')
+    // Tutar/etiket gönderilmiyor.
+    for (const yasak of ['alt:', 'ust:', 'odaAdi', 'mesafeAdi', 'aralik']) {
+      expect(talep, yasak).not.toContain(yasak)
+    }
   })
 })
 

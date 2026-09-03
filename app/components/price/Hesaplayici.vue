@@ -47,25 +47,18 @@
  */
 import { computed, ref } from 'vue'
 import { tahminiAralik, tlYaz, KAT_EN_AZ, KAT_EN_COK } from '~/utils/fiyat'
+import { fiyatDevriYolu } from '~/utils/fiyat-devri'
 
-const { data: ayarYanit } = await useFetch('/api/price-estimator', {
-  key: 'price-estimator',
-  // Sayfa yüküne yalnız hesabın okuduğu alanlar iniyor.
-  transform: (yanit) => {
-    const k = yanit?.data
-    if (!k) return null
-    return {
-      floorFee: k.floorFee,
-      packingMultiplier: k.packingMultiplier,
-      storageFee: k.storageFee,
-      rangePercent: k.rangePercent,
-      roundTo: k.roundTo,
-      not: String(k.note ?? '').trim(),
-      odalar: (k.sizes || []).map((o) => ({ id: o.id, ad: o.label, taban: o.basePrice })),
-      mesafeler: (k.distances || []).map((m) => ({ id: m.id, ad: m.label, carpan: m.multiplier })),
-    }
-  },
-})
+/**
+ * KATSAYILAR ARTIK ORTAK SÖZLEŞMEDEN.
+ *
+ * Anahtar ve `transform` bu dosyada tanımlıydı; iletişim sayfası da aynı
+ * katsayılara ihtiyaç duyunca ikisi ayrı yazılsaydı aynı anahtar farklı
+ * imzayla kullanılır ve depoda bir kez ölçülmüş NUXT_E3004 hatası
+ * tekrarlanırdı. Tanım tek yere alındı; davranış birebir aynı.
+ * (bkz. composables/useFiyatKatsayilari.ts)
+ */
+const { data: ayarYanit } = await useFiyatKatsayilari()
 
 const ayar = computed(() => ayarYanit.value ?? null)
 const odalar = computed(() => ayar.value?.odalar ?? [])
@@ -180,6 +173,35 @@ const ozet = computed(() => {
   if (form.value.depolama) ekler.push('depolama')
   if (ekler.length) liste.push({ etiket: 'EK', deger: ekler.join(' · ') })
   return liste
+})
+
+/**
+ * EYLEMİN ADRESİ — yapılandırma iletişim sayfasına TAŞINIYOR.
+ *
+ * Önce düz `/iletisim` bağlantısıydı ve kullanıcının sekiz alanlık
+ * yapılandırması tıklandığı anda kayboluyordu: iletişim sayfası boş bir
+ * form açıyor, kullanıcı aynı işi ikinci kez anlatıyor, talep kaydı da
+ * hesaplayıcıdan geldiğini bilmiyordu.
+ *
+ * Adres satırı YALNIZ GİRDİLERİ taşıyor — tutar taşınmıyor. Aralık
+ * iletişim sayfasında, doğrulanmış girdilerden ve panelin kendi
+ * katsayılarından yeniden üretiliyor (bkz. utils/fiyat-devri.ts).
+ *
+ * Seçim henüz oturmadıysa (katsayı yok) düz `/iletisim`: eksik bir
+ * yapılandırma taşımaktansa hiç taşımamak doğru.
+ */
+const eylemYolu = computed(() => {
+  if (!sonuc.value || !seciliOda.value || !seciliMesafe.value) return '/iletisim'
+  return fiyatDevriYolu({
+    odaId: seciliOda.value.id,
+    mesafeId: seciliMesafe.value.id,
+    cikisKat: form.value.cikisKat,
+    cikisAsansor: form.value.cikisAsansor,
+    varisKat: form.value.varisKat,
+    varisAsansor: form.value.varisAsansor,
+    paketleme: form.value.paketleme,
+    depolama: form.value.depolama,
+  })
 })
 
 /**
@@ -352,7 +374,10 @@ defineProps({
           <!-- `id` KARARLI: yukarıdaki `<output>` buna bağlanıyor. -->
           <p id="fh-uyari" class="fh-uyari tip-not">{{ uyari }}</p>
 
-          <NuxtLink to="/iletisim" class="fh-cta">Taşıma ayrıntılarını paylaşın</NuxtLink>
+          <!-- Metin, ölçü, dokunma hedefi ve odak davranışı DEĞİŞMEDİ;
+               değişen tek şey adresin yapılandırmayı taşıması. İkinci bir
+               düğme eklenmedi. -->
+          <NuxtLink :to="eylemYolu" class="fh-cta">Taşıma ayrıntılarını paylaşın</NuxtLink>
         </div>
       </template>
     </div>

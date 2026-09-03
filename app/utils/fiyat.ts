@@ -36,9 +36,18 @@
 //
 // EKLENEN TEK ŞEY GÜVENLİK SINIRLARI (bkz. `KAT_EN_COK` ve `sayiya`).
 
-/** Kat alanının kabul ettiği aralık. Girdideki `min`/`max` ile aynı. */
-export const KAT_EN_AZ = 0
-export const KAT_EN_COK = 30
+/**
+ * Kat alanının kabul ettiği aralık. Girdideki `min`/`max` ile aynı.
+ *
+ * TANIM ARTIK `shared/`TE. Sınırı üç yer okuyor: formdaki `min`/`max`,
+ * aşağıdaki sıkıştırma ve hesaplayıcı → iletişim devrinin doğrulaması.
+ * Sonuncusu SUNUCUDA da çalıştığı için tanım paylaşılan dosyaya taşındı
+ * (bkz. shared/utils/fiyat-devri.ts). Buradan yeniden dışa veriliyor:
+ * mevcut içe aktarmalar (`~/utils/fiyat`) olduğu gibi çalışmaya devam
+ * ediyor ve iki ayrı sabit doğmuyor.
+ */
+export { KAT_EN_AZ, KAT_EN_COK } from '#shared/utils/fiyat-devri'
+import { KAT_EN_AZ, KAT_EN_COK } from '#shared/utils/fiyat-devri'
 
 export interface FiyatKatsayilari {
   floorFee: number

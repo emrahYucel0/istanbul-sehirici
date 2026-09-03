@@ -87,13 +87,72 @@ const { data: icerikYanit } = await useFetch('/api/ic-sayfa?page=iletisim', {
 
 const bolum = (ad) => icerikYanit.value?.data?.[ad] ?? {}
 
+/**
+ * FİYAT HESAPLAYICIDAN DEVİR.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * ADRES SATIRINA GÜVENİLMİYOR — İKİ KADEME
+ *
+ *   1. BİÇİM. `fiyatDevriniOku` yalnız beklenen sekiz alanı, beklenen
+ *      biçimde okuyor: kimlikler ondalık basamak, katlar 0–30, mantıksal
+ *      alanlar yalnız "1"/"0". Fazladan gelen hiçbir anahtar okunmuyor
+ *      (allowlist), nesne birleştirme yok.
+ *   2. GERÇEKLİK. `fiyatDevriniCoz` kimlikleri panelin GERÇEK listesine
+ *      karşı doğruluyor; olmayan bir oda ya da mesafe kimliği devri
+ *      tamamen geçersiz kılıyor.
+ *
+ * Biri bile tutmazsa `devir` `null` kalıyor ve sayfa NORMAL /iletisim
+ * olarak açılıyor: özet basılmıyor, form birebir eski hâlinde. Hata
+ * fırlatılmıyor, 500 üretilmiyor.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * KATSAYI SORGUSU YALNIZ DEVİR VARSA
+ *
+ * Doğrudan gelen ziyaretçide `/api/price-estimator` HİÇ çağrılmıyor
+ * (`atlansinMi`). Anahtar ve dönüşüm hesaplayıcıyla ORTAK — ayrı yazılsa
+ * aynı anahtar iki farklı imzayla kullanılır ve NUXT_E3004 doğardı
+ * (bkz. composables/useFiyatKatsayilari.ts).
+ *
+ * TUTAR ADRESTEN OKUNMUYOR: aralık burada, doğrulanmış girdilerden ve
+ * panelin katsayılarından yeniden hesaplanıyor.
+ */
+const route = useRoute()
+const devirGirdisi = computed(() => fiyatDevriniOku(route.query))
+
+const { data: fiyatKatsayilari } = await useFiyatKatsayilari(() => !devirGirdisi.value)
+
+const devir = computed(() => fiyatDevriniCoz(devirGirdisi.value, fiyatKatsayilari.value))
+
+/**
+ * FORMLA BİRLİKTE GÖNDERİLEN HAM SEÇİMLER.
+ *
+ * Metin DEĞİL, seçimlerin kendisi gidiyor — adres satırıyla birebir aynı
+ * biçimde. Talep kaydındaki özeti sunucu bu dokuz alandan, kendi veri
+ * tabanı etiketleriyle üretiyor (bkz. server/api/leads.ts).
+ *
+ * MESAJ KUTUSU ARTIK ÖN DOLDURULMUYOR. Yapılandırma zaten yukarıdaki
+ * "Hesaplama özeti" bloğunda okunuyor; kutuya da yazmak aynı metni
+ * ekranda iki kez göstermek olurdu. Daha önemlisi: kutu düzenlenebilir
+ * olduğu için kayıt kullanıcının silme kararına bağlı kalıyordu. Artık
+ * kutu kullanıcının KENDİ notuna ait, kayıt ise sunucunun.
+ */
+const hesapAlanlari = computed(() =>
+  devirGirdisi.value ? devirAlanlari(devirGirdisi.value) : null
+)
 </script>
 
 <template>
   <main>
     <contact-giris :bolum="bolum('giris')" />
     <contact-kanallar :bolum="bolum('kanallar')" />
-    <contact-talep-formu :bolum="bolum('form')" />
+    <!-- Yalnız geçerli devirde. Normal /iletisim'de bu blok DOM'a hiç
+         girmiyor; sayfanın eski hâli birebir korunuyor. -->
+    <contact-hesap-ozeti
+      v-if="devir"
+      :cozum="devir"
+      :uyari="fiyatKatsayilari?.not || ''"
+    />
+    <contact-talep-formu :bolum="bolum('form')" :hesap-alanlari="hesapAlanlari" />
     <contact-yollar />
   </main>
 </template>

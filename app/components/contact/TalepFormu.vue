@@ -62,6 +62,33 @@ const schema = yup.object({
   note: yup.string().trim().required('Mesajınızı yazınız.'),
 })
 
+/**
+ * FİYAT HESAPLAYICIDAN GELEN BAĞLAM.
+ *
+ * Sayfa adres satırını doğruladı ve iki şey geçiriyor: mesaj kutusuna
+ * hazır gelen metin ve devrin geçerli olup olmadığı. Bu bileşen adres
+ * satırını KENDİSİ okumuyor — doğrulama tek yerde
+ * (bkz. pages/iletisim.vue, utils/fiyat-devri.ts).
+ *
+ * KİŞİSEL ALANLAR UYDURULMUYOR: ad, telefon ve e-posta hesaplayıcıdan
+ * bilinmiyor, dolayısıyla boş kalıyor. Yalnız gerçekten bilinen taşıma
+ * bağlamı ön dolduruluyor.
+ *
+ * FORMA YENİ ALAN EKLENMEDİ: kat, asansör, ev büyüklüğü ve mesafe için
+ * ayrı alan açmak yerine mevcut mesaj kutusu kullanılıyor — form zaten
+ * bu beşini oradan istiyor (aşağıdaki `HAZIRLIK` kütüğü).
+ */
+const props = defineProps({
+  /** İç sayfa içeriği — bkz. shared/utils/ic-sayfa.ts */
+  bolum: { type: Object, default: () => ({}) },
+  /**
+   * Fiyat hesaplayıcının HAM seçimleri (dokuz kısa dize) ya da `null`.
+   * Metin değil: kayda giren özeti sunucu bu alanlardan kendi veri
+   * tabanı etiketleriyle üretiyor.
+   */
+  hesapAlanlari: { type: Object, default: null },
+})
+
 const route = useRoute()
 const isSubmitting = ref(false)
 const status = ref('') // '' | 'success' | 'error'
@@ -111,8 +138,20 @@ const onSubmit = async (values, { resetForm }) => {
         message: values.note,
         // Hangi sayfadan geldiği: hangi bölge sayfasının gerçekten müşteri
         // getirdiğini ancak bu gösteriyor.
+        //
+        // FİYAT HESAPLAYICIDAN GELİNDİYSE KAYNAK ORASI. Talebin araçtan mı
+        // yoksa doğrudan iletişim sayfasından mı geldiği aksi hâlde
+        // kaybolurdu — ikisi de `/iletisim` yazardı.
+        //
+        // KAYNAĞI SUNUCU BELİRLİYOR. Buradan yalnız bulunulan yol
+        // bildiriliyor; hesaplayıcıdan gelindiği sunucuda, ham seçimler
+        // GERÇEKTEN doğrulandıktan sonra kararlaştırılıyor. Böylece
+        // adrese parametre ekleyerek kaydı hesaplayıcıdan gelmiş gibi
+        // göstermek mümkün değil (bkz. server/api/leads.ts).
         sourcePage: route.path,
         website: website.value,
+        // Hesaplayıcının ham seçimleri; devir yoksa hiç gönderilmiyor.
+        ...(props.hesapAlanlari ? { hesap: props.hesapAlanlari } : {}),
       },
     })
 
@@ -143,10 +182,7 @@ const HAZIRLIK = [
   { etiket: 'TAŞINMA TARİHİ', metin: 'Kesin gün ya da bir aralık.' },
 ]
 
-/** İç sayfa içeriği — bkz. shared/utils/ic-sayfa.ts */
-defineProps({
-  bolum: { type: Object, default: () => ({}) },
-})
+
 </script>
 
 <template>

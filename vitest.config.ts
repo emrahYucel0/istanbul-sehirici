@@ -21,6 +21,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./app', import.meta.url)),
       '~~': fileURLToPath(new URL('.', import.meta.url)),
       '@@': fileURLToPath(new URL('.', import.meta.url)),
+      // Nuxt 4'te `#shared` → `shared/`. Hem uygulama hem sunucu bu
+      // klasörden okuyor (örn. `server/domain/regions/istanbul.service.ts`
+      // → `#shared/utils/istanbul`); testler de aynı yere çözmeli, yoksa
+      // paylaşılan modüller test ortamında bulunamıyor.
+      '#shared': fileURLToPath(new URL('./shared', import.meta.url)),
     },
   },
   test: {
