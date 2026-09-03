@@ -1,4 +1,18 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
+/*
+ * COĞRAFİ SAYFA AĞI — TEK KAYNAK.
+ *
+ * Hem `runtimeConfig.public.publicRegionPages` (uygulama tarafı) hem
+ * `sitemap.exclude` (derleme tarafı) bu tek değeri okuyor. İkisi ayrı
+ * yazılsaydı biri açık biri kapalı kalabilir ve sitemap 404 veren bir
+ * adres bildirebilirdi.
+ *
+ * Ortam değişkeniyle açılıyor:  NUXT_PUBLIC_PUBLIC_REGION_PAGES=true
+ * Gerekçenin tamamı: app/composables/useRegionPages.ts
+ */
+const BOLGE_AGI_ACIK = process.env.NUXT_PUBLIC_PUBLIC_REGION_PAGES === "true";
+
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
@@ -106,7 +120,12 @@ export default defineNuxtConfig({
     // "Submitted URL marked noindex" uyarısı olarak raporlar. Rotalar
     // onaylı referans/hata ayıklama aracı olarak KALIYOR, yalnız sitemap
     // dışına alındılar.
-    exclude: ["/prototip/**"],
+    //
+    // `/bolgelerimiz` bayrak kapalıyken buradan çıkarılıyor: o sayfa Nuxt
+    // Sitemap'in OTOMATİK rota keşfiyle giriyordu, bizim uç noktamızdan
+    // değil. İlçe ve mahalle adresleri dinamik olduğu için zaten
+    // server/api/__sitemap__/urls.ts tarafında eleniyor.
+    exclude: BOLGE_AGI_ACIK ? ["/prototip/**"] : ["/prototip/**", "/bolgelerimiz"],
   },
 
   app: {
@@ -265,6 +284,29 @@ export default defineNuxtConfig({
    */
   runtimeConfig: {
     authSecret: '',
+
+    public: {
+      /*
+       * COĞRAFİ SAYFA AĞI — YARIŞMA SÜRÜMÜNDE KAPALI.
+       *
+       * `false` iken `/bolgelerimiz`, 39 ilçe ve 473 mahalle rotası
+       * ziyaretçiye 404 döner; sitemap'e girmez; navbar, footer ve
+       * sayfa içi bağlantılardan çıkar.
+       *
+       * BU BİR İÇERİK DURUMU DEĞİL, GÖRÜNÜRLÜK ANAHTARI. Region ve
+       * Neighborhood kayıtları veri tabanında olduğu gibi duruyor,
+       * `isActive` değerlerine dokunulmuyor, panel yüzeyleri açık
+       * kalıyor. Site henüz yayına çıkmadığı için korunması gereken
+       * bir indeks geçmişi de yok.
+       *
+       * AÇMAK İÇİN: burada `true` yapmak yeterli — ya da hiç dosyaya
+       * dokunmadan ortam değişkeniyle:
+       *     NUXT_PUBLIC_PUBLIC_REGION_PAGES=true
+       *
+       * Okuma noktası tek: `app/composables/useRegionPages.ts`.
+       */
+      publicRegionPages: BOLGE_AGI_ACIK,
+    },
   },
 
   // NOT: Burada bir `app:error` kancası vardı ve 500/503 hatalarında `false`

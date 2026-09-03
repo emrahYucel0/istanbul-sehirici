@@ -40,10 +40,16 @@ const whatsAppHref = computed(() => {
   return rakam ? `https://wa.me/${rakam}?text=Merhaba` : '/iletisim'
 })
 
-/** Menü kütüğü — kaynak tek yerde. */
+/**
+ * Menü kütüğü — kaynak tek yerde.
+ *
+ * "Bölgeler" yalnız coğrafi ağ AÇIKKEN basılıyor. Kapalıyken o rota 404
+ * döndüğü için menüde durması kırık bağlantı olurdu
+ * (bkz. composables/useRegionPages.ts).
+ */
 const NAV_LINKS = [
   { yol: '/hizmetlerimiz', ad: 'Hizmetler' },
-  { yol: '/bolgelerimiz', ad: 'Bölgeler' },
+  ...(useRegionPages() ? [{ yol: '/bolgelerimiz', ad: 'Bölgeler' }] : []),
   { yol: '/fiyat-hesaplama', ad: 'Fiyat' },
   { yol: '/hakkimizda', ad: 'Hakkımızda' },
   { yol: '/iletisim', ad: 'İletişim' },

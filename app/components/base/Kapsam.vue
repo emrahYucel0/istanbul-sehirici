@@ -93,6 +93,9 @@ const yakalar = computed(() => [
   { yaka: 'ANADOLU YAKASI', adet: props.ilceler.anadolu },
   ...(props.ilceler.digerleri ? [{ yaka: 'DİĞER', adet: props.ilceler.digerleri }] : []),
 ])
+
+/** Coğrafi sayfa ağı açık mı — bkz. composables/useRegionPages.ts. */
+const bolgeAgiAcik = useRegionPages()
 </script>
 
 <template>
@@ -180,7 +183,14 @@ const yakalar = computed(() => [
              haritadan kopuyor ve "bölüm bitti, bir de link var" gibi
              okunuyordu. Ok dekoratif: erişilebilir ad "Bölgelerimizi
              incele" olarak kalıyor. -->
-        <NuxtLink to="/bolgelerimiz" class="kp-bag">
+        <!--
+          CREATIVE FREEZE KORUNUYOR: harita, 25/14/39 sayımı ve başlık
+          coğrafi ağ kapalıyken de AYNEN duruyor — kapsam anlatısı bu
+          bölümün kendi işi. Kalkan tek şey dizine giden BAĞLANTI; hedefi
+          404 verdiği için. Harita zaten `aria-hidden` ve tıklanamaz,
+          yani anlatı katmanı el değmeden kalıyor.
+        -->
+        <NuxtLink v-if="bolgeAgiAcik" to="/bolgelerimiz" class="kp-bag">
           Bölgelerimizi incele<span class="kp-ok" aria-hidden="true">→</span>
         </NuxtLink>
       </div>

@@ -100,7 +100,8 @@ const saatler = computed(() =>
  */
 const gezinme = [
   { ad: 'Hizmetler', yol: '/hizmetlerimiz' },
-  { ad: 'Bölgeler', yol: '/bolgelerimiz' },
+  // "Bölgeler" yalnız coğrafi ağ açıkken; kapalıyken rota 404.
+  ...(useRegionPages() ? [{ ad: 'Bölgeler', yol: '/bolgelerimiz' }] : []),
   { ad: 'Fiyat hesaplama', yol: '/fiyat-hesaplama' },
   { ad: 'Hakkımızda', yol: '/hakkimizda' },
   { ad: 'Blog', yol: '/blog' },

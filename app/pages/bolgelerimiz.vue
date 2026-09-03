@@ -1,4 +1,19 @@
 <script setup>
+/*
+ * COĞRAFİ AĞ KAPALIYKEN BU SAYFA YOK.
+ *
+ * Yarışma sürümünde `publicRegionPages` kapalı (bkz.
+ * composables/useRegionPages.ts). Koruma dosyanın EN BAŞINDA: aşağıdaki
+ * ilçe dizini ve içerik istekleri hiç yapılmıyor.
+ *
+ * 301 değil 404: sayfa ana sayfaya yığılmıyor, `noindex` ile 200 da
+ * bırakılmıyor. Bayrak açıldığında bu blok devre dışı kalıyor ve sayfa
+ * hiçbir değişiklik olmadan geri geliyor.
+ */
+if (!useRegionPages()) {
+  throw createError({ statusCode: 404, statusMessage: 'Sayfa Bulunamadı', fatal: true })
+}
+
 /**
  * /bolgelerimiz — İSTANBUL COĞRAFİ HUB'I
  *

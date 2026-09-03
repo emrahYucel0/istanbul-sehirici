@@ -42,6 +42,9 @@ const props = defineProps({
   related: { type: Array, default: () => [] },
 })
 
+/** Coğrafi sayfa ağı açık mı — bkz. composables/useRegionPages.ts. */
+const bolgeAgiAcik = useRegionPages()
+
 const includes = computed(() =>
   parseJsonArray(props.service?.includes).filter((item) => String(item || '').trim())
 )
@@ -59,7 +62,9 @@ const bolumler = computed(() => {
   const liste = []
   if (includes.value.length) liste.push({ anahtar: 'kapsam', etiket: 'KAPSAM' })
   if (props.service?.content) liste.push({ anahtar: 'nasil', etiket: 'NASIL YAPILIYOR' })
-  if (props.regions.length) liste.push({ anahtar: 'bolge', etiket: 'İSTANBUL' })
+  // Coğrafi ağ kapalıyken İSTANBUL bölümü basılmıyor; numarası da
+  // ayrılmamalı, yoksa 03'ten 05'e atlanır.
+  if (bolgeAgiAcik && props.regions.length) liste.push({ anahtar: 'bolge', etiket: 'İSTANBUL' })
   if (faqs.value.length) liste.push({ anahtar: 'sss', etiket: 'SORULAR' })
   liste.push({ anahtar: 'adim', etiket: 'SONRAKİ ADIM' })
   return Object.fromEntries(liste.map((b, i) => [b.anahtar, { ...b, no: String(i + 1).padStart(2, '0') }]))
@@ -240,7 +245,11 @@ const adimlar = computed(() => {
          Eski sürümde burası "Türkiye genelinde veriyoruz" başlığıyla 24
          il/ilçe rozeti basıyordu. Artık yalnız İstanbul ilçeleri ve
          rozet değil, ölçü çizgisiyle ayrılmış düz bağlantı satırı. -->
-    <section v-if="regions.length" class="hz-bolum" aria-labelledby="bolge">
+    <!-- Bölüm coğrafi ağa BAĞLI: içi baştan sona ilçe sayfalarına giden
+         bağlantı; ağ kapalıyken hepsi 404 olurdu. Bölüm numaraları da
+         `bolumler` içinde `regions.length`e bağlı olduğu için, ağ
+         kapalıyken numaralama kendiliğinden kayıyor ve boşluk kalmıyor. -->
+    <section v-if="bolgeAgiAcik && regions.length" class="hz-bolum" aria-labelledby="bolge">
       <div class="hz-alan sahne-alan">
         <p class="hz-no op-kunye">{{ bolumler.bolge.no }} / {{ bolumler.bolge.etiket }}</p>
         <h2 id="bolge" class="hz-h2 tip-anlati">Hangi ilçede nasıl çalışıyoruz?</h2>

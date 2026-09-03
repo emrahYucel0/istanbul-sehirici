@@ -26,6 +26,9 @@ const ilceSayisi = istanbulYakalari.reduce((toplam, yaka) => toplam + yaka.slugl
 defineProps({
   bolum: { type: Object, default: () => ({}) },
 })
+
+/** Coğrafi sayfa ağı açık mı — bkz. composables/useRegionPages.ts. */
+const bolgeAgiAcik = useRegionPages()
 </script>
 
 <template>
@@ -46,7 +49,11 @@ defineProps({
         </p>
       </div>
 
-      <p class="ho-bolge tip-govde">
+      <!-- Cümlenin tamamı coğrafi ağa bağlı: tek bilgisi "o sayfada ilçe
+           ilçe yazılı" olduğu için bağlantıyı çıkarıp cümleyi bırakmak
+           olmayan bir yere işaret etmek olurdu. Ağ açıldığında geri
+           geliyor (bkz. composables/useRegionPages.ts). -->
+      <p v-if="bolgeAgiAcik" class="ho-bolge tip-govde">
         Hangi ilçede ne tür bir yapı dokusuyla karşılaştığımız
         <NuxtLink to="/bolgelerimiz" class="op-bag op-bag--sakin ho-bag"
           >hizmet bölgelerimiz</NuxtLink

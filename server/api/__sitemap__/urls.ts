@@ -73,12 +73,28 @@ async function fetchNeighborhoodUrls() {
   }
 }
 
-export default defineSitemapEventHandler(async () => {
+export default defineSitemapEventHandler(async (event) => {
+  /*
+   * COĞRAFİ AĞ KAPALIYKEN BÖLGE VE MAHALLE SİTEMAP'E GİRMİYOR.
+   *
+   * Yarışma sürümünde o rotalar 404 dönüyor (bkz.
+   * app/composables/useRegionPages.ts). 404 veren bir adresi sitemap'te
+   * bildirmek Search Console'da doğrudan hata üretir; iki karar birlikte
+   * verilmek zorunda.
+   *
+   * İstekleri de HİÇ ATMIYORUZ: kapalıyken `/api/regions` ve
+   * `/api/mahalleler` çağrıları yapılmıyor, sonuç boş dizi.
+   *
+   * Bayrak açıldığında eski davranış aynen dönüyor — aşağıdaki iki
+   * getirici hiç değişmedi.
+   */
+  const bolgeAgiAcik = Boolean(useRuntimeConfig(event).public.publicRegionPages);
+
   const [posts, regions, services, neighborhoods] = await Promise.all([
     fetchPostUrls(),
-    fetchRegionUrls(),
+    bolgeAgiAcik ? fetchRegionUrls() : Promise.resolve([]),
     fetchServiceUrls(),
-    fetchNeighborhoodUrls(),
+    bolgeAgiAcik ? fetchNeighborhoodUrls() : Promise.resolve([]),
   ]);
   return [...posts, ...regions, ...services, ...neighborhoods];
 });

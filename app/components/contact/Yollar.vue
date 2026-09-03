@@ -23,11 +23,17 @@ const YOLLAR = [
     ad: 'Nakliyat hizmetleri',
     metin: 'Hangi hizmetin kapsamına girdiğinizden emin değilseniz.',
   },
-  {
-    yol: '/bolgelerimiz',
-    ad: 'Hizmet bölgelerimiz',
-    metin: 'İlçenizde ne tür bir yapı dokusuyla çalıştığımızı okumak için.',
-  },
+  // Coğrafi ağ kapalıyken bu yol yok: 404 veren bir sayfaya "diğer yol"
+  // diye işaret etmek çıkmaz sokak olurdu.
+  ...(useRegionPages()
+    ? [
+        {
+          yol: '/bolgelerimiz',
+          ad: 'Hizmet bölgelerimiz',
+          metin: 'İlçenizde ne tür bir yapı dokusuyla çalıştığımızı okumak için.',
+        },
+      ]
+    : []),
 ]
 </script>
 

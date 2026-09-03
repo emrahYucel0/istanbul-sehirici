@@ -256,7 +256,25 @@ if (postError.value || regionError.value) {
   console.error('İçerik yüklenemedi:', postError.value || regionError.value)
 }
 
-if (!post.value && !region.value && !service.value && !mahalle.value) {
+/**
+ * COĞRAFİ AĞ KAPALIYKEN BÖLGE VE MAHALLE 404.
+ *
+ * Yarışma sürümünde `publicRegionPages` kapalı (bkz.
+ * composables/useRegionPages.ts). O hâlde bu rota yalnız YAZI ve HİZMET
+ * eşleşmelerini karşılıyor; ilçe ve mahalle adresleri kayıt veri
+ * tabanında dursa bile ziyaretçiye "Sayfa Bulunamadı" dönüyor.
+ *
+ * 301 ile ana sayfaya YIĞILMIYOR ve `noindex` ile 200 BIRAKILMIYOR:
+ * yarışma sürümünde bu sayfalar gerçekten public ürünün parçası değil,
+ * dolayısıyla doğru sözleşme 404. (`/istanbul` istisnası nitro
+ * seviyesinde ve ayrı bir karar — bkz. nuxt.config.ts routeRules.)
+ */
+const bolgeAgiAcik = useRegionPages()
+const cozumlendi = Boolean(
+  post.value || service.value || (bolgeAgiAcik && (region.value || mahalle.value))
+)
+
+if (!cozumlendi) {
   throw createError({ statusCode: 404, statusMessage: 'Sayfa Bulunamadı', fatal: true })
 }
 

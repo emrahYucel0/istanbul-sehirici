@@ -20,6 +20,9 @@ const durumlar = computed(() =>
     metin: o.body,
   })),
 )
+
+/** Coğrafi sayfa ağı açık mı — bkz. composables/useRegionPages.ts. */
+const bolgeAgiAcik = useRegionPages()
 </script>
 
 <template>
@@ -43,7 +46,9 @@ const durumlar = computed(() =>
           <div class="ui-durak">
             <p class="ui-sonuc tip-anlati">{{ ilceler.toplam }} ilçe.<br />{{ bolum.closing }}</p>
             <p class="ui-govde tip-govde">{{ bolum.closingNote }}</p>
-            <NuxtLink to="/bolgelerimiz" class="op-bag ui-bag">{{ bolum.ctaLabel }}</NuxtLink>
+            <!-- Sonuç cümlesi ve "{{ ilceler.toplam }} ilçe" anlatısı
+                 kalıyor; yalnız dizine giden çağrı coğrafi ağa bağlı. -->
+            <NuxtLink v-if="bolgeAgiAcik" to="/bolgelerimiz" class="op-bag ui-bag">{{ bolum.ctaLabel }}</NuxtLink>
           </div>
         </div>
       </div>
