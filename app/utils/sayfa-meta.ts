@@ -94,8 +94,12 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // taşımacılık anlayışımız." Üç iddia da doğrulanmamıştı. Bu satır
     // yalnız panelde Meta kaydı YOKKEN basılıyor — yani sessiz bir yedek.
     // Sessiz olması, iddia taramasından kaçması anlamına gelmemeli.
+    //
+    // M15B: "keşifte neyi ölçtüğümüz" → "neyi ölçtüğümüz". Keşfin HER İŞTE
+    // yapıldığı doğrulanamadı; arama sonucunda görünen bir cümlenin
+    // sayfanın kendisinden daha kesin konuşmaması gerekiyor.
     description:
-      "İstanbul'da evden eve, ofis ve parça eşya taşıması. Nasıl çalıştığımız, keşifte neyi ölçtüğümüz ve kapsamı nasıl belirlediğimiz.",
+      "İstanbul'da evden eve, ofis ve parça eşya taşıması. Nasıl çalıştığımız, neyi ölçtüğümüz ve kapsamı nasıl belirlediğimiz.",
   },
   {
     anahtar: 'services',

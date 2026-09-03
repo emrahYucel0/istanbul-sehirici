@@ -31,7 +31,13 @@ const props = defineProps({
 <template>
   <section class="hs-kap" aria-labelledby="saha-baslik">
     <div class="hs sahne-alan">
-      <p class="hs-kunye op-kunye">03 / SAHADA NEYE BAKIYORUZ</p>
+      <!-- KÜNYE "SAHADA NEYE BAKIYORUZ" İDİ.
+           "Saha" her işte yerinde bir ziyaret yapıldığını ima ediyordu;
+           kullanıcı bunun her işte olmadığını doğruladı (bkz. M15B iş
+           gerçeği matrisi). Bölümün işlevi değişmedi: dört kalemin ne
+           olduğu ve neyi belirlediği aynen duruyor, yalnız o dördünün
+           mutlaka bir keşif ziyaretinde toplandığı iddiası kalktı. -->
+      <p class="hs-kunye op-kunye">03 / PLANI NE BELİRLİYOR</p>
 
       <h2 id="saha-baslik" class="hs-h2 tip-anlati">{{ bolum.heading }}</h2>
 

@@ -31,7 +31,10 @@ const { settings } = await useSiteSettings()
 const temiz = (deger) => String(deger ?? '').trim()
 
 const telefon = computed(() => temiz(settings.value?.phone) || temiz(settings.value?.mobilePhone))
-const telHref = computed(() => `tel:${telefon.value.replace(/[^\d+]/g, '')}`)
+/* E.164 — kanonik yardımcıdan (utils/kapanis.ts). Satır içi normalizasyon
+   KOPYALANMIYOR: `tel:05355298192` yerel SIM dışında çevrilemiyordu ve
+   yardımcı zaten tam bu iş için yazılmış. Görünen numara DEĞİŞMİYOR. */
+const telHref = computed(() => telefonYolu(telefon.value))
 
 const eposta = computed(() => temiz(settings.value?.email))
 const adres = computed(() => temiz(settings.value?.address))

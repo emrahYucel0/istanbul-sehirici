@@ -56,11 +56,21 @@ const KARARLAR = [
     metin:
       'Site yönetiminden alınan giriş izni, araç kabul saati ve yük asansörü tahsisi taşıma gününe bırakılmıyor. Randevusuz gelen araç kapıda beklerken ekip de bekliyor.',
   },
+  /**
+   * 04'ün ETİKETİ VE SON CÜMLESİ DEĞİŞTİ — İŞ GERÇEĞİ HİZALAMASI.
+   *
+   * Eskiden "DEĞİŞENİ YAZ" ve "…kayda geçiyor, sözlü kalmıyor" diyordu.
+   * İkisi de kapsamın YAZILI verildiğini ima ediyor; kullanıcı bunu
+   * doğrulayamadı (bkz. M15B iş gerçeği matrisi). Kararın kendisi —
+   * değişikliğin sebebiyle birlikte açıkça konuşulması — korunuyor;
+   * kaldırılan tek şey belge taahhüdü. Yapı, sıra ve numaralandırma
+   * değişmedi.
+   */
   {
     no: '04',
-    etiket: 'DEĞİŞENİ YAZ',
+    etiket: 'DEĞİŞENİ AÇIKÇA SÖYLE',
     metin:
-      'Plan sahada değişebiliyor: kapıdan geçmeyen bir parça çıkıyor, asansör arızalı oluyor. Değiştiğinde neyin neden değiştiği kayda geçiyor, sözlü kalmıyor.',
+      'Plan sahada değişebiliyor: kapıdan geçmeyen bir parça çıkıyor, asansör arızalı oluyor. Değiştiğinde neyin neden değiştiği o anda konuşuluyor, sonraya bırakılmıyor.',
   },
 ]
 

@@ -71,7 +71,11 @@ const eposta = computed(() => settings.value?.email?.trim() || '')
 const telefon = computed(
   () => settings.value?.phone?.trim() || settings.value?.mobilePhone?.trim() || ''
 )
-const telHref = computed(() => `tel:${telefon.value.replace(/[^\d+]/g, '')}`)
+/* `tel:` adresi E.164 — kanonik yardimcidan (utils/kapanis.ts).
+   Satir ici normalizasyon kopyalanmiyor: `tel:05355298192` yurt disi
+   SIM'inde ve bazi masaustu uygulamalarinda cevrilemiyordu. Gorunen
+   numara DEGISMIYOR, yalniz href. */
+const telHref = computed(() => telefonYolu(telefon.value))
 
 /** Panelde tam URL olarak tutuluyor; ham numara girilirse de çalışsın. */
 const whatsApp = computed(() => {

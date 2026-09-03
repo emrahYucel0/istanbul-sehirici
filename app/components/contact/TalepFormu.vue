@@ -59,7 +59,24 @@ const schema = yup.object({
       const digits = String(value || '').replace(/\D/g, '')
       return digits.length >= 10 && digits.length <= 15
     }),
-  note: yup.string().trim().required('Mesajınızı yazınız.'),
+  /**
+   * SINIR SUNUCUYLA AYNI — 4000.
+   *
+   * Ölçüldü: istemcide max kuralı yokken 4.200 karakterlik bir mesaj
+   * doğrulamadan geçiyor, sunucu (`server/api/leads.ts`, yup max 4000)
+   * reddediyor ve kullanıcı "Mesajınız gönderilemedi… tekrar
+   * deneyebilirsiniz" görüyordu — tekrar denemek de aynı şekilde
+   * başarısız oluyordu ve sebep hiçbir yerde yazmıyordu.
+   *
+   * Artık aynı sınır istemcide de var; hata alanın kendi mesajı olarak,
+   * mevcut `aria-invalid` + `aria-describedby` + ilk hatalı alana odak
+   * mekanizması üzerinden görünüyor. SUNUCU SINIRI DEĞİŞMEDİ.
+   */
+  note: yup
+    .string()
+    .trim()
+    .required('Mesajınızı yazınız.')
+    .max(4000, 'Mesaj en fazla 4000 karakter olabilir.'),
 })
 
 /**
@@ -97,7 +114,11 @@ const website = ref('')
 const formRef = ref(null)
 
 const fallbackPhone = computed(() => settings.value?.phone || settings.value?.mobilePhone || '')
-const telHref = computed(() => `tel:${fallbackPhone.value.replace(/[^\d+]/g, '')}`)
+/* `tel:` adresi E.164 — kanonik yardimcidan (utils/kapanis.ts).
+   Satir ici normalizasyon kopyalanmiyor: `tel:05355298192` yurt disi
+   SIM'inde ve bazi masaustu uygulamalarinda cevrilemiyordu. Gorunen
+   numara DEGISMIYOR, yalniz href. */
+const telHref = computed(() => telefonYolu(fallbackPhone.value))
 
 /**
  * Doğrulama takıldığında İLK hatalı alana odak — form uzun, hata mesajı
@@ -121,6 +142,21 @@ const hataliyaOdaklan = async () => {
 
 const onSubmit = async (values, { resetForm }) => {
   if (website.value) return // bot
+
+  /**
+   * PROGRAMATİK YENİDEN GİRİŞ KORUMASI.
+   *
+   * Düğmenin `:disabled` hâli SUNUM katmanı: gerçek çift tıklamayı
+   * durduruyor (ölçüldü, 60 ms arayla iki tıklama → tek talep) ama aynı
+   * tick içinde `requestSubmit()` üç kez çağrıldığında üçü de doğrulamayı
+   * geçip buraya ulaşıyordu — ölçüldü, üç kayıt oluştu.
+   *
+   * Sunucu hız sınırı bu iş için değiştirilmedi; koruma burada, tek
+   * satırda. Devam eden bir gönderim varken ikinci çağrı erken dönüyor.
+   * Kilit KALICI DEĞİL: `finally` bloğu her durumda serbest bırakıyor,
+   * yani başarılı gönderimden sonra yeni bir talep gönderilebiliyor.
+   */
+  if (isSubmitting.value) return
 
   isSubmitting.value = true
   status.value = ''
@@ -174,6 +210,25 @@ const onSubmit = async (values, { resetForm }) => {
  * sunuluyor; olmayan bir form alanını varmış gibi göstermek kullanıcıyı
  * boş yere arattırırdı.
  */
+/**
+ * HESAPLAYICIDAN GELİNDİĞİNDE ZATEN BİLİNEN MADDE.
+ *
+ * Ölçüldü: geçerli bir hesap devrinde sayfanın üstündeki "Hesaplama
+ * özeti" bloğu ÇIKIŞ ve VARIŞ katını asansör durumuyla birlikte zaten
+ * gösteriyor. Kütük buna rağmen "KAT VE ASANSÖR" maddesini aynen
+ * istiyordu — kullanıcıya "bunu bir daha yaz" dedirten tek satır oydu.
+ *
+ * Devirde YALNIZ bu madde düşüyor. Diğer dördü kalıyor, çünkü
+ * hesaplayıcı onları bilmiyor:
+ *   ÇIKIŞ ADRESİ · VARIŞ ADRESİ  → yalnız kat biliniyor, ilçe/mahalle değil
+ *   EŞYA KAPSAMI                 → ev büyüklüğü biliniyor, özel parça değil
+ *   TAŞINMA TARİHİ               → hiç bilinmiyor
+ *
+ * Rozet, onay kutusu ya da "alındı" durumu EKLENMEDİ: en sade çözüm
+ * bilinen maddeyi hiç göstermemek.
+ */
+const DEVIRDE_BILINEN = 'KAT VE ASANSÖR'
+
 const HAZIRLIK = [
   { etiket: 'ÇIKIŞ ADRESİ', metin: 'İlçe ve mahalle yeterli; sokak adı gerekmiyor.' },
   { etiket: 'VARIŞ ADRESİ', metin: 'Yeni adres henüz kesin değilse ilçesini yazmanız yeterli.' },
@@ -181,6 +236,11 @@ const HAZIRLIK = [
   { etiket: 'EŞYA KAPSAMI', metin: 'Kaç odalı bir ev ve ayrıca ele alınması gereken parça var mı.' },
   { etiket: 'TAŞINMA TARİHİ', metin: 'Kesin gün ya da bir aralık.' },
 ]
+
+/** Devirde bilinen madde listeden düşüyor; normal ziyarette beşi de var. */
+const hazirlikListesi = computed(() =>
+  props.hesapAlanlari ? HAZIRLIK.filter((h) => h.etiket !== DEVIRDE_BILINEN) : HAZIRLIK
+)
 
 
 </script>
@@ -198,7 +258,7 @@ const HAZIRLIK = [
       <div class="if-hazirlik">
         <p v-if="bolum.lead" class="if-hazirlik-giris tip-not">{{ bolum.lead }}</p>
         <dl class="if-hazirlik-liste">
-          <div v-for="h in HAZIRLIK" :key="h.etiket" class="if-hazirlik-oge">
+          <div v-for="h in hazirlikListesi" :key="h.etiket" class="if-hazirlik-oge">
             <dt class="if-hazirlik-etiket op-kunye">{{ h.etiket }}</dt>
             <dd class="if-hazirlik-metin tip-not">{{ h.metin }}</dd>
           </div>
@@ -328,6 +388,7 @@ const HAZIRLIK = [
               name="note"
               rows="6"
               required
+              maxlength="4000"
               class="if-girdi if-metin"
               :class="{ 'is-hatali': errors.note }"
               :aria-invalid="errors.note ? 'true' : undefined"

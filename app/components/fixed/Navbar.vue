@@ -30,7 +30,11 @@ const navbarData = computed(() => navbarResponse.value?.data ?? null)
 const brandLabel = computed(() => navbarData.value?.logo || brandName.value)
 
 const phone = computed(() => settings.value?.phone || settings.value?.mobilePhone || '')
-const telHref = computed(() => `tel:${String(phone.value).replace(/[^\d+]/g, '')}`)
+/* `tel:` adresi E.164 — kanonik yardimcidan (utils/kapanis.ts).
+   Satir ici normalizasyon kopyalanmiyor: `tel:05355298192` yurt disi
+   SIM'inde ve bazi masaustu uygulamalarinda cevrilemiyordu. Gorunen
+   numara DEGISMIYOR, yalniz href. */
+const telHref = computed(() => telefonYolu(phone.value))
 
 /* WhatsApp artık BARDA. Eskiden sağ altta yüzen bir daireydi ve sayfadaki
    içeriği kalıcı olarak örtüyordu (bkz. app.vue'daki not). Barda durunca
