@@ -293,9 +293,14 @@ const adimlar = computed(() => {
         <!-- İLETİŞİM CÜMLESİ BURADAN ÇIKTI, sayfanın ortak kapanış
              imzasına devredildi. Kalan tek bağlantı fiyat aracı: başka bir
              hedef, tekrar değil. -->
+        <!-- "keşifte netleşiyor" ÇIKARILDI: keşfin HER işte yapıldığı
+             doğrulanamadı, bu cümle yedi hizmet sayfasının hepsinde basılıyor
+             ve zorunlu bir aşama vaat ediyordu. Kalan cümle aynı şeyi
+             söylüyor — kapsamın adrese göre değiştiğini — ama hangi araçla
+             belirlendiğini taahhüt etmiyor. -->
         <p class="hz-kapanis tip-govde">
-          Bu hizmetin sizin adresinizde ne kadarını gerektirdiği keşifte
-          netleşiyor. Kaba bir aralık için
+          Bu hizmetin sizin adresinizde ne kadarını gerektirdiği koşullar
+          konuşulduktan sonra netleşiyor. Kaba bir aralık için
           <NuxtLink to="/fiyat-hesaplama" class="op-bag op-bag--sakin hz-satirbag">fiyat hesaplama aracını</NuxtLink>
           kullanabilirsiniz.
         </p>

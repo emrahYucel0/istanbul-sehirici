@@ -39,6 +39,8 @@
     "sir-tara": "node scripts/sir-taramasi.mjs",
     "fiyat-notu": "node --env-file=.env prisma/fiyat-notu-tohum.mjs",
     "is-gercegi": "node --env-file=.env prisma/is-gercegi-hizalama.mjs",
+    "m16b-hizala": "node --env-file=.env prisma/m16b-hizalama.mjs",
+    "politika-hizala": "node --env-file=.env prisma/politika-hizalama.mjs",
     "anasayfa-icerik": "node --env-file=.env prisma/anasayfa-icerik-tohum.mjs",
     "ic-sayfa-icerik": "node --env-file=.env prisma/ic-sayfa-tohum.mjs",
     "legacy-emeklilik": "node --env-file=.env prisma/legacy-bolge-emeklilik.mjs",

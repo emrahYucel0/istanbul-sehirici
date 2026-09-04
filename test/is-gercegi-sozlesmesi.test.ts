@@ -50,10 +50,23 @@ const yeniMetinler = [...tohum.matchAll(/\n\s*yeni:\s*\n?\s*(['"])([\s\S]*?)\1,\
 // ═══════════════════════════════════════════ TOHUMUN YAZACAĞI METİN
 
 describe('veri tabanına yazılacak metinler', () => {
-  it('dokuz alanın metni okunabildi', () => {
+  it('on alanın metni okunabildi', () => {
     // Biçim değişirse iddia sessizce boşalmasın.
-    expect(yeniMetinler.length).toBe(9)
+    //
+    // 9 → 10: M16B, panelde girilmiş `Meta("about")` kaydını da bu kütüğe
+    // ekledi. M15B `sayfa-meta.ts` içindeki yedeği düzeltmişti ama
+    // `usePageSeo` önceliği DB kaydını üste koyuyor; yani düzeltilen satır
+    // hiç basılmıyordu ve arama sonucu hâlâ "keşifte" diyordu.
+    expect(yeniMetinler.length).toBe(10)
     for (const m of yeniMetinler) expect(m.length).toBeGreaterThan(10)
+  })
+
+  it('Meta("about") kaydı da kütükte', () => {
+    expect(tohum).toContain("sayfa: 'about'")
+    expect(tohum).toContain('p.meta.update')
+    // Kayıt yoksa kod varsayılanı basılıyor ve o zaten temiz; betik
+    // bu durumda yazmaya çalışmamalı.
+    expect(tohum).toContain('kayıt yok — kod varsayılanı basılıyor')
   })
 
   it('KOŞULSUZ KEŞİF taahhüdü yok', () => {

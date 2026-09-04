@@ -79,8 +79,22 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     //     gerçekten söylediği şey bu.
     //   · Sayılan hizmetler ana sayfadaki Hizmetler defteriyle eşleşiyor;
     //     depolama gibi burada sunulmayan bir şey yazmıyor.
+    //
+    // ─────────────────────────────────────────────────────────────────
+    // M16B — İKİ İDDİA DAHA ÇIKTI.
+    //
+    // Eski satır: "Erişim ve kat durumu KEŞİFTE YERİNDE ÖLÇÜLÜR, fiyat
+    // YAZILI VERİLİR." Veri tabanında `Meta("home")` kaydı YOK, yani bu
+    // sessiz bir yedek değildi: arama sonucunda, OG'de, Twitter kartında
+    // ve JSON-LD açıklamasında gerçekten basılan metin buydu.
+    //
+    // İş gerçeği sözleşmesi ikisini de reddediyor: keşif HER işte
+    // yapılmıyor, fiyatın yazılı verildiği doğrulanamadı. Yerine yeni bir
+    // vaat KONMADI — kalan cümle sitenin tezini söylüyor: bir taşımanın
+    // fiyatını mesafe değil, iki adresin koşulları belirliyor. Bu, ana
+    // sayfanın Kapsam ve Fiyat bölümlerinin zaten anlattığı şey.
     description:
-      "İstanbul'un 39 ilçesinde evden eve nakliyat. Erişim ve kat durumu keşifte yerinde ölçülür, fiyat yazılı verilir. Ambalajlama, marangozlu söküm ve kurulum dahil.",
+      "İstanbul'un 39 ilçesinde evden eve nakliyat. Fiyatı mesafe değil, iki adresin erişim ve kat koşulları belirliyor. Ambalajlama, marangozlu söküm ve kurulum dahil.",
   },
   {
     anahtar: 'about',
@@ -164,9 +178,14 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // İki iddia da doğrulanmamıştı ve panelde `Meta(fiyat-hesaplama)` kaydı
     // olmadığı için bu satırlar sessiz bir yedek değil, sayfanın gerçekten
     // bastığı metinlerdi.
+    //
+    // M16B: "onlar keşifte ölçülüyor" ÇIKARILDI. Cümlenin işi, aracın NEYİ
+    // hesaplamadığını söylemek — bunu hangi aşamanın kapattığını taahhüt
+    // etmek değil. Yeni son, hesaplayıcının kendi uyarı notuyla (`note`)
+    // aynı sözleşmeyi kullanıyor.
     title: 'Nakliyat Fiyat Hesaplama | {marka}',
     description:
-      'Ev büyüklüğü, mesafe, kat ve asansör durumuna göre tahmini bir aralık görün. Adres koşulları hesaba girmiyor; onlar keşifte ölçülüyor.',
+      'Ev büyüklüğü, mesafe, kat ve asansör durumuna göre tahmini bir aralık görün. Sokak ve bina erişimi hesaba girmiyor; tutar koşullar değerlendirildikten sonra netleşiyor.',
   },
   {
     anahtar: 'gizlilik-politikasi',

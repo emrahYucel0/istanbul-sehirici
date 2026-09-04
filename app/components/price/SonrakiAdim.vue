@@ -27,12 +27,17 @@ defineProps({
 
       <div class="fs-govde">
         <p v-if="bolum.lead" class="fs-metin tip-govde">{{ bolum.lead }}</p>
-        <!-- "yazılı olarak veriliyor" ÇIKARILDI: teklifin biçimi
-             (yazılı/sözlü) hakkında doğrulanmamış bir taahhüt. Kalan
-             cümle süreci anlatıyor, garanti vermiyor. -->
+        <!-- İKİ TURDA İKİ İDDİA KALKTI.
+             M14B: "yazılı olarak veriliyor" — teklifin biçimi hakkında
+             doğrulanmamış taahhüt.
+             M16B: "keşif için gün ayırıyoruz" — keşfin HER işte yapıldığı
+             doğrulanamadı (iş gerçeği sözleşmesi), bu ise koşulsuz vaatti.
+             Kalan cümle, `iletisim.form.note` alanındaki doğrulanmış ikiziyle
+             aynı sözleşmeyi kullanıyor: tutarın NE ZAMAN netleştiğini
+             söylüyor, hangi ARAÇLA netleştiğini değil. -->
         <p class="fs-metin tip-govde">
-          Bu ayrıntıları paylaşırsanız keşif için gün ayırıyoruz; kapsam
-          netleştikten sonra tutar paylaşılıyor.
+          Bu ayrıntıları paylaşırsanız adresleri ve tarihi teyit ediyoruz.
+          Tutar, taşıma koşulları değerlendirildikten sonra netleşiyor.
         </p>
       </div>
 

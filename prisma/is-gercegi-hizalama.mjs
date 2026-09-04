@@ -150,6 +150,36 @@ const IC_SAYFA_ALANLARI = [
   },
 ]
 
+/**
+ * META KAYITLARI — M16B'de eklendi.
+ *
+ * NEDEN SONRADAN: M15B `app/utils/sayfa-meta.ts` içindeki `about`
+ * varsayılanından "keşifte" kelimesini çıkardı ve iş bitti sanıldı. Ama
+ * `usePageSeo` öncelik sırası şu:
+ *
+ *     panelden girilen Meta kaydı  >  sayfa-meta.ts varsayılanı  >  Site Ayarları
+ *
+ * Veri tabanında `Meta("about")` kaydı VAR. Yani düzeltilen satır hiç
+ * basılmıyordu; arama sonucunda görünen açıklama hâlâ "keşifte neyi
+ * ölçtüğümüz" diyordu — sayfanın kendi gövdesi bunu artık söylemediği
+ * hâlde. M16 denetimi bu farkı ölçtü.
+ *
+ * Bu alan bu kütüğe konuyor çünkü kapattığı iddia M15B'nin iddiası:
+ * /hakkimizda sayfasının koşulsuz keşif taahhüdü.
+ */
+const META_ALANLARI = [
+  {
+    sayfa: 'about',
+    alan: 'description',
+    neden: 'koşulsuz keşif ("keşifte neyi ölçtüğümüz") — DB kaydı kod düzeltmesini eziyordu',
+    eski: [
+      "İstanbul'da evden eve, ofis ve parça eşya taşıması yapıyoruz. Nasıl çalıştığımız, keşifte neyi ölçtüğümüz ve kapsamı nasıl belirlediğimiz.",
+    ],
+    yeni:
+      "İstanbul'da evden eve, ofis ve parça eşya taşıması yapıyoruz. Nasıl çalıştığımız, neyi ölçtüğümüz ve kapsamı nasıl belirlediğimiz.",
+  },
+]
+
 /** Yazılacak yeni metinlerde doğrulanmamış iddia kalmadığını sınar. */
 const YASAKLI = [
   'keşif', 'keşfe', 'keşifte', 'yazıya dök', 'yazılı', 'sözleşme',
@@ -163,7 +193,7 @@ let korunan = 0
 
 console.log('═══ ÖN KONTROL — yeni metinlerde doğrulanmamış iddia')
 let kirli = 0
-for (const k of [...ABOUT_ALANLARI, ...IC_SAYFA_ALANLARI]) {
+for (const k of [...ABOUT_ALANLARI, ...IC_SAYFA_ALANLARI, ...META_ALANLARI]) {
   const iz = YASAKLI.filter((y) => kucult(k.yeni).includes(kucult(y)))
   if (iz.length) { kirli++; console.log(`  ⚑ ${k.alan}: ${iz.join(', ')}`) }
 }
@@ -215,6 +245,32 @@ for (const k of IC_SAYFA_ALANLARI) {
   console.log(`    SONRA: ${norm(k.yeni)}`)
   if (!YALNIZ_DOGRULA) {
     await p.internalPageSection.update({ where: { id: kayit.id }, data: { [k.alan]: k.yeni } })
+  }
+  yazilan++
+}
+
+// ─────────────────────────────────────────── Meta (panel SEO kaydı)
+console.log('\n═══ Meta')
+for (const k of META_ALANLARI) {
+  const kayit = await p.meta.findFirst({ where: { page: k.sayfa } })
+  if (!kayit) {
+    // Kayıt yoksa sayfa-meta.ts varsayılanı basılıyor ve o zaten temiz.
+    console.log(`  Meta(${k.sayfa}): kayıt yok — kod varsayılanı basılıyor, hizalama gerekmiyor`)
+    continue
+  }
+  const simdi = norm(kayit[k.alan])
+  if (simdi === norm(k.yeni)) { korunan++; console.log(`  Meta(${k.sayfa}).${k.alan}: zaten güncel`); continue }
+  if (!k.eski.some((e) => norm(e) === simdi)) {
+    atlanan++
+    console.log(`  Meta(${k.sayfa}).${k.alan}: ELLE YAZILMIŞ — EZİLMEDİ`)
+    console.log(`    mevcut: ${simdi.slice(0, 110)}…`)
+    continue
+  }
+  console.log(`  Meta(${k.sayfa}).${k.alan}: ${k.neden}`)
+  console.log(`    ÖNCE : ${simdi}`)
+  console.log(`    SONRA: ${norm(k.yeni)}`)
+  if (!YALNIZ_DOGRULA) {
+    await p.meta.update({ where: { id: kayit.id }, data: { [k.alan]: k.yeni } })
   }
   yazilan++
 }

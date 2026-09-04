@@ -29,6 +29,17 @@ if (!sayfa.value || sayfa.value.isActive === false) {
   throw createError({ statusCode: 404, statusMessage: 'Sayfa Bulunamadı' })
 }
 
+/**
+ * Künyenin sağ yarısı — başlığın versal hâli ("GİZLİLİK POLİTİKASI").
+ *
+ * `tr-TR` yerel ayarı ŞART: varsayılan `toUpperCase()` "i" harfini "I"
+ * yapıyor ve "Gizlilik" → "GIZLILIK" çıkıyor. Türkçe metin taşıyan bir
+ * sitede bu, künyenin tek görünür kusuru olurdu.
+ */
+const kunyeAdi = computed(() =>
+  String(sayfa.value?.title ?? '').toLocaleUpperCase('tr-TR')
+)
+
 const guncellemeTarihi = computed(() => {
   const t = sayfa.value?.lastUpdated
   if (!t) return ''
@@ -42,10 +53,12 @@ const guncellemeTarihi = computed(() => {
     <ui-section tone="surface" labelledby="politika-baslik">
       <article class="politika">
         <header class="politika__ust">
-          <h1 id="politika-baslik" class="politika__baslik">{{ sayfa.title }}</h1>
-          <p v-if="sayfa.subtitle" class="politika__alt">{{ sayfa.subtitle }}</p>
-          <p v-if="guncellemeTarihi" class="politika__tarih">
-            Son güncelleme: <time :datetime="sayfa.lastUpdated">{{ guncellemeTarihi }}</time>
+          <p class="politika__kunye op-kunye">YASAL / {{ kunyeAdi }}</p>
+          <h1 id="politika-baslik" class="politika__baslik tip-baslik">{{ sayfa.title }}</h1>
+          <p v-if="sayfa.subtitle" class="politika__alt tip-giris">{{ sayfa.subtitle }}</p>
+          <p v-if="guncellemeTarihi" class="politika__tarih op-kunye">
+            SON GÜNCELLEME ·
+            <time :datetime="sayfa.lastUpdated">{{ guncellemeTarihi }}</time>
           </p>
         </header>
 
@@ -56,9 +69,24 @@ const guncellemeTarihi = computed(() => {
 </template>
 
 <style scoped>
+/*
+ * ÖLÇÜ 39rem — ESKİSİ 52rem (832px = 85ch) İDİ.
+ *
+ * Ölçüldü: sitenin donmuş uzun metin yüzeyi (blog yazısı) 1440'ta 623px
+ * basıyor, yani ~64ch. Legal aynı puntoyla 85ch veriyordu — aynı sitede
+ * %33 daha uzun satır.
+ *
+ * BİRİM NEDEN `ch` DEĞİL: `ch`, yazıldığı elemanın punto bağlamında
+ * çözülüyor. Bu kap 16px gövde bağlamında, içindeki metin ise 17px;
+ * `64ch` yazınca ekrana 60ch'lik bir metin çıkıyordu (ölçüldü: 587px).
+ * `rem` bağlamdan bağımsız ve donmuş referansla birebir eşleşiyor.
+ *
+ * Kademe, renk ve satır aralığı DEĞİŞMEDİ; yalnız ölçü sitenin kendi
+ * standardına çekildi.
+ */
 .politika {
   margin: 0 auto;
-  max-width: 52rem;
+  max-width: 39rem;
 }
 
 .politika__ust {
@@ -67,26 +95,26 @@ const guncellemeTarihi = computed(() => {
   border-bottom: 1px solid rgb(var(--c-line));
 }
 
+/* Bölüm kimliği — sitenin her sayfasında olan mono künye. Legal
+   sayfalarda yoktu ve aile bu yüzden başka bir siteden gibi duruyordu. */
+.politika__kunye {
+  margin-bottom: 1rem;
+}
+
+/* Kademe artık ortak `.tip-baslik`ten geliyor (700); buradaki yerel
+   clamp ve `font-weight: 800` kaldırıldı — sitede 800 başka hiçbir
+   başlıkta kullanılmıyordu. */
 .politika__baslik {
-  font-size: clamp(1.875rem, 1.4rem + 2vw, 2.75rem);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
   color: rgb(var(--c-ink));
-  text-wrap: balance;
 }
 
 .politika__alt {
   margin-top: 0.75rem;
-  max-width: 60ch;
-  color: rgb(var(--c-ink-muted));
-  line-height: 1.7;
-  text-wrap: pretty;
 }
 
+/* Tarih artık kapanış cümlesi değil, editoryal künye: mono, versal,
+   sayfanın diğer metadata satırlarıyla aynı dil. */
 .politika__tarih {
-  margin-top: 1rem;
-  font-size: 0.875rem;
-  color: rgb(var(--c-ink-muted));
+  margin-top: 1.25rem;
 }
 </style>
