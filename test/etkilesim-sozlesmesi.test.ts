@@ -36,6 +36,11 @@ const dizin = oku('app', 'components', 'region', 'IlceDizini.vue')
 const hizmetler = oku('app', 'components', 'base', 'Hizmetler.vue')
 const kapsam = oku('app', 'components', 'base', 'Kapsam.vue')
 const duzen = oku('app', 'layouts', 'default.vue')
+const acilis = oku('app', 'components', 'sayfa', 'Acilisi.vue')
+const sgGiris = oku('app', 'components', 'service', 'Giris.vue')
+const bgGiris = oku('app', 'components', 'blog-index', 'Giris.vue')
+const sgDizin = oku('app', 'components', 'service', 'Dizin.vue')
+const byListe = oku('app', 'components', 'blog-index', 'YaziListesi.vue')
 
 /** Yorumları atar: iddialar KOD için, açıklama metni için değil. */
 const kodu = (k: string) => k.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/<!--[\s\S]*?-->/g, ' ')
@@ -512,6 +517,106 @@ describe('kısa ekranda parametre satırları içeriğe göre boyutlanıyor', ()
     const m = blok.match(/\.qp-action\s*\{[^}]*min-height:\s*([\d.]+)rem/)
     expect(m, 'kısa ekran qp-action min-height yok').not.toBeNull()
     expect(Number.parseFloat(m![1]) * 16).toBeGreaterThanOrEqual(44)
+  })
+})
+
+
+// ═══════════════════════════════════════════ M18B1 EDİTORYAL DİZİN
+
+describe('dizin açılışları tek sicilden geliyor', () => {
+  it('ortak açılış ilkeli var ve iki dizin de onu kullanıyor', () => {
+    // M18A'da ölçüldü: beş Giris bileşeni aynı açılışı kuruyordu
+    // (normalize şablon benzerliği ort. ~%78). Bu tur yalnız iki dizin
+    // taşındı; detay sayfaları Pack B'nin kararı.
+    expect(kodu(acilis)).toContain('BreadcrumbList')
+    for (const [ad, kaynak] of [['hizmetler', sgGiris], ['blog', bgGiris]] as Array<[string, string]>) {
+      expect(kodu(kaynak), `${ad} açılışı ilkeli kullanmıyor`).toContain('<SayfaAcilisi')
+      // Kopyalanmış yol izi işaretlemesi geri gelmemeli.
+      expect(kodu(kaynak), `${ad} açılışı yol izini yeniden kuruyor`).not.toContain('BreadcrumbList')
+    }
+  })
+
+  it('yol izi anlambilimi ilkelde korunuyor', () => {
+    const k = kodu(acilis)
+    expect(k).toContain('itemtype="https://schema.org/ListItem"')
+    expect(k).toContain('aria-current="page"')
+    expect(k).toContain('aria-label="Yol izi"')
+    // Tek h1 ve dışarıdan verilen kimlik.
+    expect((k.match(/<h1/g) || []).length).toBe(1)
+    expect(k).toContain(':id="baslikId"')
+  })
+
+  it('dizin açılışı ana sayfa gösterisini kopyalamıyor', () => {
+    // Açılış otoritesi punto ile geliyor; yapışkan sahne, 300vh ya da
+    // kaydırmaya bağlı uzun koreografi YOK.
+    const k = kodu(acilis)
+    expect(k).not.toMatch(/position:\s*sticky/)
+    expect(k).not.toMatch(/height:\s*\d{3}vh/)
+    expect(k).not.toMatch(/addEventListener|IntersectionObserver|requestAnimationFrame|gsap/)
+  })
+})
+
+describe('dizin sayfaları kart diline dönmüyor', () => {
+  it.each([
+    ['açılış ilkeli', 'acilis'],
+    ['hizmet dizini', 'sgDizin'],
+    ['blog listesi', 'byListe'],
+  ])('%s yuvarlatma/gölge taşımıyor', (_ad, anahtar) => {
+    const harita: Record<string, string> = { acilis, sgDizin, byListe }
+    const k = kodu(harita[anahtar])
+    expect(k).not.toMatch(/border-radius:\s*(?!0)/)
+    expect(k).not.toMatch(/box-shadow:\s*(?!none)/)
+  })
+})
+
+describe('blog görsel politikası duyarlı, sabit küçük resim değil', () => {
+  it('masaüstü görsel kolonu viewport ile ölçekleniyor ama üstten sınırlı', () => {
+    // M18A: 1440'ta da 1024'te de 240x180 sabitti — katalog küçük resmi.
+    // Artık `clamp` ile ölçekleniyor; üst sınır px cinsinden çünkü kök
+    // punto akışkan (rem tavanı 3440'ta 440px'e çıkıyordu, ölçüldü) ve
+    // 320px'i aşınca `sizes` bir üst adaya geçip aktarımı büyütüyor.
+    const k = kodu(byListe)
+    expect(k).toMatch(/grid-template-columns:[^;]*clamp\([^)]*vw[^)]*\)/)
+    expect(k).toMatch(/clamp\([^)]*,\s*\d+px\)/)
+    expect(k).not.toMatch(/minmax\(0,\s*15rem\)/)
+  })
+
+  it('oran kaynağın kendi oranı — kırpma yok', () => {
+    const k = kodu(byListe)
+    expect(k).toContain('aspect-ratio: 16 / 10')
+    expect(k).not.toMatch(/aspect-ratio:\s*4\s*\/\s*3/)
+  })
+
+  it('katlama altındaki kapaklar tembel, yalnız ilk satır öncelikli', () => {
+    const k = kodu(byListe)
+    expect(k).toContain("i === 0 && sayfa === 1 ? 'eager' : 'lazy'")
+    expect(k).toMatch(/width="640"/)
+    expect(k).toMatch(/height="400"/)
+  })
+})
+
+describe('blog sayfalama sözleşmesi korunuyor', () => {
+  it('gerçek bağlantılar ve ?sayfa=N', () => {
+    const k = kodu(byListe)
+    expect(k).toContain('sayfaYolu(')
+    expect(k).toContain("rel=\"prev\"")
+    expect(k).toContain("rel=\"next\"")
+    // Düğmeye geri dönülmemeli: arama motoru ikinci sayfayı bulamıyordu.
+    expect(k).not.toMatch(/<button[^>]*@click="[^"]*sayfa/)
+    expect(k).toContain('aria-current="false"')
+  })
+})
+
+describe('dizin ailesi hareketi MİKRO kalıyor', () => {
+  it.each([
+    ['açılış', 'acilis'],
+    ['blog listesi', 'byListe'],
+  ])('%s azaltılmış hareket koruması taşıyor', (_ad, anahtar) => {
+    const harita: Record<string, string> = { acilis, byListe }
+    const k = harita[anahtar]
+    expect(k).toMatch(/prefers-reduced-motion/)
+    // Uzun kaydırma koreografisi yok.
+    expect(kodu(k)).not.toMatch(/height:\s*\d{3}vh/)
   })
 })
 

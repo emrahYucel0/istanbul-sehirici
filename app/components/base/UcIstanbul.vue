@@ -469,6 +469,16 @@ const bolgeAgiAcik = useRegionPages()
 </template>
 
 <style scoped>
+/*
+   `--ce-pl` SAYISAL olarak enterpole edilmeli; kayitsiz ozel
+   ozellikler adim adim degisir ve altyazi telafisi zipplar.
+*/
+@property --ce-pl {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
 /* ==========================================================================
    BASE
    ======================================================================= */
@@ -1237,22 +1247,96 @@ const bolgeAgiAcik = useRegionPages()
       font-size: clamp(4.6rem, 5.3vw, 6.7rem);
     }
 
+    /*
+      PLAKA GEOMETRİSİ ARTIK DÜZEN DEĞİL, TRANSFORM — ÖLÇÜLEN SEBEP.
+
+      M18B ön uçuşunda ölçüldü: kareler `width/height/left/top`
+      canlandırdığı için Chrome her kaydırma karesinde `layout-shift`
+      kaydediyordu. Yükleme anı CLS'i 0 olmasına rağmen sayfa yaşam
+      döngüsü CLS'i:
+
+        1920x1080 -> 0.269 (programatik) / 0.158 (gerçek tekerlek)
+        1440x900  -> 0.238 (programatik) / 0.167 (gerçek tekerlek)
+        <=1024    -> 0.000   (masaüstü koreografisi yok)
+        azaltılmış hareket -> 0.000   (kaynak münhasıran bu katman)
+
+      Kaymalar `hadRecentInput` ile DIŞLANMIYORDU (dışlanan toplam 0).
+      Kaynak düğümler: FIGURE.ce-pafta--2 ve --3.
+
+      Çözüm: her plakanın DÜZEN kutusu sabitleniyor (aşağıdaki referans
+      değerler = eski karelerdeki `scale(1)` durumu) ve tüm hareket
+      `transform`a taşınıyor. Kompozisyon değişmiyor; kareler birebir
+      aynı görsel durumları üretiyor (bkz. @keyframes içindeki türetme).
+
+      `--ce-pl` plakanın o andaki ölçeği; altyazının fiziksel puntosunu
+      sabit tutmak için kullanılıyor (aşağıya bak).
+    */
+    .ce-pafta {
+      transform-origin: 50% 50%;
+      /*
+        KENAR: bilerek telafi EDİLMEDİ.
+
+        Plaka çerçevesi eskiden her durumda 1px'ti; `scale()` altında
+        ölçekle inceliyor (ölçüldü: en küçük durumda 0,47px, ortalarda
+        0,56–0,93px). Kenar kalınlığını ölçeğe bölerek
+        telafi etmek DENENDİ ve GERİ ALINDI: üç plakanın yalnız birinde
+        tutarlı çalıştı ve 1440x900'de yüklemede 0,004'lük yeni bir
+        kayma doğurdu (kenar kalınlığı içerik kutusunu, o da SVG'yi
+        yeniden boyutlandırıyor).
+
+        Kalan fark: saç teli çerçevenin küçük durumlarda bir tık daha
+        açık görünmesi. Kompozisyon, konum, ölçek ve altyazı puntosu
+        birebir korunuyor.
+      */
+    }
+
     /* ACTIVE PLATE 1 ---------------------------------------------------- */
     .ce-pafta--1 {
       z-index: 5;
+      width: 78%;
+      height: 54%;
+      left: 11%;
+      top: 23%;
       animation-name: ce-plate-1;
     }
 
     /* ACTIVE PLATE 2 ---------------------------------------------------- */
     .ce-pafta--2 {
       z-index: 6;
+      width: 47%;
+      height: 76%;
+      left: 27%;
+      top: 10%;
       animation-name: ce-plate-2;
     }
 
     /* ACTIVE PLATE 3 ---------------------------------------------------- */
     .ce-pafta--3 {
       z-index: 7;
+      width: 80%;
+      height: 56%;
+      left: 10%;
+      top: 22%;
       animation-name: ce-plate-3;
+    }
+
+    /*
+      ALTYAZI TELAFİSİ.
+
+      Eski davranışta kutu küçülürken altyazı puntosu 8px'te SABİT
+      kalıyordu (ölçüldü: 16 ilerleme noktasının hepsinde 8px).
+      Plaka artık `scale()` ile küçüldüğü için altyazı da küçülürdü —
+      en küçük durumda 8px yerine 3,8px. Bu yüzden altyazının yerel
+      puntosu ve iç boşlukları ölçeğe BÖLÜNÜYOR: `scale()` sonrası
+      fiziksel değer yine 8px ve 0,7rem oluyor.
+    */
+    .ce-pafta-alt {
+      font-size: calc(0.5rem / var(--ce-pl, 1));
+      right: calc(0.7rem / var(--ce-pl, 1));
+      bottom: calc(0.5rem / var(--ce-pl, 1));
+      left: calc(0.7rem / var(--ce-pl, 1));
+      gap: calc(0.7rem / var(--ce-pl, 1));
+      letter-spacing: calc(0.08em);
     }
 
     /* inner drawing micro-motion */
@@ -1351,159 +1435,109 @@ const bolgeAgiAcik = useRegionPages()
       84%, 100% { transform: translate3d(0, -648%, 0); }
     }
 
+    /* PLAKA 1 - referans kutu 78% x 54% @ 11%,23% */
     @keyframes ce-plate-1 {
       0%, 7% {
-        width: 72%;
-        height: 49%;
-        left: 14%;
-        top: 27%;
+        --ce-pl: 0.8308;
         opacity: 0;
         clip-path: inset(50% 0 50% 0);
-        transform: translate3d(-8%, 7%, 0) scale(0.9) rotate(-1.5deg);
+        transform: translate3d(-7.385%, 9.130%, 0) rotate(-1.5deg) scale(0.8308, 0.8167);
       }
-
       14% {
+        --ce-pl: 0.9292;
         opacity: 1;
         clip-path: inset(22% 0 22% 0);
-        transform: translate3d(-2%, 2%, 0) scale(0.96) rotate(-0.5deg);
+        transform: translate3d(-1.936%, 3.080%, 0) rotate(-0.5deg) scale(0.9292, 0.9230);
       }
-
       19%, 29% {
-        width: 78%;
-        height: 54%;
-        left: 11%;
-        top: 23%;
+        --ce-pl: 1.0000;
         opacity: 1;
         clip-path: inset(0);
-        transform: translate3d(0, 0, 0) scale(1) rotate(0);
+        transform: translate3d(0.000%, 0.000%, 0) scale(1.0000, 1.0000);
       }
-
       38% {
-        width: 56%;
-        height: 38%;
-        left: 2%;
-        top: 7%;
+        --ce-pl: 0.6031;
         opacity: 0.8;
-        transform: translate3d(0, 0, 0) scale(0.84) rotate(-2deg);
+        transform: translate3d(-25.641%, -44.444%, 0) rotate(-2deg) scale(0.6031, 0.5911);
       }
-
       53%, 73% {
-        width: 45%;
-        height: 31%;
-        left: 2%;
-        top: 8%;
+        --ce-pl: 0.5769;
         opacity: 0.42;
-        transform: rotate(-3deg);
+        transform: translate3d(-32.692%, -49.074%, 0) rotate(-3deg) scale(0.5769, 0.5741);
       }
-
       84%, 100% {
-        width: 37%;
-        height: 26%;
-        left: 3%;
-        top: 7%;
+        --ce-pl: 0.4744;
         opacity: 1;
-        transform: rotate(-2deg);
+        transform: translate3d(-36.538%, -55.556%, 0) rotate(-2deg) scale(0.4744, 0.4815);
       }
     }
 
+    /* PLAKA 2 - referans kutu 47% x 76% @ 27%,10% */
     @keyframes ce-plate-2 {
       0%, 28% {
-        width: 42%;
-        height: 67%;
-        left: 31%;
-        top: 16%;
+        --ce-pl: 0.7774;
         opacity: 0;
         clip-path: inset(50% 0 50% 0);
-        transform: translate3d(7%, 6%, 0) scale(0.87) rotate(1.5deg);
+        transform: translate3d(9.447%, 7.263%, 0) rotate(1.5deg) scale(0.7774, 0.7670);
       }
-
       35% {
+        --ce-pl: 0.9034;
         opacity: 1;
         clip-path: inset(24% 0 24% 0);
-        transform: translate3d(2%, 2%, 0) scale(0.95) rotate(0.6deg);
+        transform: translate3d(3.375%, 2.802%, 0) rotate(0.6deg) scale(0.9034, 0.8981);
       }
-
       41%, 51% {
-        width: 47%;
-        height: 76%;
-        left: 27%;
-        top: 10%;
+        --ce-pl: 1.0000;
         opacity: 1;
         clip-path: inset(0);
-        transform: translate3d(0, 0, 0) scale(1) rotate(0);
+        transform: translate3d(0.000%, 0.000%, 0) scale(1.0000, 1.0000);
       }
-
       61% {
-        width: 34%;
-        height: 55%;
-        left: 63%;
-        top: 4%;
+        --ce-pl: 0.7234;
         opacity: 0.74;
-        transform: rotate(2deg);
+        transform: translate3d(62.766%, -21.711%, 0) rotate(2deg) scale(0.7234, 0.7237);
       }
-
       74% {
-        width: 28%;
-        height: 47%;
-        left: 68%;
-        top: 5%;
+        --ce-pl: 0.5957;
         opacity: 0.38;
-        transform: rotate(3deg);
+        transform: translate3d(67.021%, -25.658%, 0) rotate(3deg) scale(0.5957, 0.6184);
       }
-
       84%, 100% {
-        width: 24%;
-        height: 40%;
-        left: 72%;
-        top: 6%;
+        --ce-pl: 0.5106;
         opacity: 1;
-        transform: rotate(2deg);
+        transform: translate3d(71.277%, -28.947%, 0) rotate(2deg) scale(0.5106, 0.5263);
       }
     }
 
+    /* PLAKA 3 - referans kutu 80% x 56% @ 10%,22% */
     @keyframes ce-plate-3 {
       0%, 49% {
-        width: 73%;
-        height: 51%;
-        left: 14%;
-        top: 27%;
+        --ce-pl: 0.8213;
         opacity: 0;
         clip-path: inset(50% 0 50% 0);
-        transform: translate3d(0, 8%, 0) scale(0.9) rotate(-1deg);
+        transform: translate3d(0.625%, 11.750%, 0) rotate(-1deg) scale(0.8213, 0.8196);
       }
-
       56% {
+        --ce-pl: 0.9212;
         opacity: 1;
         clip-path: inset(25% 0 25% 0);
-        transform: translate3d(0, 2%, 0) scale(0.96) rotate(-0.4deg);
+        transform: translate3d(0.288%, 3.978%, 0) rotate(-0.4deg) scale(0.9212, 0.9204);
       }
-
       62%, 73% {
-        width: 80%;
-        height: 56%;
-        left: 10%;
-        top: 22%;
+        --ce-pl: 1.0000;
         opacity: 1;
         clip-path: inset(0);
-        transform: translate3d(0, 0, 0) scale(1) rotate(0);
+        transform: translate3d(0.000%, 0.000%, 0) scale(1.0000, 1.0000);
       }
-
       82% {
-        width: 54%;
-        height: 38%;
-        left: 23%;
-        top: 57%;
+        --ce-pl: 0.6750;
         opacity: 0.88;
-        transform: rotate(-1deg);
+        transform: translate3d(0.000%, 46.429%, 0) rotate(-1deg) scale(0.6750, 0.6786);
       }
-
       90%, 100% {
-        width: 44%;
-        height: 31%;
-        left: 28%;
-        top: 62%;
+        --ce-pl: 0.5500;
         opacity: 1;
-        transform: rotate(-0.5deg);
+        transform: translate3d(0.000%, 49.107%, 0) rotate(-0.5deg) scale(0.5500, 0.5536);
       }
     }
 

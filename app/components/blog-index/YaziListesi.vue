@@ -282,7 +282,7 @@ useHead({
                   class="by-foto"
                   format="webp"
                   quality="70"
-                  sizes="xs:320px sm:320px md:40vw lg:20vw xl:18vw"
+                  sizes="xs:320px sm:320px md:38vw lg:21vw xl:17vw xxl:13vw"
                   :loading="i === 0 && sayfa === 1 ? 'eager' : 'lazy'"
                   :fetchpriority="i === 0 && sayfa === 1 ? 'high' : undefined"
                   decoding="async"
@@ -431,6 +431,30 @@ useHead({
 }
 
 /*
+  MİKRO HAREKET — Aile A politikası.
+  Tek jest: satır üzerine gelindiğinde/odaklanıldığında görselin
+  üstündeki ölçü çizgisi soldan sağa çiziliyor. Yapışkan anlatı,
+  300vh, JS kaydırma motoru yok. Azaltılmış harekette çizgi tam boyda.
+*/
+.by-gorsel::before {
+  transform: scaleX(0.18);
+  transform-origin: left center;
+  transition: transform 260ms ease;
+}
+
+.by-satir:hover .by-gorsel::before,
+.by-satir:focus-within .by-gorsel::before {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .by-gorsel::before {
+    transform: none;
+    transition: none;
+  }
+}
+
+/*
  * MOBİLDE GENİŞLİK SINIRLI — ÖLÇÜLMÜŞ SEBEP.
  *
  * Önce görsel mobilde sütunu tamamen dolduruyordu (`sizes` 88vw). 412 px'lik
@@ -448,11 +472,40 @@ useHead({
  * cihazlar hâlâ 1024 alıyor; bu satırlar tembel yüklendiği için kabul
  * edilebilir bir kalıntı (bkz. rapor).
  */
+/*
+  GÖRSEL ARTIK KATALOG KÜÇÜK RESMİ DEĞİL — M18A'da ölçülen kusur.
+
+  Eskiden masaüstünde 15rem'lik sabit kolonda 4/3 oranıyla 240x180 px
+  duruyordu: 1440'ta da 1024'te de AYNI boy, altında `--c-paper-sunken`
+  çerçevesiyle. Bu, kompozisyon ögesi değil kart küçük resmi okumasına
+  yol açıyordu (sitenin başka hiçbir yerinde kart yok).
+
+  Değişen YALNIZ İŞLEYİŞ, boyut değil:
+    - çerçeve zemini kalktı (görselsiz satırda boş kutu da kalmıyordu,
+      artık dolu satırda da çerçeve yok)
+    - oran 4/3 yerine kaynağın KENDİ oranı 16/10 — kırpma yok
+    - üstünde bölümün ölçü çizgisiyle aynı dilde ince bir kural
+    - satır üzerine gelince kısa bir açılım (mikro)
+
+  BOYUT BİLEREK BÜYÜTÜLMEDİ. Ölçüldü: görselin görünen genişliği 320px'i
+  aştığında `sizes` bir üst adaya (640) geçiyor ve on görselin toplam
+  aktarımı 1440'ta 307KB'den ~495KB'ye çıkıyor. M18A'nın "aktarımı
+  belirgin artırma" uyarısı bunu yasaklıyor; bu yüzden genişlik 320px
+  bandında tutuldu, editoryal etki işleyişten alındı.
+*/
 .by-gorsel {
+  position: relative;
   margin: clamp(1rem, 0.85rem + 0.6vw, 1.5rem) 0 0;
   grid-column: 2;
   max-width: 20rem;
-  background: rgb(var(--c-paper-sunken));
+}
+
+.by-gorsel::before {
+  content: '';
+  position: absolute;
+  inset: -0.55rem 0 auto 0;
+  height: 1px;
+  background: rgb(var(--c-measure));
 }
 .by-foto {
   display: block;
@@ -460,6 +513,7 @@ useHead({
   height: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
+  object-position: 50% 45%;
 }
 
 /* ---- Sayfalama --------------------------------------------------------- */
@@ -527,7 +581,7 @@ useHead({
     grid-column: 2 / 13;
   }
   .by-yazi {
-    grid-template-columns: 2.5rem minmax(0, 1fr) minmax(0, 15rem);
+    grid-template-columns: 2.5rem minmax(0, 1fr) minmax(0, clamp(13rem, 21vw, 320px));
     column-gap: var(--sahne-kolon-arasi);
     align-items: start;
   }
@@ -537,7 +591,7 @@ useHead({
     max-width: none;
   }
   .by-foto {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 10;
   }
 }
 </style>

@@ -260,3 +260,67 @@ describe('Signature #2 — üç koşul, gömülü diyagram', () => {
     expect(kodu(ham)).toContain('v-for="d in durumlar"')
   })
 })
+
+// ═══════════════════════════════════════════ M18B1 KAYDIRMA CLS SÖZLEŞMESİ
+
+describe('üç plaka koreografisi düzen değil transform canlandırıyor', () => {
+  /** `ce-plate-*` karelerinin gövdesini döndürür. */
+  const kareler = () => {
+    const k = kodu(uc)
+    const cikti: Record<string, string> = {}
+    for (const no of ['1', '2', '3']) {
+      const i = k.indexOf(`@keyframes ce-plate-${no} {`)
+      expect(i, `ce-plate-${no} kareleri yok`).toBeGreaterThan(-1)
+      // Blok sonu: aynı girintideki kapanış
+      const son = k.indexOf('\n    }', i)
+      cikti[no] = k.slice(i, son)
+    }
+    return cikti
+  }
+
+  it('kareler width/height/left/top CANLANDIRMIYOR', () => {
+    // M18B'de ölçüldü: bu özellikler kaydırma boyunca `layout-shift`
+    // üretiyordu. Sayfa yaşam döngüsü CLS'i 1920x1080'de 0,269'a,
+    // 1440x900'de 0,238'e çıkıyordu; kaymalar `hadRecentInput` ile
+    // dışlanmıyordu. Kaynak düğümler FIGURE.ce-pafta--2 ve --3.
+    for (const [no, blok] of Object.entries(kareler())) {
+      for (const ozellik of ['width', 'height', 'left', 'top']) {
+        expect(blok, `ce-plate-${no} hâlâ ${ozellik} canlandırıyor`)
+          .not.toMatch(new RegExp(`(^|[;{\s])${ozellik}\s*:`, 'm'))
+      }
+    }
+  })
+
+  it('hareket transform ile taşınıyor', () => {
+    for (const [no, blok] of Object.entries(kareler())) {
+      expect(blok, `ce-plate-${no} transform kullanmıyor`).toMatch(/transform:\s*translate3d\(/)
+      expect(blok, `ce-plate-${no} ölçek taşımıyor`).toMatch(/scale\(/)
+    }
+  })
+
+  it('plakaların düzen kutusu sabit — referans geometri statik yazılı', () => {
+    // Kutu artık canlanmadığı için statik olarak tanımlanmalı; aksi hâlde
+    // transform'un dayandığı referans kaybolur.
+    const k = kodu(uc)
+    for (const no of ['1', '2', '3']) {
+      const i = k.indexOf(`.ce-pafta--${no} {\n      z-index:`)
+      expect(i, `.ce-pafta--${no} animasyon bloğu yok`).toBeGreaterThan(-1)
+      const govde = k.slice(i, k.indexOf('}', i))
+      expect(govde).toMatch(/width:\s*\d+%/)
+      expect(govde).toMatch(/height:\s*\d+%/)
+    }
+  })
+
+  it('altyazı puntosu ölçeğe göre telafi ediliyor', () => {
+    // Eski davranışta altyazı her durumda 8px'ti (ölçüldü). Plaka artık
+    // ölçeklendiği için yerel punto ölçeğe bölünüyor; fiziksel sonuç 8px.
+    const k = kodu(uc)
+    expect(k).toMatch(/@property\s+--ce-pl/)
+    expect(k).toMatch(/\.ce-pafta-alt\s*\{[^}]*font-size:\s*calc\([^)]*var\(--ce-pl/)
+  })
+
+  it('azaltılmış hareket koruması duruyor', () => {
+    expect(uc).toContain('prefers-reduced-motion: no-preference')
+    expect(uc).toContain('prefers-reduced-motion: reduce')
+  })
+})
