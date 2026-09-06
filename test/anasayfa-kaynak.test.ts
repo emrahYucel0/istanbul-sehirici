@@ -105,8 +105,11 @@ const TASINAN: Record<string, string[]> = {
 /** Bileşen → dosyada KALMASI gereken statik tasarım metinleri. */
 const STATIK_KALAN: Record<string, string[]> = {
   'Hero.vue': ["01 / İSTANBUL'DA TAŞINMAK"],
-  'Kapsam.vue': ['AVRUPA YAKASI', 'ANADOLU YAKASI', 'TOPLAM İLÇE', 'Bölgelerimizi incele'],
-  'UcIstanbul.vue': ['02 / ŞEHİR PLANI DEĞİŞTİRİR'],
+  // M17 pafta: sayaç etiketi "TOPLAM İLÇE" yerini "İLÇE / TEK OPERASYON AĞI"
+  // künyesine bıraktı. Sözleşme aynı: bu metinler KODDA, CMS'te değil.
+  'Kapsam.vue': ['AVRUPA YAKASI', 'ANADOLU YAKASI', 'İLÇE / TEK OPERASYON AĞI', 'Bölgelerimizi incele'],
+  // M17 pafta: bölüm sırası değişince künye numarası 02 → 03 oldu.
+  'UcIstanbul.vue': ['03 / ŞEHİR PLANI DEĞİŞTİRİR'],
   'Surec.vue': ['03 / TAŞIMANIN İÇİNDE NE OLUYOR?'],
   // "Keşif sonrası fiyat yazılı veriliyor." BURADAN ÇIKARILDI, silinmedi:
   // aşağıdaki TASINAN listesine geçti. Cümle doğrulanmamış bir süreç
@@ -242,6 +245,11 @@ describe('hizmet sayısı hiçbir metne gömülmemiş', () => {
     // Metin zayıflatılmadı: bileşenin açılış yorumu zaten "aynı operasyonun
     // farklı yetkinlikleri" diyor. Başlık o cümleye döndü.
     expect(baslik).toContain('yetkinlikleri')
-    expect(oku('Hizmetler.vue')).toContain('aynı operasyonun farklı yetkinlikleri')
+    // M17 pafta: bileşenin açılış yorumu aynı fikri yeni dilde söylüyor —
+    // "BİR OPERASYON / ÇOK YETKİNLİK". Aranan şey cümlenin harfi harfine
+    // hâli değil, başlığın bölümün kendi gerekçesiyle aynı şeyi söylemesi.
+    const kaynakHizmetler = oku('Hizmetler.vue')
+    expect(kaynakHizmetler).toContain('ÇOK YETKİNLİK')
+    expect(kaynakHizmetler).toContain('operasyon yetenekleri')
   })
 })

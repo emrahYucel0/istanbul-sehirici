@@ -61,13 +61,19 @@ describe('dikey ritim kademeleri', () => {
 
 describe('durağan bölümler payını kütükten alıyor', () => {
   // [bileşen, dikey payı taşıyan seçici]
+  //
+  // M17 "Teknik İstanbul Taşıma Paftası" yeniden tasarımıyla ana sayfa
+  // bölümlerinin sınıf önekleri değişti (kp→ks, lg→cw, fy→qp, ss→pd,
+  // cl→fs). SÖZLEŞME AYNI KALDI: dikey pay `--sahne-*` kütüğünden gelir,
+  // bölüm kendi kademesini uydurmaz. Test o sözleşmeyi ölçüyor; eski
+  // seçici adlarını değil.
   const BOLUMLER: Array<[string, string]> = [
-    ['Kapsam', '.kp-alan'],
-    ['Hizmetler', '.lg-alan'],
-    ['Fiyat', '.fy'],
-    ['Sorular', '.ss-alan'],
+    ['Kapsam', '.ks-track'],
+    ['Hizmetler', '.cw-alan'],
+    ['Fiyat', '.qp-track'],
+    ['Sorular', '.pd-alan'],
     ['Yorumlar', '.yr-alan'],
-    ['Kapanis', '.cl-alan'],
+    ['Kapanis', '.fs-track'],
   ]
 
   /** İlgili kuralın gövdesini çıkarır (yorumlar atılmış kaynaktan). */
@@ -79,19 +85,31 @@ describe('durağan bölümler payını kütükten alıyor', () => {
     return k.slice(i, k.indexOf('}', i))
   }
 
-  it.each(BOLUMLER)('%s — dikey pay elle clamp() yazmıyor', (ad, secici) => {
+  it.each(BOLUMLER)('%s — dikey pay kütükten geliyor', (ad, secici) => {
     const govde = kural(bilesen(ad), secici)
     const pay = govde.match(/padding(-block)?:[^;]*/)?.[0] ?? ''
     expect(pay, `${ad}: padding bulunamadı`).not.toBe('')
     // Yatay pay `--sahne-pad` kütüğünden; dikey pay da kütükten gelmeli.
-    expect(pay, `${ad}: dikey payda elle clamp() var`).not.toMatch(/clamp\(/)
     expect(pay).toMatch(/--sahne-(dikey|perde)/)
+    // ELLE KADEME YASAK: `clamp()` yalnız bir kütük tokenıyla BİRLİKTE,
+    // `calc()` içinde ince ayar olarak kullanılabilir (Kapsam alt dikişi
+    // `calc(var(--sahne-perde) + clamp(…))` böyle). Tek başına duran bir
+    // clamp payı kademeyi kütükten koparır.
+    //
+    // Kütüğe bağlı calc() gruplarını çıkarıp geriye çıplak clamp kalıp
+    // kalmadığına bakıyoruz — parçalara bölmek iç içe parantezi kırıyordu.
+    const kalan = pay.replace(/calc\([^()]*(?:\([^()]*\)[^()]*)*\)/g, (g) =>
+      g.includes('--sahne-') ? ' ' : g
+    )
+    expect(kalan, `${ad}: kütüğe bağlı olmayan elle clamp() payı`).not.toMatch(/clamp\(/)
   })
 
-  it('perde KAPANIŞ bloklarında geniş pay var — 01→02 ve 03→04 dikişleri', () => {
+  it('perde dikişi bölüm kapanışlarında duruyor', () => {
+    // Kapsam alt dikişini `calc(var(--sahne-perde) + …)` ile taşıyor;
+    // Hizmetler doğrudan. İkisi de kütüğe bağlı.
     for (const [ad, secici] of [
-      ['Kapsam', '.kp-alan'],
-      ['Hizmetler', '.lg-alan'],
+      ['Kapsam', '.ks-track'],
+      ['Hizmetler', '.cw-alan'],
     ] as Array<[string, string]>) {
       const govde = kural(bilesen(ad), secici)
       expect(govde, `${ad} perde dikişini taşımıyor`).toContain('var(--sahne-perde)')
@@ -99,8 +117,8 @@ describe('durağan bölümler payını kütükten alıyor', () => {
     }
   })
 
-  it('Kapanış iç payı KÜÇÜLTÜLDÜ — eski geniş kademe geri gelmedi', () => {
-    const govde = kural(bilesen('Kapanis'), '.cl-alan')
+  it('Kapanış iç payı geniş kademeye geri dönmedi', () => {
+    const govde = kural(bilesen('Kapanis'), '.fs-track')
     expect(govde).toContain('var(--sahne-perde)')
     expect(govde).not.toContain('--sahne-dikey-genis')
   })

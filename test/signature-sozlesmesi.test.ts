@@ -246,8 +246,17 @@ describe('Signature #2 — üç koşul, gömülü diyagram', () => {
   })
 
   it('sahne sayısı ÜÇ — kompozisyon dördüncüyü kaldırmaz', () => {
-    const k = kodu(uc)
-    for (const n of [1, 2, 3]) expect(k).toContain(`.ui-alan .ui-kare:nth-child(${n})`)
-    expect(k).not.toContain('.ui-alan .ui-kare:nth-child(4)')
+    // M17 pafta: kompozisyon `.ui-kare:nth-child(n)` kutularından
+    // `.ce-durak` duraklarına geçti. SÖZLEŞME AYNI: üç koşul anlatılıyor,
+    // dördüncüsü yok. Test artık seçici adını değil, SAHNE SAYISINI
+    // ölçüyor — kaynak künyeleri üzerinden.
+    const ham = uc
+    for (const vaka of ['01 / DAR SOKAK', '02 / MERDİVEN', '03 / KONTROLLÜ GİRİŞ']) {
+      expect(ham, `${vaka} sahnesi yok`).toContain(vaka)
+    }
+    // Dördüncü bir vaka künyesi açılmamış.
+    expect(ham).not.toMatch(/04 \/ [A-ZÇĞİÖŞÜ]/)
+    // Duraklar tek bir kütükten dönüyor; elle çoğaltılmış blok yok.
+    expect(kodu(ham)).toContain('v-for="d in durumlar"')
   })
 })

@@ -1,365 +1,1681 @@
 <script setup>
+
 /**
- * FOOTER — yeni tasarım dilinin utility katmanı.
+
+ * SITE REGISTER — GLOBAL FOOTER
+
+ * --------------------------------------------------------------------------
+
+ * Footer satış bölümü değildir.
+
+ * Final Signal dönüşümü yaptı; burası sitenin resmi kayıt katmanı:
+
  *
- * GLOBAL: `layouts/default.vue` üzerinden BÜTÜN sayfalarda görünüyor.
- * Bu yüzden ana sayfaya özel hiçbir şey içermiyor.
+
+ *   KİMLİK
+
+ *   İLETİŞİM
+
+ *   NAVİGASYON
+
+ *   SOSYAL
+
+ *   YASAL / TELİF
+
  *
- * GÖREVİ SATIŞ DEĞİL
- * Dönüşümü Kapanış yaptı. Burası kimlik, temel navigasyon, gerçek iletişim
- * bilgisi ve yasal bağlantılar için sakin son katman. İkinci bir CTA
- * bölümü değil; büyük başlık yok.
+
+ * Kapanış koyu; footer tekrar KÂĞIT yüzeye döner.
+
+ * Bu renk değişimi anlatının bittiğini ve utility katmanının başladığını
+
+ * fiziksel olarak gösterir.
+
  *
- * YÜZEY — Kapanış koyu, Footer KÂĞIT
- * İkisi aynı koyu yüzeyde devam etseydi tek dev blok gibi okunurdu.
- * Renk değişimi anlatının bittiğini, utility katmanının başladığını
- * söylüyor. Üstteki tek ölçü çizgisi, Kapanış olmayan sayfalarda da
- * (ör. /iletisim) ayrımı garanti ediyor.
+
+ * Korunan veri sözleşmeleri:
+
+ * - useSiteSettings()
+
+ * - brandName
+
+ * - footerText
+
+ * - address
+
+ * - workingHours
+
+ * - phone / mobilePhone
+
+ * - email
+
+ * - whatsAppNumber
+
+ * - social URLs
+
+ * - useRegionPages()
+
+ * - gerçek birincil rotalar
+
  *
- * KOMPOZİSYON — jenerik dört kart değil
- *   · kimlik ve fiziksel varlık (adres, saatler) SOL eksende
- *   · iletişim kanalları AYRI bir baseline'da, sağda
- *   · navigasyon TEK YATAY SATIR — dikey link kolonları yok
- *   · yasal/meta bilgisi en altta ince bir katmanda
- * Kutu, kart, panel yok. İki çizgi var, ikisi de gerçek ayırma yapıyor.
- *
- * ESKİ FOOTER'DAN ÇIKARILANLAR (bkz. rapor) — hiçbiri doğrulanamadı:
- *   "sigortalı, şeffaf fiyatlı ve zamanında teslimat esasına dayalı hizmet"
- * Yerine doğrulanmamış YENİ slogan da yazılmadı; tanım cümlesi yalnız
- * ne yapıldığını ve nerede yapıldığını söylüyor.
- *
- * BAĞLANTI MİMARİSİ — sitemap değil
- * Eski Footer üç CMS kolonu basıyordu: hizmet derin bağlantıları, blog
- * yazıları ve ŞEHİR bağlantıları (/bursa, /izmir, /ankara) — sonuncular
- * İstanbul konumlandırmasıyla doğrudan çelişiyordu. Artık yalnız sitenin
- * gerçek birincil rotaları var; hepsi 200 döndüğü doğrulandı. CMS verisi
- * SİLİNMEDİ, yalnız render edilmiyor (bkz. rapor).
+
+ * Kart / panel / accordion / CTA banner yok.
+
+ * Ek JS / GSAP yok.
+
  */
+
 const { settings, brandName } = await useSiteSettings()
 
-/**
- * Footer kaydı iletişim alanlarını taşıyabiliyor ama şu an hepsi BOŞ;
- * bu yüzden Site Ayarları'na düşülüyor. Sıra korunuyor: footer kaydı >
- * site ayarları. Hiçbiri doluysa alan render EDİLMİYOR.
- */
-/*
- * `/api/footer` İSTEĞİ KALDIRILDI (M6).
- *
- * Bu bileşen o kayıttan yalnız ÜÇ alanı okuyordu — adres, e-posta, telefon —
- * ve üçü de Site Ayarları'nın ÜSTÜNE YAZMA alanıydı: `footer.address ||
- * settings.address` biçiminde. Üçü de veri tabanında BOŞTU, yani görünen
- * değer zaten Site Ayarları'ndan geliyordu.
- *
- * İki kaynaklı iletişim bilgisi gerçek bir tuzaktı: yönetici Footer
- * ekranına telefon yazdığında Site Ayarları'ndaki numara sessizce
- * ezilecek, ama Navbar'daki numara değişmeyecekti — aynı sitede iki farklı
- * telefon. Tek sahip artık Site Ayarları.
- *
- * Kaydın geri kalanı (telif metni, sosyal bağlantılar, hızlı/blog/bölge
- * bağlantı listeleri) zaten hiç okunmuyordu: alttaki gezinme listeleri bu
- * dosyanın içinde sabit (`gezinme`, `yasal`) ve telif satırı
- * `© {yıl} {marka}` olarak basılıyor.
- *
- * ÖLÇÜLDÜ: görünen adres, e-posta ve telefon DEĞİŞMEDİ. Sunucu tarafında
- * bir istek eksildi.
- */
+const isletmeTanimi = computed(() =>
 
-const isletmeTanimi = computed(() => settings.value?.footerText?.trim() || '')
+  settings.value?.footerText?.trim() || '',
 
-const adres = computed(() => settings.value?.address?.trim() || '')
-const eposta = computed(() => settings.value?.email?.trim() || '')
-const telefon = computed(
-  () => settings.value?.phone?.trim() || settings.value?.mobilePhone?.trim() || ''
 )
-/* `tel:` adresi E.164 — kanonik yardimcidan (utils/kapanis.ts).
-   Satir ici normalizasyon kopyalanmiyor: `tel:05355298192` yurt disi
-   SIM'inde ve bazi masaustu uygulamalarinda cevrilemiyordu. Gorunen
-   numara DEGISMIYOR, yalniz href. */
+
+const adres = computed(() =>
+
+  settings.value?.address?.trim() || '',
+
+)
+
+const eposta = computed(() =>
+
+  settings.value?.email?.trim() || '',
+
+)
+
+const telefon = computed(() =>
+
+  settings.value?.phone?.trim() ||
+
+  settings.value?.mobilePhone?.trim() ||
+
+  '',
+
+)
+
 const telHref = computed(() => telefonYolu(telefon.value))
 
-/** Panelde tam URL olarak tutuluyor; ham numara girilirse de çalışsın. */
 const whatsApp = computed(() => {
+
   const ham = (settings.value?.whatsAppNumber || '').trim()
+
   if (!ham) return ''
+
   if (/^https?:\/\//i.test(ham)) return ham
+
   const rakam = ham.replace(/\D/g, '')
+
   return rakam ? `https://wa.me/${rakam}` : ''
+
 })
 
-/**
- * Serbest metin çalışma saatleri "/" ile ayrılmış satırlar hâlinde
- * giriliyor ve içinde uzun boşluk blokları var. Boş satır atılıyor.
- */
 const saatler = computed(() =>
+
   (settings.value?.workingHours || '')
+
     .split('/')
+
     .map((s) => s.replace(/\s+/g, ' ').trim())
-    .filter(Boolean)
+
+    .filter(Boolean),
+
 )
 
-/**
- * Sitenin GERÇEK birincil rotaları. Her biri denendi, hepsi 200 döndü.
- * Hizmet başına ayrı detay rotası olmadığı için tek `/hizmetlerimiz`
- * kullanılıyor; sahte bağlantı üretilmedi.
- */
 const gezinme = [
+
   { ad: 'Hizmetler', yol: '/hizmetlerimiz' },
-  // "Bölgeler" yalnız coğrafi ağ açıkken; kapalıyken rota 404.
-  ...(useRegionPages() ? [{ ad: 'Bölgeler', yol: '/bolgelerimiz' }] : []),
+
+  ...(useRegionPages()
+
+    ? [{ ad: 'Bölgeler', yol: '/bolgelerimiz' }]
+
+    : []),
+
   { ad: 'Fiyat hesaplama', yol: '/fiyat-hesaplama' },
+
   { ad: 'Hakkımızda', yol: '/hakkimizda' },
-  { ad: 'Blog', yol: '/blog' },
+
   { ad: 'İletişim', yol: '/iletisim' },
+
 ]
 
 const yasal = [
+
   { ad: 'Gizlilik Politikası', yol: '/gizlilik-politikasi' },
+
   { ad: 'Kullanım Şartları', yol: '/kullanim-sartlari' },
+
   { ad: 'Çerez Politikası', yol: '/cerez-politikasi' },
+
 ]
 
-/**
- * Sosyal hesaplar: yalnız DOLU olanlar. Boş/placeholder ikon basılmıyor.
- * Yeni ikon kütüphanesi eklenmedi — yeni dilde metin bağlantısı zaten
- * ikondan daha okunur ve erişilebilir ad sorunu yaratmıyor.
- */
 const sosyal = computed(() =>
+
   [
+
     { ad: 'Instagram', url: settings.value?.instagramUrl },
+
     { ad: 'Facebook', url: settings.value?.facebookUrl },
+
     { ad: 'YouTube', url: settings.value?.youtubeUrl },
+
     { ad: 'LinkedIn', url: settings.value?.linkedinUrl },
-  ].filter((s) => (s.url || '').trim())
+
+  ].filter((s) => (s.url || '').trim()),
+
 )
 
 const yil = new Date().getFullYear()
+
 </script>
 
 <template>
-  <footer class="ft">
-    <div class="ft-alan">
-      <!-- ── Kimlik ve fiziksel varlık ─────────────────────────────── -->
-      <div class="ft-kimlik">
-        <p class="ft-marka">{{ brandName }}</p>
-        <!--
-          İŞLETME TANIMI — SİTE AYARLARI'NDAN (M7).
 
-          Bu cümle koda gömülüydü ve her sayfada basılıyordu; işletme
-          hizmet kapsamını değiştirdiğinde kod değişikliği gerekiyordu.
-          Doğal sahibi Site Ayarları: aynı ekranda telefon, adres ve marka
-          adı zaten duruyor ve alan (`footerText`) orada YILLARDIR VARDI —
-          yalnız hiçbir yer okumuyordu. M6'da "düzenlenebilir ama hiçbir şey
-          yapmıyor" alanları temizlerken bu, silinmek yerine BAĞLANMASI
-          gereken tek örnekti; M7'de bağlandı.
+  <footer class="fr">
 
-          Boşsa hiç basılmıyor: yedek metin bırakmak ikinci bir çalışma
-          zamanı kaynağı demek olurdu.
-        -->
-        <p v-if="isletmeTanimi" class="ft-tanim">{{ isletmeTanimi }}</p>
-        <address class="ft-adres">
-          <span v-if="adres">{{ adres }}</span>
-          <span v-for="s in saatler" :key="s" class="ft-saat">{{ s }}</span>
+    <div class="fr-alan">
+<!-- ================================================================
+
+           BRAND / IDENTITY
+
+           ================================================================ -->
+
+      <section class="fr-kimlik" aria-label="İşletme bilgileri">
+
+        <p class="fr-marka">
+
+          {{ brandName }}
+
+        </p>
+
+        <p
+
+          v-if="isletmeTanimi"
+
+          class="fr-tanim"
+
+        >
+
+          {{ isletmeTanimi }}
+
+        </p>
+
+        <address class="fr-adres">
+
+          <span v-if="adres">
+
+            {{ adres }}
+
+          </span>
+
+          <span
+
+            v-for="s in saatler"
+
+            :key="s"
+
+            class="fr-saat"
+
+          >
+
+            {{ s }}
+
+          </span>
+
         </address>
-      </div>
 
-      <!-- ── İletişim kanalları, ayrı baseline ─────────────────────── -->
-      <div class="ft-iletisim">
-        <a v-if="telefon" :href="telHref" class="ft-tel">{{ telefon }}</a>
-        <a v-if="whatsApp" :href="whatsApp" target="_blank" rel="noopener" class="ft-bag">
-          WhatsApp
-        </a>
-        <a v-if="eposta" :href="`mailto:${eposta}`" class="ft-bag">{{ eposta }}</a>
-      </div>
+      </section>
 
-      <!-- ── Navigasyon — tek yatay satır, dikey kolon yığını değil.
-           Grup etiketleri BAŞLIK YAPILMADI: eski Footer'da "Hizmetlerimiz /
-           Bölgelerimiz / Diğer Hizmetler" sahipsiz `h3`lerdi ve sayfanın
-           başlık ağacına üç düğüm ekliyorlardı. Ad işini `aria-label`
-           yapıyor. -->
-      <nav class="ft-gezinme" aria-label="Alt bilgi bağlantıları">
-        <NuxtLink v-for="g in gezinme" :key="g.yol" :to="g.yol" class="ft-bag">
-          {{ g.ad }}
-        </NuxtLink>
+      <!-- ================================================================
+
+           CONTACT RAIL
+
+           ================================================================ -->
+
+      <section
+
+        class="fr-iletisim"
+
+        aria-label="İletişim kanalları"
+
+      >
+
+        <span class="fr-bolum-no" aria-hidden="true">
+
+          01
+
+        </span>
+
+        <div class="fr-iletisim-icerik">
+
+          <a
+
+            v-if="telefon"
+
+            :href="telHref"
+
+            class="fr-tel"
+
+          >
+<span class="fr-link-main">{{ telefon }}</span>
+
+            <span class="fr-link-arrow" aria-hidden="true">→</span>
+
+          </a>
+
+          <a
+
+            v-if="whatsApp"
+
+            :href="whatsApp"
+
+            target="_blank"
+
+            rel="noopener"
+
+            class="fr-bag"
+
+          >
+<span class="fr-link-main">WhatsApp</span>
+
+            <span class="fr-link-arrow" aria-hidden="true">↗</span>
+
+          </a>
+
+          <a
+
+            v-if="eposta"
+
+            :href="`mailto:${eposta}`"
+
+            class="fr-bag"
+
+          >
+<span class="fr-link-main">{{ eposta }}</span>
+
+            <span class="fr-link-arrow" aria-hidden="true">↗</span>
+
+          </a>
+
+        </div>
+
+      </section>
+
+      <!-- ================================================================
+
+           PRIMARY NAV / RUNNING INDEX
+
+           ================================================================ -->
+
+      <nav
+
+        class="fr-gezinme"
+
+        aria-label="Alt bilgi bağlantıları"
+
+      >
+
+        <span class="fr-bolum-no" aria-hidden="true">
+
+          02
+
+        </span>
+
+        <div class="fr-nav-list">
+
+          <NuxtLink
+
+            v-for="(g, i) in gezinme"
+
+            :key="g.yol"
+
+            :to="g.yol"
+
+            class="fr-nav-link"
+
+          >
+
+            <span class="fr-nav-no" aria-hidden="true">
+
+              {{ String(i + 1).padStart(2, '0') }}
+
+            </span>
+
+            <span class="fr-nav-label">
+
+              {{ g.ad }}
+
+            </span>
+
+            <span class="fr-nav-arrow" aria-hidden="true">
+
+              ↗
+
+            </span>
+
+          </NuxtLink>
+
+        </div>
+
       </nav>
 
-      <!-- ── Meta katmanı ──────────────────────────────────────────── -->
-      <div class="ft-meta">
-        <p class="ft-telif">© {{ yil }} {{ brandName }}</p>
-        <nav class="ft-yasal" aria-label="Yasal bilgiler">
-          <NuxtLink v-for="y in yasal" :key="y.yol" :to="y.yol" class="ft-bag ft-bag--kucuk">
-            {{ y.ad }}
-          </NuxtLink>
-        </nav>
-        <nav v-if="sosyal.length" class="ft-sosyal" aria-label="Sosyal medya">
+      <!-- ================================================================
+
+           SOCIAL
+
+           ================================================================ -->
+
+      <nav
+
+        v-if="sosyal.length"
+
+        class="fr-sosyal"
+
+        aria-label="Sosyal medya"
+
+      >
+
+        <span class="fr-bolum-no" aria-hidden="true">
+
+          03
+
+        </span>
+
+        <div class="fr-sosyal-list">
+
           <a
+
             v-for="s in sosyal"
+
             :key="s.ad"
+
             :href="s.url"
+
             target="_blank"
+
             rel="noopener"
-            class="ft-bag ft-bag--kucuk"
-          >{{ s.ad }}</a>
+
+            class="fr-sosyal-link"
+
+          >
+
+            <span>{{ s.ad }}</span>
+
+            <span aria-hidden="true">↗</span>
+
+          </a>
+
+        </div>
+
+      </nav>
+
+      <!-- ================================================================
+
+           META / LEGAL
+
+           ================================================================ -->
+
+      <div class="fr-meta">
+
+        <p class="fr-telif">
+
+          © {{ yil }} {{ brandName }}
+
+        </p>
+
+        <nav
+
+          class="fr-yasal"
+
+          aria-label="Yasal bilgiler"
+
+        >
+
+          <NuxtLink
+
+            v-for="y in yasal"
+
+            :key="y.yol"
+
+            :to="y.yol"
+
+            class="fr-yasal-link"
+
+          >
+
+            {{ y.ad }}
+
+          </NuxtLink>
+
         </nav>
-      </div>
+</div>
+
     </div>
+
   </footer>
+
 </template>
 
 <style scoped>
-.ft {
-  background: rgb(var(--c-paper));
-  color: rgb(var(--c-ink));
-  /* Tek üst ayraç: Kapanış'ın koyu yüzeyi zaten ayırıyor ama Kapanış
-     olmayan sayfalarda (ör. /iletisim) ayrımı bu çizgi kuruyor. */
-  border-top: 1px solid rgb(var(--c-measure));
+
+/* ==========================================================================
+
+   SITE REGISTER
+
+   ======================================================================= */
+
+.fr {
+
+  --fr-paper: rgb(var(--c-paper));
+
+  --fr-paper-2: rgb(var(--c-paper-sunken));
+
+  --fr-ink: rgb(var(--c-ink));
+
+  --fr-soft: rgb(var(--c-ink-soft));
+
+  --fr-rule: rgb(var(--c-rule));
+
+  --fr-measure: rgb(var(--c-measure));
+
+  --fr-signal: rgb(var(--c-signal));
+
+  position: relative;
+
+  overflow: clip;
+
+  background: var(--fr-paper);
+
+  color: var(--fr-ink);
+
+  border-top:
+
+    1px solid var(--fr-measure);
+
 }
 
-.ft-alan {
+.fr-alan {
+
   max-width: var(--container-wide);
+
   margin: 0 auto;
-  padding: clamp(3rem, 2rem + 3vw, 4.5rem) clamp(1.25rem, 0.5rem + 3vw, 4rem)
-    clamp(2rem, 1.5rem + 1.5vw, 3rem);
+
+  padding:
+
+    clamp(2.8rem, 6vw, 5rem)
+
+    var(--sahne-pad)
+
+    clamp(1.6rem, 3vw, 2.6rem);
+
   display: grid;
-  gap: clamp(2rem, 1.5rem + 2vw, 3rem);
+
+  gap:
+
+    clamp(2.2rem, 5vw, 4rem);
+
 }
 
-/* ---- Kimlik ------------------------------------------------------------ */
-.ft-marka {
-  font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  margin: 0;
+/* ==========================================================================
+
+   REGISTER HEADER
+
+   ======================================================================= */
+
+.fr-kunye {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  padding-bottom:
+
+    clamp(0.75rem, 1.5vw, 1rem);
+
+  border-bottom:
+
+    1px solid var(--fr-rule);
+
+  font-family: var(--f-mono);
+
+  font-size: 0.5625rem;
+
+  line-height: 1.2;
+
+  letter-spacing: 0.1em;
+
+  text-transform: uppercase;
+
+  color: var(--fr-soft);
+
 }
-.ft-tanim {
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  color: rgb(var(--c-ink-soft));
-  max-width: 44ch;
-  margin: 0.75rem 0 0;
+
+.fr-kunye span:last-child {
+
+  text-align: right;
+
+}
+
+/* ==========================================================================
+
+   IDENTITY
+
+   ======================================================================= */
+
+.fr-kimlik {
+
+  display: grid;
+
+  gap: 0;
+
+}
+
+.fr-marka {
+
+  margin: 0;
+
+  max-width: 12ch;
+
+  font-family: var(--f-display, var(--f-sans));
+
+  font-size:
+
+    clamp(3.2rem, 14vw, 6.5rem);
+
+  font-weight: 790;
+
+  line-height: 0.82;
+
+  letter-spacing: -0.07em;
+
+  text-wrap: balance;
+
+}
+
+.fr-tanim {
+
+  margin:
+
+    clamp(1.2rem, 2.4vw, 1.8rem)
+
+    0
+
+    0;
+
+  max-width: 46ch;
+
+  font-size:
+
+    clamp(0.95rem, 0.91rem + 0.2vw, 1.05rem);
+
+  line-height: 1.58;
+
+  color: var(--fr-soft);
+
   text-wrap: pretty;
+
 }
-.ft-adres {
+
+.fr-adres {
+
+  margin:
+
+    clamp(1.3rem, 2.6vw, 2rem)
+
+    0
+
+    0;
+
   display: grid;
-  gap: 0.25rem;
+
+  gap: 0.3rem;
+
+  max-width: 44ch;
+
   font-style: normal;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: rgb(var(--c-ink-soft));
-  margin-top: 1.25rem;
-}
-.ft-saat {
-  font-variant-numeric: tabular-nums;
-}
 
-/* ---- İletişim ---------------------------------------------------------- */
-.ft-iletisim {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-.ft-tel {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  /* Karakter katmanının doğal yeri: gerçek numara. Dekoratif etiket değil. */
   font-family: var(--f-mono);
-  font-size: 1rem;
+
+  font-size: 0.72rem;
+
+  line-height: 1.5;
+
   letter-spacing: 0.03em;
-  font-weight: 500;
-  color: rgb(var(--c-ink));
-  text-decoration: none;
-  border-bottom: 1px solid rgb(var(--c-measure));
-  padding-bottom: 0.125rem;
-}
-.ft-tel:hover {
-  border-bottom-color: rgb(var(--c-ink));
+
+  color: var(--fr-soft);
+
 }
 
-/* ---- Ortak bağlantı dili ---------------------------------------------- */
-.ft-bag {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font-size: 0.9375rem;
-  color: rgb(var(--c-ink));
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.15s ease-out, color 0.15s ease-out;
-}
-.ft-bag:hover {
-  border-bottom-color: rgb(var(--c-ink));
-}
-.ft-bag:focus-visible {
-  outline: 2px solid rgb(var(--c-ink));
-  outline-offset: 4px;
-}
-.ft-bag--kucuk {
-  font-size: 0.8125rem;
-  color: rgb(var(--c-ink-soft));
-}
-.ft-bag--kucuk:hover {
-  color: rgb(var(--c-ink));
-  border-bottom-color: rgb(var(--c-ink));
+.fr-saat {
+
+  font-variant-numeric: tabular-nums;
+
 }
 
-/* ---- Navigasyon — yatay satır ------------------------------------------ */
-.ft-gezinme {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 clamp(1.25rem, 0.75rem + 1.5vw, 2.25rem);
-}
+/* ==========================================================================
 
-/* ---- Meta -------------------------------------------------------------- */
-.ft-meta {
-  border-top: 1px solid rgb(var(--c-rule));
-  padding-top: clamp(1rem, 0.75rem + 0.8vw, 1.5rem);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 clamp(1rem, 0.5rem + 1.5vw, 2rem);
-}
-.ft-telif {
+   SECTION INDEX
+
+   ======================================================================= */
+
+.fr-bolum-no {
+
   font-family: var(--f-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  color: rgb(var(--c-ink-soft));
-  margin: 0;
-  margin-right: auto;
-}
-.ft-yasal,
-.ft-sosyal {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 clamp(0.875rem, 0.5rem + 1vw, 1.5rem);
+
+  font-size: 0.625rem;
+
+  line-height: 1;
+
+  letter-spacing: 0.1em;
+
+  color: var(--fr-signal);
+
 }
 
-/* ===========================================================================
-   MASAÜSTÜ — kimlik solda, iletişim sağda ve ayrı baseline'da
-   ======================================================================== */
-@media (min-width: 1024px) {
-  .ft-alan {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: clamp(1rem, 0.5rem + 1.5vw, 2rem);
-    row-gap: clamp(2.5rem, 2rem + 2vw, 4rem);
+/* ==========================================================================
+
+   CONTACT
+
+   ======================================================================= */
+
+.fr-iletisim {
+
+  display: grid;
+
+  grid-template-columns:
+
+    auto
+
+    minmax(0, 1fr);
+
+  gap:
+
+    clamp(0.8rem, 2vw, 1.3rem);
+
+}
+
+.fr-iletisim-icerik {
+
+  display: grid;
+
+  border-top:
+
+    1px solid var(--fr-measure);
+
+}
+
+.fr-tel,
+
+.fr-bag {
+
+  position: relative;
+
+  min-height: 4.6rem;
+
+  padding:
+
+    0.85rem
+
+    0;
+
+  display: grid;
+
+  grid-template-columns:
+
+    minmax(0, 1fr)
+    auto;
+
+  gap:
+
+    clamp(0.7rem, 2vw, 1.2rem);
+
+  align-items: center;
+
+  border-bottom:
+
+    1px solid var(--fr-rule);
+
+  color: inherit;
+
+  text-decoration: none;
+
+}
+
+.fr-link-meta {
+
+  font-family: var(--f-mono);
+
+  font-size: 0.52rem;
+
+  letter-spacing: 0.08em;
+
+  color: var(--fr-soft);
+
+}
+
+.fr-link-main {
+
+  min-width: 0;
+
+  font-size:
+
+    clamp(1rem, 0.94rem + 0.4vw, 1.25rem);
+
+  font-weight: 620;
+
+  overflow-wrap: anywhere;
+
+}
+
+.fr-tel .fr-link-main {
+
+  font-family: var(--f-mono);
+
+  letter-spacing: 0.025em;
+
+}
+
+.fr-link-arrow {
+
+  color: var(--fr-signal);
+
+  font-size: 1.25rem;
+
+  line-height: 1;
+
+  transition:
+
+    transform 180ms ease-out;
+
+}
+
+.fr-tel:hover .fr-link-arrow,
+
+.fr-tel:focus-visible .fr-link-arrow {
+
+  transform:
+
+    translateX(0.25rem);
+
+}
+
+.fr-bag:hover .fr-link-arrow,
+
+.fr-bag:focus-visible .fr-link-arrow {
+
+  transform:
+
+    translate(0.2rem, -0.2rem);
+
+}
+
+/* ==========================================================================
+
+   NAVIGATION
+
+   ======================================================================= */
+
+.fr-gezinme {
+
+  display: grid;
+
+  grid-template-columns:
+
+    auto
+
+    minmax(0, 1fr);
+
+  gap:
+
+    clamp(0.8rem, 2vw, 1.3rem);
+
+}
+
+.fr-nav-list {
+
+  border-top:
+
+    1px solid var(--fr-measure);
+
+}
+
+.fr-nav-link {
+
+  min-height:
+
+    clamp(4.2rem, 12vw, 5.7rem);
+
+  padding:
+
+    0.8rem
+
+    0;
+
+  display: grid;
+
+  grid-template-columns:
+
+    minmax(0, 1fr)
+    auto;
+
+  gap:
+
+    clamp(0.7rem, 2vw, 1.1rem);
+
+  align-items: center;
+
+  border-bottom:
+
+    1px solid var(--fr-rule);
+
+  color: inherit;
+
+  text-decoration: none;
+
+}
+
+.fr-nav-no {
+
+  font-family: var(--f-mono);
+
+  font-size: 0.52rem;
+
+  letter-spacing: 0.08em;
+
+  color: var(--fr-soft);
+
+}
+
+.fr-nav-label {
+
+  font-family: var(--f-display, var(--f-sans));
+
+  font-size:
+
+    clamp(1.4rem, 5vw, 2rem);
+
+  font-weight: 650;
+
+  line-height: 1;
+
+  letter-spacing: -0.03em;
+
+}
+
+.fr-nav-arrow {
+
+  color: var(--fr-signal);
+
+  font-size: 1.2rem;
+
+  transition:
+
+    transform 180ms ease-out;
+
+}
+
+.fr-nav-link:hover .fr-nav-arrow,
+
+.fr-nav-link:focus-visible .fr-nav-arrow {
+
+  transform:
+
+    translate(0.22rem, -0.22rem);
+
+}
+
+/* ==========================================================================
+
+   SOCIAL
+
+   ======================================================================= */
+
+.fr-sosyal {
+
+  display: grid;
+
+  grid-template-columns:
+
+    auto
+
+    minmax(0, 1fr);
+
+  gap:
+
+    clamp(0.8rem, 2vw, 1.3rem);
+
+}
+
+.fr-sosyal-list {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap:
+
+    0
+
+    clamp(1rem, 2.5vw, 2rem);
+
+  padding-top:
+
+    0.45rem;
+
+  border-top:
+
+    1px solid var(--fr-measure);
+
+}
+
+.fr-sosyal-link {
+
+  min-height: 44px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.4rem;
+
+  color: var(--fr-ink);
+
+  text-decoration: none;
+
+  font-size: 0.9rem;
+
+}
+
+.fr-sosyal-link span:last-child {
+
+  color: var(--fr-signal);
+
+  transition:
+
+    transform 180ms ease-out;
+
+}
+
+.fr-sosyal-link:hover span:last-child,
+
+.fr-sosyal-link:focus-visible span:last-child {
+
+  transform:
+
+    translate(0.18rem, -0.18rem);
+
+}
+
+/* ==========================================================================
+
+   META
+
+   ======================================================================= */
+
+.fr-meta {
+
+  padding-top:
+
+    clamp(1rem, 2vw, 1.4rem);
+
+  border-top:
+
+    1px solid var(--fr-rule);
+
+  display: grid;
+
+  gap:
+
+    0.75rem;
+
+}
+
+.fr-telif {
+
+  margin: 0;
+
+  font-family: var(--f-mono);
+
+  font-size: 0.7rem;
+
+  letter-spacing: 0.05em;
+
+  color: var(--fr-soft);
+
+}
+
+.fr-yasal {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap:
+
+    0
+
+    clamp(0.9rem, 2vw, 1.4rem);
+
+}
+
+.fr-yasal-link {
+
+  min-height: 44px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  font-size: 0.78rem;
+
+  color: var(--fr-soft);
+
+  text-decoration: none;
+
+  border-bottom:
+
+    1px solid transparent;
+
+  transition:
+
+    color 150ms ease-out,
+
+    border-color 150ms ease-out;
+
+}
+
+.fr-yasal-link:hover {
+
+  color: var(--fr-ink);
+
+  border-bottom-color:
+
+    var(--fr-ink);
+
+}
+
+.fr-meta-code {
+
+  font-family: var(--f-mono);
+
+  font-size: 0.48rem;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  color: var(--fr-measure);
+
+}
+
+/* ==========================================================================
+
+   FOCUS
+
+   ======================================================================= */
+
+.fr-tel:focus-visible,
+
+.fr-bag:focus-visible,
+
+.fr-nav-link:focus-visible,
+
+.fr-sosyal-link:focus-visible,
+
+.fr-yasal-link:focus-visible {
+
+  outline:
+
+    2px solid var(--fr-ink);
+
+  outline-offset:
+
+    4px;
+
+}
+
+/* ==========================================================================
+
+   VIEW-ENTRY — SUBTLE ONLY
+
+   Footer utility layer; no choreography.
+
+   ======================================================================= */
+
+@supports (animation-timeline: view()) {
+
+  @media (prefers-reduced-motion: no-preference) {
+
+    .fr {
+
+      view-timeline-name:
+
+        --fr;
+
+      view-timeline-axis:
+
+        block;
+
+    }
+
+    .fr-kunye,
+
+    .fr-kimlik,
+
+    .fr-iletisim,
+
+    .fr-gezinme,
+
+    .fr-sosyal,
+
+    .fr-meta {
+
+      animation-duration:
+
+        auto;
+
+      animation-fill-mode:
+
+        both;
+
+      animation-timing-function:
+
+        linear;
+
+      animation-timeline:
+
+        --fr;
+
+    }
+.fr-kimlik {
+
+      animation-name:
+
+        fr-print-main;
+
+      animation-range:
+
+        entry 86%
+
+        cover 25%;
+
+    }
+
+    .fr-iletisim {
+
+      animation-name:
+
+        fr-print-row;
+
+      animation-range:
+
+        entry 78%
+
+        cover 36%;
+
+    }
+
+    .fr-gezinme {
+
+      animation-name:
+
+        fr-print-row;
+
+      animation-range:
+
+        entry 67%
+
+        cover 52%;
+
+    }
+
+    .fr-sosyal {
+
+      animation-name:
+
+        fr-print-row;
+
+      animation-range:
+
+        entry 56%
+
+        cover 66%;
+
+    }
+
+    .fr-meta {
+
+      animation-name:
+
+        fr-print-row;
+
+      animation-range:
+
+        entry 46%
+
+        cover 80%;
+
+    }
+
+    @keyframes fr-print-top {
+
+      from {
+
+        clip-path:
+
+          inset(0 100% 0 0);
+
+      }
+
+      to {
+
+        clip-path:
+
+          inset(0);
+
+      }
+
+    }
+
+    @keyframes fr-print-main {
+
+      from {
+
+        transform:
+
+          translateY(1rem);
+
+        clip-path:
+
+          inset(0 0 12% 0);
+
+      }
+
+      to {
+
+        transform:
+
+          translateY(0);
+
+        clip-path:
+
+          inset(0);
+
+      }
+
+    }
+
+    @keyframes fr-print-row {
+
+      from {
+
+        transform:
+
+          translateY(0.7rem);
+
+        clip-path:
+
+          inset(0 0 10% 0);
+
+      }
+
+      to {
+
+        transform:
+
+          translateY(0);
+
+        clip-path:
+
+          inset(0);
+
+      }
+
+    }
+
   }
-  .ft-kimlik {
-    grid-column: 1 / 7;
-    grid-row: 1;
+
+}
+
+/* ==========================================================================
+
+   TABLET
+
+   ======================================================================= */
+
+@media (min-width: 768px) {
+
+  .fr-alan {
+
+    grid-template-columns:
+
+      repeat(12, minmax(0, 1fr));
+
+    column-gap:
+
+      var(--sahne-kolon-arasi);
+
   }
-  .ft-iletisim {
-    grid-column: 9 / 13;
-    grid-row: 1;
-    /* Kimlikle aynı hizada başlamıyor: kendi ekseninde biraz aşağıda. */
-    margin-top: 0.375rem;
+
+  .fr-kunye {
+
+    grid-column:
+
+      1 / 13;
+
   }
-  .ft-gezinme {
-    grid-column: 1 / 13;
-    grid-row: 2;
+
+  .fr-kimlik {
+
+    grid-column:
+
+      1 / 7;
+
   }
-  .ft-meta {
-    grid-column: 1 / 13;
-    grid-row: 3;
+
+  .fr-iletisim {
+
+    grid-column:
+
+      8 / 13;
+
+    align-self:
+
+      start;
+
+  }
+
+  .fr-gezinme {
+
+    grid-column:
+
+      1 / 13;
+
+  }
+
+  .fr-sosyal {
+
+    grid-column:
+
+      1 / 13;
+
+  }
+
+  .fr-meta {
+
+    grid-column:
+
+      1 / 13;
+
+  }
+
+  .fr-marka {
+
+    max-width:
+
+      10ch;
+
+    font-size:
+
+      clamp(4.5rem, 9vw, 7.5rem);
+
+  }
+
+  .fr-nav-list {
+
+    display: grid;
+
+    grid-template-columns:
+
+      repeat(2, minmax(0, 1fr));
+
+    column-gap:
+
+      var(--sahne-kolon-arasi);
+
+  }
+
+  .fr-nav-link {
+
+    min-height:
+
+      5.2rem;
+
+  }
+
+  .fr-nav-link:nth-child(odd) {
+
+    border-right:
+
+      1px solid var(--fr-rule);
+
+    padding-right:
+
+      clamp(1rem, 2vw, 1.5rem);
+
+  }
+
+  .fr-nav-link:nth-child(even) {
+
+    padding-left:
+
+      clamp(1rem, 2vw, 1.5rem);
+
+  }
+
+  .fr-meta {
+
+    grid-template-columns:
+
+      auto
+      minmax(0, 1fr);
+
+    align-items:
+
+      center;
+
+    column-gap:
+
+      1.5rem;
+
+  }
+
+  .fr-yasal {
+
+    justify-content:
+
+      center;
+
   }
 }
+
+/* ==========================================================================
+
+   DESKTOP
+
+   ======================================================================= */
+
+@media (min-width: 1024px) {
+
+  .fr-alan {
+
+    padding-top:
+
+      clamp(3.5rem, 6vh, 5.5rem);
+
+    padding-bottom:
+
+      clamp(1.8rem, 3vh, 2.6rem);
+
+    row-gap:
+
+      clamp(2.8rem, 5vh, 4.5rem);
+
+  }
+
+  .fr-kimlik {
+
+    grid-column:
+
+      1 / 8;
+
+  }
+
+  .fr-iletisim {
+
+    grid-column:
+
+      9 / 13;
+
+    margin-top:
+
+      0.2rem;
+
+  }
+
+  .fr-marka {
+
+    max-width:
+
+      9ch;
+
+    font-size:
+
+      clamp(5.5rem, 7vw, 9rem);
+
+  }
+
+  .fr-nav-list {
+
+    grid-template-columns:
+
+      repeat(3, minmax(0, 1fr));
+
+  }
+
+  .fr-nav-link:nth-child(odd),
+
+  .fr-nav-link:nth-child(even) {
+
+    padding-left:
+
+      clamp(0.8rem, 1.2vw, 1rem);
+
+    padding-right:
+
+      clamp(0.8rem, 1.2vw, 1rem);
+
+    border-right:
+
+      1px solid var(--fr-rule);
+
+  }
+
+  .fr-nav-link:nth-child(3n) {
+
+    border-right:
+
+      0;
+
+  }
+
+  .fr-nav-label {
+
+    font-size:
+
+      clamp(1.5rem, 1.8vw, 2.15rem);
+
+  }
+
+  .fr-sosyal {
+
+    align-items:
+
+      start;
+
+  }
+
+}
+
+/* ==========================================================================
+
+   ULTRAWIDE
+
+   ======================================================================= */
+
+@media (min-width: 1800px) {
+
+  .fr-alan {
+
+    max-width:
+
+      1840px;
+
+  }
+
+  .fr-marka {
+
+    font-size:
+
+      clamp(6rem, 6vw, 9.5rem);
+
+  }
+
+  .fr-nav-label {
+
+    font-size:
+
+      clamp(1.6rem, 1.55vw, 2.25rem);
+
+  }
+
+}
+
+/* ==========================================================================
+
+   REDUCED MOTION
+
+   ======================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .fr-link-arrow,
+
+  .fr-nav-arrow,
+
+  .fr-sosyal-link span:last-child {
+
+    transition:
+
+      none;
+
+  }
+
+  .fr-tel:hover .fr-link-arrow,
+
+  .fr-tel:focus-visible .fr-link-arrow,
+
+  .fr-bag:hover .fr-link-arrow,
+
+  .fr-bag:focus-visible .fr-link-arrow,
+
+  .fr-nav-link:hover .fr-nav-arrow,
+
+  .fr-nav-link:focus-visible .fr-nav-arrow,
+
+  .fr-sosyal-link:hover span:last-child,
+
+  .fr-sosyal-link:focus-visible span:last-child {
+
+    transform:
+
+      none;
+
+  }
+
+}
+
 </style>
