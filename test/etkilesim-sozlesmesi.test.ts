@@ -41,6 +41,8 @@ const sgGiris = oku('app', 'components', 'service', 'Giris.vue')
 const bgGiris = oku('app', 'components', 'blog-index', 'Giris.vue')
 const sgDizin = oku('app', 'components', 'service', 'Dizin.vue')
 const byListe = oku('app', 'components', 'blog-index', 'YaziListesi.vue')
+const hizmetGorunum = oku('app', 'components', 'article', 'ServiceView.vue')
+const yaziGorunum = oku('app', 'components', 'article', 'BlogPostView.vue')
 
 /** Yorumları atar: iddialar KOD için, açıklama metni için değil. */
 const kodu = (k: string) => k.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/<!--[\s\S]*?-->/g, ' ')
@@ -617,6 +619,122 @@ describe('dizin ailesi hareketi MİKRO kalıyor', () => {
     expect(k).toMatch(/prefers-reduced-motion/)
     // Uzun kaydırma koreografisi yok.
     expect(kodu(k)).not.toMatch(/height:\s*\d{3}vh/)
+  })
+})
+
+
+// ═══════════════════════════════════════════ M18C EDİTORYAL DETAY
+
+describe('detay aileleri aynı açılış gramerini paylaşıyor', () => {
+  it.each([
+    ['hizmet detayı', 'hizmetGorunum', 'hz'],
+    ['yazı detayı', 'yaziGorunum', 'yz'],
+  ])('%s sicil çizgisi + tek h1 taşıyor', (_ad, anahtar, onek) => {
+    const harita: Record<string, string> = { hizmetGorunum, yaziGorunum }
+    const k = kodu(harita[anahtar])
+    expect(k).toContain(`class="${onek}-cizgi"`)
+    expect((k.match(/<h1/g) || []).length).toBe(1)
+    // Başlık ölçeği dizin ailesiyle aynı formülden, bir kademe sakin:
+    // düz `tip-baslik` (56px) değil, kendi clamp'i var.
+    const kural = k.slice(k.indexOf('.' + onek + '-h1 {'))
+    expect(kural.slice(0, 260), onek + '-h1 punto kuralı yok').toContain('font-size: clamp(')
+  })
+
+  it('detay açılışı ana sayfa koreografisini kopyalamıyor', () => {
+    for (const k of [kodu(hizmetGorunum), kodu(yaziGorunum)]) {
+      expect(k).not.toMatch(/height:\s*\d{3}vh/)
+      expect(k).not.toMatch(/addEventListener|IntersectionObserver|requestAnimationFrame|gsap/)
+    }
+  })
+})
+
+describe('detay rolleri korunuyor', () => {
+  it('hizmet detayı altı bölüm rolünü sürdürüyor', () => {
+    // kapsam · nasıl · bölge · sss · adım + açılış. Sayı düşerse rol kaybı olur.
+    const k = kodu(hizmetGorunum)
+    for (const kimlik of ['kapsam', 'nasil', 'bolge', 'sss', 'adim']) {
+      expect(k, `${kimlik} bölümü yok`).toContain(`aria-labelledby="${kimlik}"`)
+    }
+    expect(k).toContain('hz-giris-kap')
+  })
+
+  it('yazı detayı üç yapısal rolünü sürdürüyor', () => {
+    const k = kodu(yaziGorunum)
+    for (const rol of ['yz-giris-kap', 'yz-govde-kap', 'yz-son-kap']) {
+      expect(k, `${rol} yok`).toContain(rol)
+    }
+    // Yazıya yapay bir hizmet dönüşüm bölümü eklenmedi.
+    expect(k).not.toContain('aria-labelledby="sss"')
+  })
+
+  it('düz blog rotası korunuyor — /blog/{slug} DEĞİL', () => {
+    const k = kodu(yaziGorunum)
+    expect(k).toMatch(/:to="`\/\$\{[a-zA-Z.]+\.slug\}`"/)
+    expect(k).not.toMatch(/\/blog\/\$\{/)
+  })
+})
+
+describe('detay gövde ritmi gerçek başlıklardan geliyor', () => {
+  it('yazı gövdesindeki h2 ler ölçü diliyle işaretleniyor', () => {
+    const k = kodu(yaziGorunum)
+    expect(k).toMatch(/\.yz-metin :deep\(h2\)/)
+    // İşaret çizgisel: üretilen METİN yok (ekran okuyucuya numara okunmasın).
+    const i = k.indexOf('.yz-metin :deep(h2)')
+    const blok = k.slice(i, i + 900)
+    expect(blok).not.toMatch(/content:\s*counter\(/)
+    expect(blok).toMatch(/content:\s*''/)
+  })
+
+  it('ortak Prose bileşenine dokunulmadı', () => {
+    // Prose hizmet detayı ve bölge sayfalarınca da kullanılıyor.
+    const prose = kodu(oku('app', 'components', 'article', 'Prose.vue'))
+    expect(prose).not.toContain('yz-metin')
+    expect(prose).not.toContain('hz-govde')
+  })
+})
+
+describe('detay sayfaları kart diline dönmüyor', () => {
+  it.each([
+    ['hizmet detayı', 'hizmetGorunum'],
+    ['yazı detayı', 'yaziGorunum'],
+  ])('%s yuvarlatma/gölge taşımıyor', (_ad, anahtar) => {
+    const harita: Record<string, string> = { hizmetGorunum, yaziGorunum }
+    const k = kodu(harita[anahtar])
+    expect(k).not.toMatch(/border-radius:\s*(?!0)/)
+    expect(k).not.toMatch(/box-shadow:\s*(?!none)/)
+  })
+})
+
+describe('detay hareketi düzen özelliği canlandırmıyor', () => {
+  it.each([
+    ['hizmet detayı', 'hizmetGorunum', 'hz'],
+    ['yazı detayı', 'yaziGorunum', 'yz'],
+  ])('%s kareleri yalnız transform sürüyor', (_ad, anahtar, onek) => {
+    // M18B dersi: width/height/top/left canlandırmak kaydırma boyunca
+    // layout-shift üretiyor.
+    const harita: Record<string, string> = { hizmetGorunum, yaziGorunum }
+    const k = kodu(harita[anahtar])
+    const i = k.indexOf(`@keyframes ${onek}-cizgi-ciz`)
+    expect(i, `${onek}-cizgi-ciz kareleri yok`).toBeGreaterThan(-1)
+    const blok = k.slice(i, i + 260)
+    expect(blok).toMatch(/transform:\s*scaleX/)
+    for (const ozellik of ['width', 'height', 'left', 'top']) {
+      expect(blok, `${onek} karesi ${ozellik} canlandırıyor`).not.toMatch(new RegExp(`(^|[;{\s])${ozellik}\s*:`, 'm'))
+    }
+    expect(k).toMatch(/prefers-reduced-motion/)
+  })
+})
+
+describe('yazı yol izinin son kademesi kısalıyor', () => {
+  it('taşma yerine üç nokta', () => {
+    // M18C'de ölçüldü: 440/390/360'ta son kademe (yazı başlığı) listenin
+    // satırından taşıp kırpılıyordu. CSS yorumundaki niyet vardı, kuralı yoktu.
+    const k = kodu(yaziGorunum)
+    const i = k.indexOf('.yz-yol-oge:last-child')
+    expect(i, 'son kademe kuralı yok').toBeGreaterThan(-1)
+    const blok = k.slice(i, i + 220)
+    expect(blok).toMatch(/min-width:\s*0/)
+    expect(blok).toMatch(/text-overflow:\s*ellipsis/)
   })
 })
 

@@ -74,7 +74,17 @@ const props = defineProps({
 })
 
 /** Yazar alanı boşsa satır hiç basılmıyor — yedek ad ÜRETİLMİYOR. */
-const yazar = computed(() => String(props.post.author ?? '').trim())
+const yazar = computed(() => {
+  const ham = String(props.post.author ?? '').trim()
+  /*
+    CMS'te yazar alanı yer tutucu olarak '-' bırakılmış (ölçüldü: bakılan
+    yazıların hepsinde). Eski koşul `v-if="yazar"` bu değeri DOLU sayıyor
+    ve açılış sicilinin altına tek başına bir tire basıyordu.
+    Harf ya da rakam içermeyen değer yazar sayılmıyor. İçerik
+    DEĞİŞTİRİLMİYOR — yalnız boş kabul edilme koşulu düzeltiliyor.
+  */
+  return /[\p{L}\p{N}]/u.test(ham) ? ham : ''
+})
 
 const tarih = computed(() => {
   if (!props.post.createdAt) return ''
@@ -174,6 +184,9 @@ const sonrakiYazi = computed(() =>
             </li>
           </ol>
         </nav>
+
+        <!-- Sicil çizgisi: dizin ve hizmet detayıyla aynı açılış grameri. -->
+        <span class="yz-cizgi" aria-hidden="true"></span>
 
         <p class="yz-kunye op-kunye">
           BİLGİ / BLOG<span v-if="tarih"> / <time :datetime="tarihIso">{{ tarih }}</time></span>
@@ -298,6 +311,31 @@ const sonrakiYazi = computed(() =>
   flex: 0 0 auto;
   white-space: nowrap;
 }
+
+/*
+  SON KADEME GERÇEKTEN KISALIYOR.
+
+  Üstteki `flex-wrap: nowrap` gerekçesi "son öğe sarmak yerine kısalıyor"
+  diyordu ama kısaltmayı sağlayan kurallar yazılmamıştı: `flex: 0 0 auto`
+  öğeyi küçülmez yapıyor, `min-width: auto` da içeriğin altına inmesini
+  engelliyordu. Sonuç kısalma değil TAŞMA idi — M18C'de ölçüldü:
+
+    440x956  kap içi 398px, son kademe 268px, sağ kenar 419px
+    390x844  kap içi 350px, son kademe 221px
+    360x780  kap içi 320px, son kademe 191px
+
+  Üç genişlikte de son kademe listenin 20px'lik satırından taşıp
+  kırpılıyordu. Artık küçülebiliyor ve üç nokta ile bitiyor; tam başlık
+  DOM'da duruyor (zaten `aria-current="page"` ve h1 ile aynı metin).
+  Yol izi anlambilimi, mikroveri ve kademe sayısı değişmedi.
+  ServiceView'da bu kusur YOK: orada liste `flex-wrap: wrap`.
+*/
+.yz-yol-oge:last-child {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 /* Son kademe kendi içinde de esnek: ayraç sabit, başlık kısalan taraf. */
 .yz-yol-oge:last-child {
   flex: 0 1 auto;
@@ -359,12 +397,31 @@ const sonrakiYazi = computed(() =>
   white-space: nowrap;
 }
 
-.yz-kunye {
-  margin-top: clamp(1.75rem, 1.25rem + 2vw, 3rem);
+/*
+  SİCİL ÇİZGİSİ — `sa-cizgi` (dizin) ve `hz-cizgi` (hizmet detayı) ile
+  aynı dil. Üç sayfa ailesi de aynı gramerden açılıyor.
+*/
+.yz-cizgi {
+  display: block;
+  height: 1px;
+  margin-top: clamp(1.1rem, 0.9rem + 0.8vw, 1.8rem);
+  background: rgb(var(--c-rule));
+  transform-origin: left center;
 }
+
+.yz-kunye {
+  margin-top: clamp(1.4rem, 1.1rem + 1.2vw, 2.4rem);
+}
+/*
+  BAŞLIK OTORİTESİ — hizmet detayıyla aynı kademe, dizinin bir altı.
+  Yazı başlıkları hizmet adlarından uzun olduğu için `max-width` daha
+  geniş; ölçek aynı formülden geliyor ki iki detay ailesi aynı
+  tipografik kademede dursun.
+*/
 .yz-h1 {
-  margin-top: clamp(0.75rem, 0.5rem + 0.8vw, 1.25rem);
+  margin-top: clamp(0.6rem, 0.4rem + 0.7vw, 1.1rem);
   max-width: 22ch;
+  font-size: clamp(2.3rem, 1.4rem + 2.8vw, 4.3rem);
 }
 .yz-ozet {
   margin-top: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
@@ -375,9 +432,12 @@ const sonrakiYazi = computed(() =>
   color: rgb(var(--c-ink-soft));
 }
 
+/*
+  KAPAK: çerçeve zemini kaldırıldı (dizin görsel politikasıyla aynı
+  karar — kart okuması üreten boş çerçeve yok).
+*/
 .yz-kapak {
   margin: clamp(2rem, 1.5rem + 1.5vw, 3rem) 0 0;
-  background: rgb(var(--c-paper-sunken));
 }
 .yz-foto {
   display: block;
@@ -422,6 +482,60 @@ const sonrakiYazi = computed(() =>
  */
 .yz-metin {
   max-width: 64ch;
+}
+
+/*
+  GÖVDE RİTMİ — M18A'nın en zayıf boyutu buydu.
+
+  Yazı gövdesi CMS'ten gelen tek bir HTML bloğu ve `article-prose` onu
+  düz bir akış olarak basıyordu: üç büyük bölüm, aralarında teknik ritim
+  yok. M18A ölçümü: blog detayı 20, hizmet detayı 24 — aradaki farkın
+  büyük kısmı buradan geliyordu.
+
+  YENİ İÇERİK ÜRETİLMEDİ. Ritim, yazının KENDİ `<h2>` başlıklarından
+  çıkarılıyor: her bölüm başlığının üstüne bölümün ölçü dilinden bir
+  saç teli kural ve kısa bir bakır ölçü çentiği geliyor.
+
+  Numara BASILMIYOR: `content: counter(...)` bazı ekran okuyucularda
+  sesli okunuyor; dekoratif numaralandırmayı erişilebilirlik ağacına
+  sokmamak için işaret tamamen çizgisel.
+
+  Kurallar YALNIZ `.yz-metin` altında; `article/Prose.vue` ortak
+  bileşen ve hizmet detayı ile bölge sayfaları da onu kullanıyor —
+  ona dokunulmadı.
+*/
+.yz-metin :deep(h2) {
+  position: relative;
+  margin-top: clamp(3rem, 2.4rem + 1.6vw, 4.25rem);
+  padding-top: clamp(1.5rem, 1.3rem + 0.6vw, 1.9rem);
+}
+
+.yz-metin :deep(h2)::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: rgb(var(--c-rule));
+}
+
+.yz-metin :deep(h2)::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 2.75rem;
+  height: 2px;
+  background: rgb(var(--c-signal));
+}
+
+/* İlk başlıkta kural yok: gövdenin üstünde zaten bölüm sınırı var. */
+.yz-metin :deep(h2:first-child) {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.yz-metin :deep(h2:first-child)::before,
+.yz-metin :deep(h2:first-child)::after {
+  content: none;
 }
 
 /* Teknik marj yalnız masaüstünde var; mobil/tablette normal akış bozulmuyor. */
@@ -508,6 +622,10 @@ const sonrakiYazi = computed(() =>
   }
   .yz-yol {
     grid-column: 1 / 10;
+  }
+
+  .yz-cizgi {
+    grid-column: 1 / 13;
   }
   .yz-kunye,
   .yz-h1,
@@ -619,6 +737,31 @@ const sonrakiYazi = computed(() =>
   }
   .yz-kapanis {
     grid-column: 2 / 10;
+  }
+}
+/* ==========================================================================
+   MİKRO HAREKET — YALNIZ SİCİL ÇİZGİSİ
+   ======================================================================= */
+
+/*
+  Aile B politikası: SCROLL-LIGHT. Tek jest, sicil çizgisinin çizilmesi.
+  Yapışkan sahne, 300vh, pin, JS kaydırma motoru YOK. Yalnız `transform`
+  canlandırılıyor — düzen özelliği (width/height/top/left) canlandırılmıyor,
+  bu yüzden kaydırma boyunca layout-shift üretmiyor (M18B dersi).
+  Azaltılmış harekette çizgi tam boyda.
+*/
+@supports (animation-timeline: view()) {
+  @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    .yz-cizgi {
+      animation: yz-cizgi-ciz linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 85%;
+    }
+
+    @keyframes yz-cizgi-ciz {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
   }
 }
 </style>

@@ -166,6 +166,9 @@ const adimlar = computed(() => {
           </ol>
         </nav>
 
+        <!-- Sicil çizgisi: dizin ailesiyle (5510af9) aynı açılış grameri. -->
+        <span class="hz-cizgi" aria-hidden="true"></span>
+
         <p class="hz-kunye op-kunye">HİZMET / İSTANBUL</p>
         <h1 id="hizmet-baslik" class="hz-h1 tip-baslik">{{ service.title }}</h1>
         <p v-if="service.subtitle" class="hz-etiket op-kunye">{{ service.subtitle }}</p>
@@ -374,8 +377,37 @@ const adimlar = computed(() => {
 }
 .hz-yol [aria-current='page'] { color: rgb(var(--c-ink)); }
 
-.hz-kunye { margin-top: clamp(2rem, 1.5rem + 2vw, 3.5rem); }
-.hz-h1 { margin-top: clamp(0.75rem, 0.5rem + 0.8vw, 1.25rem); max-width: 18ch; }
+/*
+  SİCİL ÇİZGİSİ — dizin ailesindeki `sa-cizgi` ile aynı dil.
+  Açılışı "kayıt" gibi kuruyor; detay sayfası dizinle aynı gramerden
+  başlıyor ama aşağıdaki başlık ölçeği onu bir kademe sakin tutuyor.
+*/
+.hz-cizgi {
+  display: block;
+  height: 1px;
+  margin-top: clamp(1.1rem, 0.9rem + 0.8vw, 1.8rem);
+  background: rgb(var(--c-rule));
+  transform-origin: left center;
+}
+
+.hz-kunye { margin-top: clamp(1.4rem, 1.1rem + 1.2vw, 2.4rem); }
+
+/*
+  BAŞLIK OTORİTESİ — dizinin ALTINDA, eskisinin ÜSTÜNDE.
+
+  M18A'da ölçüldü: bütün ikincil sayfalar 56px başlıkta eşitleniyordu.
+  Pack A dizin açılışını 75px'e (1440) çıkardı; detay sayfası aynı
+  kalsaydı, kendisine bağlanan dizinden daha zayıf görünecekti.
+
+  Ölçek bilerek dizinin bir tık altında: 1440'ta ~65px (dizin 75),
+  1920'de ~80px (dizin 83), 3440'ta ~95px (dizin 114). Aynı aile,
+  daha derin ve daha sakin kademe.
+*/
+.hz-h1 {
+  margin-top: clamp(0.6rem, 0.4rem + 0.7vw, 1.1rem);
+  max-width: 18ch;
+  font-size: clamp(2.3rem, 1.4rem + 2.8vw, 4.3rem);
+}
 .hz-etiket { margin-top: 0.75rem; letter-spacing: 0.1em; }
 .hz-giris-metin { margin-top: clamp(1rem, 0.85rem + 0.6vw, 1.5rem); }
 
@@ -540,13 +572,17 @@ const adimlar = computed(() => {
     align-items: start;
   }
   .hz-yol { grid-column: 1 / 8; }
+  .hz-cizgi { grid-column: 1 / 13; }
   .hz-kunye,
   .hz-h1,
   .hz-etiket,
   .hz-giris-metin { grid-column: 2 / 8; }
   .hz-gorsel {
+    /* Üst kenar künye satırıyla hizalı — açılışın üstünde yüzen bir
+       dikdörtgen değil, kompozisyonun sağ kolonu. (Aynı düzeltme
+       /hizmetlerimiz açılışında da yapıldı.) */
     grid-column: 8 / 13;
-    grid-row: 1 / 6;
+    grid-row: 3 / 7;
     align-self: stretch;
     margin: 0;
     aspect-ratio: auto;
@@ -661,5 +697,30 @@ const adimlar = computed(() => {
   .hz-kapsam { border-bottom: 1px solid rgb(var(--c-rule)); }
 
   .hz-ilgili-liste { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+/* ==========================================================================
+   MİKRO HAREKET — YALNIZ SİCİL ÇİZGİSİ
+   ======================================================================= */
+
+/*
+  Aile B politikası: SCROLL-LIGHT. Tek jest, sicil çizgisinin çizilmesi.
+  Yapışkan sahne, 300vh, pin, JS kaydırma motoru YOK. Yalnız `transform`
+  canlandırılıyor — düzen özelliği (width/height/top/left) canlandırılmıyor,
+  bu yüzden kaydırma boyunca layout-shift üretmiyor (M18B dersi).
+  Azaltılmış harekette çizgi tam boyda.
+*/
+@supports (animation-timeline: view()) {
+  @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    .hz-cizgi {
+      animation: hz-cizgi-ciz linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 85%;
+    }
+
+    @keyframes hz-cizgi-ciz {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+  }
 }
 </style>
