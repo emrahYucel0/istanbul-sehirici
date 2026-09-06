@@ -43,6 +43,11 @@ const sgDizin = oku('app', 'components', 'service', 'Dizin.vue')
 const byListe = oku('app', 'components', 'blog-index', 'YaziListesi.vue')
 const hizmetGorunum = oku('app', 'components', 'article', 'ServiceView.vue')
 const yaziGorunum = oku('app', 'components', 'article', 'BlogPostView.vue')
+const hesaplayici = oku('app', 'components', 'price', 'Hesaplayici.vue')
+const fgGiris = oku('app', 'components', 'price', 'Giris.vue')
+const hgGiris = oku('app', 'components', 'about', 'Giris.vue')
+const igGiris = oku('app', 'components', 'contact', 'Giris.vue')
+const iletisimSayfa = oku('app', 'pages', 'iletisim.vue')
 
 /** Yorumları atar: iddialar KOD için, açıklama metni için değil. */
 const kodu = (k: string) => k.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/<!--[\s\S]*?-->/g, ' ')
@@ -566,8 +571,10 @@ describe('dizin sayfaları kart diline dönmüyor', () => {
   ])('%s yuvarlatma/gölge taşımıyor', (_ad, anahtar) => {
     const harita: Record<string, string> = { acilis, sgDizin, byListe }
     const k = kodu(harita[anahtar])
-    expect(k).not.toMatch(/border-radius:\s*(?!0)/)
-    expect(k).not.toMatch(/box-shadow:\s*(?!none)/)
+    const yaricaplar = [...k.matchAll(/border-radius:\s*([^;]+);/g)].map((m) => m[1].trim())
+    expect(yaricaplar.filter((v) => !/^0(px|rem|%)?$/.test(v)), 'sıfır olmayan yarıçap').toEqual([])
+    const golgeler = [...k.matchAll(/box-shadow:\s*([^;]+);/g)].map((m) => m[1].trim())
+    expect(golgeler.filter((v) => v !== 'none'), 'gölge').toEqual([])
   })
 })
 
@@ -700,8 +707,10 @@ describe('detay sayfaları kart diline dönmüyor', () => {
   ])('%s yuvarlatma/gölge taşımıyor', (_ad, anahtar) => {
     const harita: Record<string, string> = { hizmetGorunum, yaziGorunum }
     const k = kodu(harita[anahtar])
-    expect(k).not.toMatch(/border-radius:\s*(?!0)/)
-    expect(k).not.toMatch(/box-shadow:\s*(?!none)/)
+    const yaricaplar = [...k.matchAll(/border-radius:\s*([^;]+);/g)].map((m) => m[1].trim())
+    expect(yaricaplar.filter((v) => !/^0(px|rem|%)?$/.test(v)), 'sıfır olmayan yarıçap').toEqual([])
+    const golgeler = [...k.matchAll(/box-shadow:\s*([^;]+);/g)].map((m) => m[1].trim())
+    expect(golgeler.filter((v) => v !== 'none'), 'gölge').toEqual([])
   })
 })
 
@@ -735,6 +744,109 @@ describe('yazı yol izinin son kademesi kısalıyor', () => {
     const blok = k.slice(i, i + 220)
     expect(blok).toMatch(/min-width:\s*0/)
     expect(blok).toMatch(/text-overflow:\s*ellipsis/)
+  })
+})
+
+
+// ═══════════════════════════════════════════ M18D DÖNÜŞÜM / KURUMSAL
+
+describe('dönüşüm sayfaları ortak açılış sicilini kullanıyor', () => {
+  it.each([
+    ['fiyat hesaplama', 'fgGiris'],
+    ['hakkımızda', 'hgGiris'],
+    ['iletişim', 'igGiris'],
+  ])('%s açılışı ilkelden geliyor', (_ad, anahtar) => {
+    // M18D'de ölçüldü: bu üç bileşenin 12–13 açılış kuralının 5–7'si
+    // `sayfa/Acilisi.vue` ile BİREBİR aynıydı (M18C'deki detay
+    // görünümlerinde bu oran 1–2/19 idi ve orada ilkel zorlanmadı).
+    const harita: Record<string, string> = { fgGiris, hgGiris, igGiris }
+    const k = kodu(harita[anahtar])
+    expect(k).toContain('<SayfaAcilisi')
+    expect(k).not.toContain('BreadcrumbList')
+  })
+})
+
+describe('hesaplayıcı sözleşmesi donuk', () => {
+  it('formül, aralık ve devir mantığı yerinde', () => {
+    const k = kodu(hesaplayici)
+    // Devir yolu bileşende hesaplanıyor; sorgu dizesi çalışma anında kuruluyor.
+    expect(k).toContain('const eylemYolu = computed(')
+    expect(k).toContain('/iletisim')
+  })
+
+  it('kontroller yerel anlambilimini koruyor', () => {
+    const k = kodu(hesaplayici)
+    // Sahte açılır liste / div-düğme yok.
+    expect(k).toContain('<select')
+    expect(k).toMatch(/type="checkbox"/)
+    expect(k).toMatch(/type="number"/)
+    // `appearance: none` ile select'in ok işareti gizlenmiyor.
+    expect(k).not.toMatch(/\.fh-girdi[^{]*\{[^}]*appearance:\s*none/)
+  })
+
+  it('form dili sitenin ÇİZGİ diliyle aynı', () => {
+    // M18A: hesaplayıcı dört kenarlı kutu, diğer iki form çizgi tabanlıydı.
+    const k = kodu(hesaplayici)
+    const i = k.indexOf('.fh-girdi {')
+    const govde = k.slice(i, k.indexOf('}', i))
+    expect(govde).toMatch(/border:\s*0/)
+    expect(govde).toMatch(/border-bottom:\s*1px solid rgb\(var\(--c-measure\)\)/)
+    expect(govde).toMatch(/border-radius:\s*0/)
+  })
+
+  it('onay kutusu hedefi 24px eşiğinin üstünde', () => {
+    // Tıklanabilir alan kutucuk değil, onu saran etiket satırı (ölçüldü:
+    // 112x44 ve 540x44). Etiket sarmalayıcısı ve satır yüksekliği şart.
+    const k = kodu(hesaplayici)
+    expect(k).toMatch(/<label class="fh-onay">[\s\S]*?type="checkbox"/)
+    const i = k.indexOf('.fh-onay {')
+    const govde = k.slice(i, k.indexOf('}', i))
+    const m = govde.match(/min-height:\s*(\d+)px/)
+    expect(m, 'fh-onay min-height yok').not.toBeNull()
+    expect(Number.parseInt(m![1], 10)).toBeGreaterThanOrEqual(44)
+  })
+
+  it('birincil eylem görünürlüğünü koruyor', () => {
+    // Metin bağlantısına indirgenmedi: dolgu + kare geometri + sicil oku.
+    const k = kodu(hesaplayici)
+    const i = k.indexOf('.fh-cta {')
+    const govde = k.slice(i, k.indexOf('}', i))
+    expect(govde).toMatch(/background:\s*rgb\(var\(--c-ink\)\)/)
+    expect(govde).toMatch(/border-radius:\s*0/)
+    expect(govde).toMatch(/border-left:\s*3px solid rgb\(var\(--c-signal\)\)/)
+    expect(k).toContain('fh-cta-ok')
+  })
+})
+
+describe('iletişim kapanış sözleşmesi', () => {
+  it('/iletisim sayfasına Kapanis EKLENMEDİ', () => {
+    // M18A bunu önermişti; donuk rota sözleşmesi öneriyi ezmiyor.
+    expect(kodu(iletisimSayfa)).not.toMatch(/base-kapanis|BaseKapanis/i)
+  })
+
+  it('lead sözleşmesi ve bal küpü yerinde', () => {
+    const k = kodu(talep)
+    expect(k).toContain("'/api/leads'")
+    expect(k).toContain('website: website.value')
+    expect(k).toContain('sourcePage')
+  })
+})
+
+describe('Pack C kart diline dönmüyor ve kaydırma koreografisi taşımıyor', () => {
+  it.each([
+    ['hesaplayıcı', 'hesaplayici'],
+    ['fiyat açılışı', 'fgGiris'],
+    ['iletişim açılışı', 'igGiris'],
+  ])('%s temiz', (_ad, anahtar) => {
+    const harita: Record<string, string> = { hesaplayici, fgGiris, igGiris }
+    const k = kodu(harita[anahtar])
+    const yaricaplar = [...k.matchAll(/border-radius:\s*([^;]+);/g)].map((m) => m[1].trim())
+    expect(yaricaplar.filter((v) => !/^0(px|rem|%)?$/.test(v)), 'sıfır olmayan yarıçap').toEqual([])
+    const golgeler = [...k.matchAll(/box-shadow:\s*([^;]+);/g)].map((m) => m[1].trim())
+    expect(golgeler.filter((v) => v !== 'none'), 'gölge').toEqual([])
+    expect(k).not.toMatch(/animation-timeline/)
+    expect(k).not.toMatch(/height:\s*\d{3}vh/)
+    expect(k).not.toMatch(/addEventListener\('scroll'|IntersectionObserver|gsap/)
   })
 })
 

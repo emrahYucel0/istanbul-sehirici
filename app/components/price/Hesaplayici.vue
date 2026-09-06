@@ -377,7 +377,10 @@ defineProps({
           <!-- Metin, ölçü, dokunma hedefi ve odak davranışı DEĞİŞMEDİ;
                değişen tek şey adresin yapılandırmayı taşıması. İkinci bir
                düğme eklenmedi. -->
-          <NuxtLink :to="eylemYolu" class="fh-cta">Taşıma ayrıntılarını paylaşın</NuxtLink>
+          <NuxtLink :to="eylemYolu" class="fh-cta">
+            <span>Taşıma ayrıntılarını paylaşın</span>
+            <span class="fh-cta-ok" aria-hidden="true">↗</span>
+          </NuxtLink>
         </div>
       </template>
     </div>
@@ -427,6 +430,9 @@ defineProps({
 }
 .fh-alan--dar {
   max-width: 7rem;
+  /* Yatay dolgu kalkınca kat alanının altı çizgisi 49px'e düşüyordu;
+     alan olduğu okunmuyordu. Genişlik geri veriliyor (ölçüldü: 80px). */
+  min-width: 5rem;
 }
 .fh-etiket {
   font-size: 0.9375rem;
@@ -459,7 +465,9 @@ defineProps({
 .fh-girdi {
   width: 100%;
   margin-top: 0.5rem;
-  padding: 0.75rem 0.875rem;
+  /* Yatay dolgu 0: alan artık kutu değil, çizgi. Etiket ile girdi aynı
+     sol kenardan başlıyor — sitedeki diğer iki formla aynı hizalama. */
+  padding: 0.625rem 0;
   /* Köşe yarıçapı ve gölge YOK — V2 dilinde kutu değil, çizgi.
      TON `--c-rule` DEĞİL. Ölçüldü: dekoratif ayraç tonu bu çukur zeminde
      1,42:1 veriyor ve kontrolün nerede başlayıp bittiğini gösteren TEK
@@ -467,9 +475,26 @@ defineProps({
      sınırı için 3:1 istiyor. `tokens.css` zaten aynı şeyi söylüyor:
      "bilgi taşıyan her çizgi `--c-measure` kullanır". Aynı çözüm sitede
      `contact/TalepFormu.vue` girdilerinde de var. */
-  border: 1px solid rgb(var(--c-measure));
+  /*
+    ÇİZGİ TABANLI — M18A'da ölçülen "iki form dili" kusuru.
+
+    Hesaplayıcı alanları dört kenarlı kutuydu; `contact/TalepFormu` ve
+    `base/ReviewForm` ise `border: 0` + `border-bottom` ile çizgi
+    tabanlıydı. Sitede aynı anda iki form dili konuşuluyordu ve mevcut
+    test paketi çizgi dilini yalnız diğer iki formda kilitliyordu.
+
+    TON KORUNDU: `--c-rule` DEĞİL `--c-measure`. Ölçüldü — dekoratif
+    ayraç tonu bu çukur zeminde 1,42:1 veriyor ve kontrolün sınırını
+    gösteren TEK işaret bu çizgi; WCAG 2.1 SC 1.4.11 arayüz bileşeni
+    sınırı için 3:1 istiyor. Kenar sayısı azaldı, kontrast azalmadı.
+
+    `appearance` ELLENMEDİ: select kendi açılır okunu çizmeye devam
+    ediyor, yani hâlâ select olduğunu söylüyor.
+  */
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-measure));
   border-radius: 0;
-  background: rgb(var(--c-paper));
+  background: none;
   color: rgb(var(--c-ink));
   /* 16 px altı, mobil Safari'de odakta sayfayı yakınlaştırıyor. */
   font-size: 1rem;
@@ -484,10 +509,16 @@ defineProps({
 .fh-girdi:hover {
   border-color: rgb(var(--c-ink-soft));
 }
-.fh-girdi:focus {
+.fh-girdi:focus-visible {
   outline: 2px solid rgb(var(--c-ink));
-  outline-offset: 2px;
-  border-color: rgb(var(--c-ink));
+  outline-offset: 4px;
+}
+
+/* Odakta çizgi kalınlaşıyor: fare kullanıcısı da hangi alanda olduğunu
+   görüyor (odak halkası yalnız klavyede çiziliyor). */
+.fh-girdi:focus {
+  border-bottom-width: 2px;
+  border-bottom-color: rgb(var(--c-ink));
 }
 
 .fh-grup {
@@ -523,9 +554,21 @@ defineProps({
   display: flex;
   margin-top: 0.25rem;
 }
+/*
+  ONAY KUTUSU.
+
+  M18A "18x18px" diye kaydetmişti; M18D'de ölçüldü: tıklanabilir alan
+  kutucuk değil, onu saran `<label class="fh-onay">` ve o alan
+  112x44 / 540x44 px. Yani WCAG 2.2 SC 2.5.8'in 24px eşiği ZATEN
+  aşılıyordu — erişilebilirlik kusuru yoktu.
+
+  Değişen yalnız GÖRÜNÜR kutucuğun boyu: 18 -> 22px. Hedef alanı,
+  anlambilim ve `accent-color` aynı.
+*/
 .fh-kutu {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex: none;
   accent-color: rgb(var(--c-signal));
   cursor: pointer;
 }
@@ -593,12 +636,29 @@ defineProps({
   color: rgb(var(--c-ink-soft));
 }
 
+/*
+  BİRİNCİL EYLEM — dönüşüm kritik, görünürlüğü DÜŞÜRÜLMEDİ.
+
+  M18A bunu "çevresindeki sicil diliyle uyumsuz dolgu siyah düğme" diye
+  kaydetti. Dolgu KORUNDU: bu sayfanın tek işi hesabı tamamlatmak ve
+  eylemi ince bir metin bağlantısına indirmek dönüşüm riski olurdu
+  (brief de bunu açıkça yasaklıyor).
+
+  Genellik yerine sicil grameri eklendi:
+    · sol kenarda bakır yön çizgisi (3px) — sitenin ölçü/sinyal dili
+    · sonda `↗` register oku (dekoratif, `aria-hidden`)
+    · kare geometri, mono versal, harf aralığı — zaten vardı
+  Böylece "jenerik siyah dikdörtgen" değil, teknik bir eylem çubuğu.
+*/
 .fh-cta {
   display: inline-flex;
   align-items: center;
+  gap: 0.9rem;
   margin-top: clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
   min-height: 52px;
-  padding: 0.875rem 2rem;
+  padding: 0.875rem 1.75rem;
+  border: 0;
+  border-left: 3px solid rgb(var(--c-signal));
   border-radius: 0;
   background: rgb(var(--c-ink));
   color: rgb(var(--c-paper));
@@ -607,6 +667,26 @@ defineProps({
   letter-spacing: 0.12em;
   text-transform: uppercase;
   text-decoration: none;
+}
+
+.fh-cta-ok {
+  transition: transform 0.18s ease-out;
+}
+
+.fh-cta:hover .fh-cta-ok,
+.fh-cta:focus-visible .fh-cta-ok {
+  transform: translate(0.2rem, -0.2rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fh-cta-ok {
+    transition: none;
+  }
+
+  .fh-cta:hover .fh-cta-ok,
+  .fh-cta:focus-visible .fh-cta-ok {
+    transform: none;
+  }
 }
 .fh-cta:hover {
   background: rgb(var(--c-signal-deep));
