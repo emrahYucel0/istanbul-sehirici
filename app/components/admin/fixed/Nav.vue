@@ -8,7 +8,8 @@ const handleLogout = async () => {
     await $fetch('/api/logout', { method: 'POST' })
   } finally {
     isLoggingOut.value = false
-    router.push('/evdeneveyonetim')
+    // Çıkış, giriş sayfasının YENİ adresine dönüyor (bkz. middleware/auth.global.ts).
+    router.push('/sehiriciyonetim')
   }
 }
 </script>

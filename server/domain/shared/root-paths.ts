@@ -89,6 +89,7 @@ export const IC_KOK_ADRESLER: readonly string[] = [
   'istanbul', // routeRules → 301 /
   'prototip',
   'robots.txt',
+  'sehiriciyonetim', // yönetim girişi (app/pages/sehiriciyonetim.vue)
   'sitemap.xml',
   'yuklemeler', // server/routes/yuklemeler
 ]

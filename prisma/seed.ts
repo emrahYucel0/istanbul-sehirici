@@ -16,9 +16,19 @@ function requireEnv(name: string): string {
   return value;
 }
 
+/**
+ * TEK YÖNETİCİ HESABI.
+ *
+ * Önce iki hesap tohumlanıyordu; ikisi de devralınan projeden geliyordu.
+ * Erişim rotasyonunda ikinci hesap kaldırıldı: kaç kişinin girebildiği
+ * belirsiz olan fazladan bir yönetici, tek başına bir risk. Bu dizinin
+ * iki girdisi kalsaydı `npm run seed` silinen hesabı geri getirirdi.
+ *
+ * Kimlik bilgileri KODDA DEĞİL: `.env` (gitignore'lu) üzerinden okunuyor
+ * ve eksikse süreç hata veriyor — yer tutucu bir parola asla üretilmiyor.
+ */
 const admins = [
   { email: requireEnv('SEED_ADMIN_1_EMAIL'), password: requireEnv('SEED_ADMIN_1_PASSWORD') },
-  { email: requireEnv('SEED_ADMIN_2_EMAIL'), password: requireEnv('SEED_ADMIN_2_PASSWORD') },
 ];
 
 async function seed() {

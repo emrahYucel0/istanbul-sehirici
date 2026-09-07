@@ -72,6 +72,10 @@ export default defineNuxtConfig({
     "/admin/**": { robots: "noindex, nofollow" },
     "/evdeneveyonetim": { robots: "noindex, nofollow" },
     "/evdeneveyonetim/**": { robots: "noindex, nofollow" },
+    // Yönetim GİRİŞİ bu kök rotaya taşındı; /evdeneveyonetim artık 404.
+    // Kural, arama motoru bir yolla adresi bulursa diye duruyor — güvenlik
+    // buna değil, middleware/auth.global.ts + /api/session'a dayanıyor.
+    "/sehiriciyonetim": { robots: "noindex, nofollow" },
 
     // ───────────────────────────────────────────────────────────────────
     // /istanbul → /  (KALICI, TEK SIÇRAMA)
