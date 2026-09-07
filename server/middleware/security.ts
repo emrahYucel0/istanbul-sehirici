@@ -26,7 +26,7 @@ const CSP = [
   // harici sunucuya isteği kalmadı; izinleri açık bırakmak gereksiz yüzey.
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
-  "img-src 'self' data: blob: https://istanbulevenakliyat.com https://cdn.istanbulevenakliyat.com",
+  "img-src 'self' data: blob: https://istanbulsehirici.com https://cdn.istanbulsehirici.com",
   "connect-src 'self'",
   // google.com: İletişim sayfasındaki Google Haritalar embed'i (Site
   // Ayarları'ndan giriliyor). Bu izin olmadan admin haritayı ekliyor ama

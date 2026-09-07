@@ -94,11 +94,16 @@ describe('sayfa-meta kütüğü — arama sonucunda görünen metin', () => {
   })
 
   it('ana sayfa tezini KORUYOR — yerine boşluk konmadı', () => {
-    // İddia kaldırıldı diye sayfa kimliksiz kalmamalı: İstanbul ve
-    // "koşullar fiyatı belirler" tezi duruyor.
+    // İddia kaldırıldı diye sayfa kimliksiz kalmamalı: coğrafi kapsam ve
+    // "koşullar planı belirler" tezi duruyor.
+    //
+    // M19B3: "39 ilçesinde" ifadesi açıklamadan ÇIKTI. Yerine boşluk
+    // konmadı — konum artık birincil arama konusunun kendisiyle veriliyor
+    // ("İstanbul şehir içi"), ki bu daha güçlü bir sinyal. Çivi de o
+    // ifadeye taşındı; iddia zayıflamadı, hedefi değişti.
     const k = kayit('home')
-    expect(k).toContain('39 ilçesinde')
-    expect(kucult(k)).toContain('koşulları belirliyor')
+    expect(k).toContain('İstanbul şehir içi')
+    expect(kucult(k)).toContain('göre kuruluyor')
   })
 
   it('fiyat hesaplama açıklaması koşulsuz keşif söylemiyor', () => {

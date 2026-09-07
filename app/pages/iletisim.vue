@@ -1,4 +1,5 @@
 <script setup>
+import { kurulusKimligi } from '#shared/utils/kurulus'
 /**
  * /ILETISIM — V2
  *
@@ -30,7 +31,7 @@
  * çalışmıyordu ama sorgu her seferinde yapılıyordu. Telefonun tek kaynağı
  * artık Site Ayarları; navbar ve alt bilgi de oradan okuyor.
  */
-const { brandName, settings } = await usePageSeo('contact', sayfaMetasi('contact'))
+const { brandName, settings, siteUrl } = await usePageSeo('contact', sayfaMetasi('contact'))
 
 /**
  * YAPISAL VERİ — `ContactPage` + iletişim noktası.
@@ -58,7 +59,10 @@ useHead({
           description: `${brandName.value} iletişim bilgileri ve taşıma talebi formu.`,
           publisher: {
             '@type': 'Organization',
+            '@id': kurulusKimligi(siteUrl.value),
             name: brandName.value,
+            url: siteUrl.value,
+            email: settings.value?.email || undefined,
             contactPoint: {
               '@type': 'ContactPoint',
               telephone: settings.value?.phone || settings.value?.mobilePhone || undefined,

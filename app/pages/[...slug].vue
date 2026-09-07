@@ -1,5 +1,6 @@
 <script setup>
 import { istanbulIlcesiMi } from '#shared/utils/istanbul'
+import { kurulusKimligi } from '#shared/utils/kurulus'
 import { MAHALLE_EKI, mahalleBasligi } from '#shared/utils/mahalle'
 /**
  * YAZI VE BÖLGE DETAY SAYFASI
@@ -57,6 +58,7 @@ const { brandName, siteUrl, ogImage: siteOgImage, mutlakGorsel, settings } = awa
 // işlevi okuyor. Bkz. shared/utils/istanbul.ts.
 const saglayici = computed(() => ({
   '@type': 'MovingCompany',
+  '@id': kurulusKimligi(siteUrl.value),
   name: brandName.value,
   url: siteUrl.value,
   telephone: settings.value?.phone || settings.value?.mobilePhone || undefined,
@@ -765,7 +767,14 @@ useHead({
           description: data.excerpt || undefined,
           image: shareImage.value,
           url: canonical.value,
-          publisher: { '@type': 'Organization', name: brandName.value },
+          // Yayıncı, hizmet sayfalarındaki sağlayıcıyla AYNI varlık; `@id`
+          // ikisini tek düğümde birleştiriyor (bkz. shared/utils/kurulus.ts).
+          publisher: {
+            '@type': 'Organization',
+            '@id': kurulusKimligi(siteUrl.value),
+            name: brandName.value,
+            url: siteUrl.value,
+          },
         }
 
         if (post.value) {

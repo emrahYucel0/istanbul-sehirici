@@ -251,7 +251,7 @@ cPanel → **Setup Node.js App** → Create Application
 | Node.js version | 20 veya üzeri |
 | Application mode | Production |
 | Application root | `nakliye`  (yani `/home/<CPANEL_USER>/nakliye` — public_html DIŞINDA) |
-| Application URL | istanbulevenakliyat.com |
+| Application URL | istanbulsehirici.com |
 | Application startup file | `.output/server/index.mjs` |
 
 Startup file alanı alt klasör yolunu kabul etmezse: `deploy/app.mjs`
@@ -370,21 +370,21 @@ sitemap'i gönderebilirsiniz.
 3. Şu üç kontrolü **gözünüzle** yapın:
 
 ```
-https://istanbulevenakliyat.com/robots.txt
+https://istanbulsehirici.com/robots.txt
    → "Disallow:" satırının KARŞISI BOŞ olmalı.
      "Disallow: /" görürseniz site indekslenmez — durun ve haber verin.
 
-https://istanbulevenakliyat.com/sitemap.xml
+https://istanbulsehirici.com/sitemap.xml
    → <loc> satırları görünmeli.
 
-https://istanbulevenakliyat.com/
+https://istanbulsehirici.com/
    → 200 ve içerik dolu.
 ```
 
 4. Tam duman testini canlıya karşı çalıştırın:
 
 ```bash
-node scripts/duman-testi.mjs https://istanbulevenakliyat.com
+node scripts/duman-testi.mjs https://istanbulsehirici.com
 ```
 
 30'dan fazla kontrol yapar; sayfaların yalnızca 200 dönmesine değil,

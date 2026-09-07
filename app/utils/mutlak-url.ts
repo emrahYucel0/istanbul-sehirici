@@ -41,7 +41,7 @@ const kendiBasinaCozulur = (deger: string): boolean =>
  * Göreli bir varlık yolunu site kökü ile birleştirir.
  *
  * @param yol      `/yuklemeler/foto.webp` · `images/a.webp` · `https://…` · boş
- * @param siteKoku `https://istanbulevenakliyat.com` (sondaki eğik çizgi önemsiz)
+ * @param siteKoku `https://istanbulsehirici.com` (sondaki eğik çizgi önemsiz)
  * @returns        Mutlak adres; çözülemiyorsa boş dize.
  */
 export function mutlakUrl(yol: unknown, siteKoku: unknown): string {

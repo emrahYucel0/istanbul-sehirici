@@ -225,8 +225,8 @@ export default defineNuxtConfig({
   // `NUXT_SITE_URL` / `NUXT_SITE_NAME` ortam değişkenleriyle ezilebilir —
   // yani başka bir siteye taşırken bu dosyaya dokunmak gerekmiyor.
   site: {
-    url: process.env.NUXT_SITE_URL || "https://istanbulevenakliyat.com",
-    name: process.env.NUXT_SITE_NAME || "İstanbul Eve Nakliyat",
+    url: process.env.NUXT_SITE_URL || "https://istanbulsehirici.com",
+    name: process.env.NUXT_SITE_NAME || "Ege Kent Nakliyat",
   },
 
   // GÖRSELLER — sunucuda işleme YOK.
@@ -252,7 +252,7 @@ export default defineNuxtConfig({
         provider: "~/providers/statik.ts",
       },
     },
-    domains: ["istanbulevenakliyat.com", "cdn.istanbulevenakliyat.com"],
+    domains: ["istanbulsehirici.com", "cdn.istanbulsehirici.com"],
     quality: 70,
     format: ["webp"],
     screens: {

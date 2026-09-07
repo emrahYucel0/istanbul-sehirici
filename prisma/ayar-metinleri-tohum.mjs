@@ -41,7 +41,7 @@ const yerTutucuMu = (v) => {
  * yazılmış bir metni ezmiyor — yalnız bilinen devir metnini değiştiriyor.
  *
  * Neden değişiyorlar:
- *   brandName/siteName  eski marka kimliği (yeni alan adı: istanbulevenakliyat.com)
+ *   brandName/siteName  eski marka kimliği (yeni alan adı: istanbulsehirici.com)
  *   email               eski alan adının posta kutusu
  *   siteDescription     "Türkiye genelinde", "depolama", "ücretsiz keşif" —
  *                       ilki İstanbul konumlandırmasıyla çelişiyor, diğer
@@ -59,7 +59,7 @@ const DEVIR = {
   },
   email: {
     eskisi: 'info@evenakliyatevden.com',
-    yenisi: 'info@istanbulevenakliyat.com',
+    yenisi: 'info@istanbulsehirici.com',
   },
   siteDescription: {
     eskisi:

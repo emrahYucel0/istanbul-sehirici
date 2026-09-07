@@ -1,4 +1,5 @@
 <script setup>
+import { kurulusKimligi } from '#shared/utils/kurulus';
 /*
  * GÜNCEL SIRA (yeni tasarım geçişi sürüyor)
  *   Hero+Strip → Vaat → Süreç → Hizmetler → Kapsam  ← yeni, onaylı
@@ -177,6 +178,10 @@ useHead({
         JSON.stringify({
           "@context": "https://schema.org",
           "@type": "MovingCompany",
+          // KARARLI KİMLİK. Aynı kuruluş beş ayrı sayfada bildiriliyor;
+          // `@id` olmadan arama motoru için bunlar aynı adı taşıyan AYRI
+          // düğümler oluyordu (bkz. shared/utils/kurulus.ts).
+          "@id": kurulusKimligi(siteUrl.value),
           name: brandName.value,
           url: siteUrl.value,
           // GÖRSEL ALANLARI MUTLAK.

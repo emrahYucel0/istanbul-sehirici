@@ -2,24 +2,24 @@
 import { describe, expect, it } from 'vitest'
 import { mutlakUrl } from './mutlak-url.ts'
 
-const KOK = 'https://istanbulevenakliyat.com'
+const KOK = 'https://istanbulsehirici.com'
 
 describe('göreli yol mutlaklaşıyor', () => {
   it.each([
-    ['/yuklemeler/foto-1024.webp', 'https://istanbulevenakliyat.com/yuklemeler/foto-1024.webp'],
-    ['/images/hero-istanbul-1024.webp', 'https://istanbulevenakliyat.com/images/hero-istanbul-1024.webp'],
-    ['images/a.webp', 'https://istanbulevenakliyat.com/images/a.webp'],
+    ['/yuklemeler/foto-1024.webp', 'https://istanbulsehirici.com/yuklemeler/foto-1024.webp'],
+    ['/images/hero-istanbul-1024.webp', 'https://istanbulsehirici.com/images/hero-istanbul-1024.webp'],
+    ['images/a.webp', 'https://istanbulsehirici.com/images/a.webp'],
     ['//yuklemeler//a.webp', '//yuklemeler//a.webp'],
   ])('%s → %s', (yol, beklenen) => {
     expect(mutlakUrl(yol, KOK)).toBe(beklenen)
   })
 
   it('site kökünün sonundaki eğik çizgi çift çizgi üretmiyor', () => {
-    expect(mutlakUrl('/a.webp', 'https://istanbulevenakliyat.com/')).toBe(
-      'https://istanbulevenakliyat.com/a.webp'
+    expect(mutlakUrl('/a.webp', 'https://istanbulsehirici.com/')).toBe(
+      'https://istanbulsehirici.com/a.webp'
     )
-    expect(mutlakUrl('/a.webp', 'https://istanbulevenakliyat.com///')).toBe(
-      'https://istanbulevenakliyat.com/a.webp'
+    expect(mutlakUrl('/a.webp', 'https://istanbulsehirici.com///')).toBe(
+      'https://istanbulsehirici.com/a.webp'
     )
   })
 
@@ -27,18 +27,18 @@ describe('göreli yol mutlaklaşıyor', () => {
     // `//…` ile başlayan değer protokolsüz adres sayılıp korunuyor
     // (yukarıdaki blokta ölçülüyor); burada tek çizgiden fazlası
     // birleştirmede kırpılıyor.
-    expect(mutlakUrl('/a.webp', KOK)).toBe('https://istanbulevenakliyat.com/a.webp')
-    expect(mutlakUrl('a.webp', KOK)).toBe('https://istanbulevenakliyat.com/a.webp')
+    expect(mutlakUrl('/a.webp', KOK)).toBe('https://istanbulsehirici.com/a.webp')
+    expect(mutlakUrl('a.webp', KOK)).toBe('https://istanbulsehirici.com/a.webp')
   })
 
   it('boşluklar kırpılıyor', () => {
-    expect(mutlakUrl('  /a.webp  ', KOK)).toBe('https://istanbulevenakliyat.com/a.webp')
+    expect(mutlakUrl('  /a.webp  ', KOK)).toBe('https://istanbulsehirici.com/a.webp')
   })
 })
 
 describe('kendi başına çözülen adrese DOKUNULMUYOR', () => {
   it.each([
-    'https://cdn.istanbulevenakliyat.com/a.webp',
+    'https://cdn.istanbulsehirici.com/a.webp',
     'http://ornek.com/a.webp',
     '//cdn.ornek.com/a.webp',
     'data:image/webp;base64,AAAA',

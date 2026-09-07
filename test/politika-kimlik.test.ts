@@ -23,8 +23,12 @@ const betik = oku('prisma', 'politika-kimlik.mjs')
 
 const ESKI_ALAN = /evenakliyatevden\.com/g
 const ESKI_POSTA = /info@evenakliyatevden\.com/g
-const YENI_ALAN = /istanbulevenakliyat\.com/g
-const YENI_POSTA = /info@istanbulevenakliyat\.com/g
+// M19B3: yayın kimliği istanbulsehirici.com. Bir önceki ad
+// (istanbulevenakliyat.com) da artık ESKİ sayılıyor — politika
+// gövdelerinde ikisinden biri kalırsa test kırılmalı.
+const ESKI_ALAN_2 = /istanbulevenakliyat\.com/g
+const YENI_ALAN = /istanbulsehirici\.com/g
+const YENI_POSTA = /info@istanbulsehirici\.com/g
 
 /** Tohumdaki üç politika metnini şablon değişmezlerinden çıkarır. */
 const metinler = (() => {
@@ -54,10 +58,16 @@ describe('tohum metinleri', () => {
     expect(metinler[ad as keyof typeof metinler].match(ESKI_POSTA)).toBeNull()
   })
 
+  it.each(Object.keys(metinler))('%s — bir önceki alan adı da YOK', (ad) => {
+    // M19B3 devri: istanbulevenakliyat.com hiç yayınlanmadan bırakıldı.
+    expect(metinler[ad as keyof typeof metinler].match(ESKI_ALAN_2)).toBeNull()
+  })
+
   it('dosyanın tamamında eski kimlik YOK — yorumlar dahil', () => {
     // Burada yorumlar da sayılıyor: tohum dosyası hukuki METNİN kendisi,
     // içinde "eskiden şöyleydi" diye bir kayıt tutmuyor.
     expect(tohum.match(ESKI_ALAN)).toBeNull()
+    expect(tohum.match(ESKI_ALAN_2)).toBeNull()
   })
 
   it('yeni kimlik yerinde', () => {

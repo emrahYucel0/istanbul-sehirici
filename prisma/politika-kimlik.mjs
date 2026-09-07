@@ -55,8 +55,10 @@ const uygula = process.argv.includes('--uygula')
 
 /** Kimlik değişimi. Sıra korunmalı (bkz. başlık). */
 export const KIMLIK = [
-  ['info@evenakliyatevden.com', 'info@istanbulevenakliyat.com'],
-  ['evenakliyatevden.com', 'istanbulevenakliyat.com'],
+  ['info@evenakliyatevden.com', 'info@istanbulsehirici.com'],
+  ['info@istanbulevenakliyat.com', 'info@istanbulsehirici.com'],
+  ['evenakliyatevden.com', 'istanbulsehirici.com'],
+  ['istanbulevenakliyat.com', 'istanbulsehirici.com'],
 ]
 
 /**
@@ -152,8 +154,8 @@ for (const s of sonra) {
   const eskiAlan = say(govde, /evenakliyatevden\.com/g)
   const eskiPosta = say(govde, /info@evenakliyatevden\.com/g)
   const sirket = say(govde, /Şirket/g)
-  const yeniAlan = say(govde, /istanbulevenakliyat\.com/g)
-  const yeniPosta = say(govde, /info@istanbulevenakliyat\.com/g)
+  const yeniAlan = say(govde, /istanbulsehirici\.com/g)
+  const yeniPosta = say(govde, /info@istanbulsehirici\.com/g)
   if (eskiAlan || eskiPosta || sirket) sorun++
   console.log(
     ` ${eskiAlan || eskiPosta || sirket ? '✘' : '✔'} ${s.slug.padEnd(22)}` +

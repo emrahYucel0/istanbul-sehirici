@@ -115,7 +115,10 @@ describe('ana sayfa başlığı', () => {
   })
 
   it('ana anahtar kelime duruyor', () => {
-    expect(baslik).toContain('İstanbul Evden Eve Nakliyat')
+    // M19B3: birincil konu "İstanbul şehir içi evden eve nakliyat" oldu.
+    // Çivi daraltılmadı, TAM ifadeye çekildi — eski hâli ("İstanbul Evden
+    // Eve Nakliyat") bu ifadenin içinde bitişik geçmiyor.
+    expect(baslik).toContain('İstanbul Şehir İçi Evden Eve Nakliyat')
   })
 
   it('doğrulanmamış değer önermesi eklenmemiş', () => {

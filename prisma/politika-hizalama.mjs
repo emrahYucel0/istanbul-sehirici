@@ -69,7 +69,7 @@ const YALNIZ_DOGRULA = process.argv.slice(2).includes('--dogrula')
  */
 const BUGUN = new Date()
 
-const GIZLILIK = `<p>Bu metin, istanbulevenakliyat.com üzerinden paylaştığınız kişisel verilerin nasıl işlendiğini açıklar. 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında hazırlanmıştır.</p>
+const GIZLILIK = `<p>Bu metin, istanbulsehirici.com üzerinden paylaştığınız kişisel verilerin nasıl işlendiğini açıklar. 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında hazırlanmıştır.</p>
 
 <h2>1. Hangi verileri topluyoruz</h2>
 <p>Sitede ziyaretçi kaydı, üyelik ya da şifreli giriş yoktur. Kişisel veri yalnızca iletişim formunu doldurduğunuzda toplanır:</p>
@@ -132,10 +132,10 @@ const GIZLILIK = `<p>Bu metin, istanbulevenakliyat.com üzerinden paylaştığı
 <p>haklarına sahipsiniz.</p>
 
 <h2>8. Başvuru</h2>
-<p>Taleplerinizi <a href="mailto:info@istanbulevenakliyat.com">info@istanbulevenakliyat.com</a> adresine iletebilirsiniz. Başvurularınız en geç 30 gün içinde sonuçlandırılır.</p>
+<p>Taleplerinizi <a href="mailto:info@istanbulsehirici.com">info@istanbulsehirici.com</a> adresine iletebilirsiniz. Başvurularınız en geç 30 gün içinde sonuçlandırılır.</p>
 <p>Bu metin, sitenin yürürlükteki sürümündeki uygulamayı anlatır. Veri işleme biçimi değiştiğinde metin de güncellenir ve güncelleme tarihi sayfanın başında görünür.</p>`
 
-const CEREZ = `<p>Bu sayfa, istanbulevenakliyat.com'un yürürlükteki sürümünde çerezlerin nasıl kullanıldığını açıklar. <a href="/gizlilik-politikasi">Gizlilik Politikası</a>'nın bir parçasıdır.</p>
+const CEREZ = `<p>Bu sayfa, istanbulsehirici.com'un yürürlükteki sürümünde çerezlerin nasıl kullanıldığını açıklar. <a href="/gizlilik-politikasi">Gizlilik Politikası</a>'nın bir parçasıdır.</p>
 
 <h2>Çerez nedir?</h2>
 <p>Çerez, bir web sitesini ziyaret ettiğinizde cihazınıza (bilgisayar, telefon, tablet) kaydedilen küçük bir metin dosyasıdır. Siteler çerezleri genellikle oturum yönetimi, tercih hatırlama, ölçümleme ve reklam için kullanır.</p>
@@ -177,7 +177,7 @@ const CEREZ = `<p>Bu sayfa, istanbulevenakliyat.com'un yürürlükteki sürümü
 <h2>Değişiklik</h2>
 <p>Bu metin sitenin bugünkü sürümünü anlatır. İleride ölçümleme veya benzeri bir araç eklenirse, bu sayfa eklenmeden önce güncellenir ve gerekiyorsa onayınız istenir.</p>`
 
-const SARTLAR = `<p>Bu Kullanım Şartları, istanbulevenakliyat.com sitesinin kullanımını düzenler. Siteyi kullanarak bu şartları ve <a href="/gizlilik-politikasi">Gizlilik Politikası</a> ile <a href="/cerez-politikasi">Çerez Politikası</a>'nı kabul etmiş sayılırsınız.</p>
+const SARTLAR = `<p>Bu Kullanım Şartları, istanbulsehirici.com sitesinin kullanımını düzenler. Siteyi kullanarak bu şartları ve <a href="/gizlilik-politikasi">Gizlilik Politikası</a> ile <a href="/cerez-politikasi">Çerez Politikası</a>'nı kabul etmiş sayılırsınız.</p>
 
 <h2>1. Sitenin kapsamı</h2>
 <p>Site, sunulan nakliyat hizmetlerini tanıtır ve iletişim kurmanızı sağlar. Sitede üyelik, hesap oluşturma ve çevrim içi ödeme bulunmaz. Site üzerinden yapılan tek işlem, iletişim formuyla talep iletmenizdir.</p>
@@ -197,7 +197,7 @@ const SARTLAR = `<p>Bu Kullanım Şartları, istanbulevenakliyat.com sitesinin k
 <ul>
 <li>Sitedeki metinler, görseller, tasarım ve yazılım site işletmecisine aittir.</li>
 <li>İçeriğin izinsiz kopyalanması, çoğaltılması veya başka bir yerde yayımlanması uygun değildir.</li>
-<li>Fikri mülkiyet hakkınızın ihlal edildiğini düşünüyorsanız <a href="mailto:info@istanbulevenakliyat.com">info@istanbulevenakliyat.com</a> adresine bildirebilirsiniz.</li>
+<li>Fikri mülkiyet hakkınızın ihlal edildiğini düşünüyorsanız <a href="mailto:info@istanbulsehirici.com">info@istanbulsehirici.com</a> adresine bildirebilirsiniz.</li>
 </ul>
 
 <h2>5. Bilgilerin güncelliği</h2>
@@ -211,7 +211,7 @@ const SARTLAR = `<p>Bu Kullanım Şartları, istanbulevenakliyat.com sitesinin k
 <p>Bu şartlar Türkiye Cumhuriyeti mevzuatına tabidir.</p>
 
 <h2>İletişim</h2>
-<p>Sorularınız için: <a href="mailto:info@istanbulevenakliyat.com">info@istanbulevenakliyat.com</a></p>`
+<p>Sorularınız için: <a href="mailto:info@istanbulsehirici.com">info@istanbulsehirici.com</a></p>`
 
 /**
  * HİZALAMA KÜTÜĞÜ.

@@ -71,7 +71,12 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // "garantili", "profesyonel", "lider" gibi ifadeler de aynı sınıfa
     // girer. Kalan başlık yalnız ana anahtar kelimeyi ve sitenin
     // gerçekten yaptığı şeyi söylüyor.
-    title: 'İstanbul Evden Eve Nakliyat | Planlı Taşıma',
+    // M19B3: birincil konu ARTIK AÇIKÇA YAZILI. Eski başlık "Planlı
+    // Taşıma" ile bitiyordu — doğru bir tez ama arama karşılığı olmayan
+    // bir ifade. Yerine marka geldi: alan adı (istanbulsehirici.com)
+    // ile varlık adı (Ege Kent Nakliyat) farklı olduğu için markanın
+    // başlıkta bir kez geçmesi kimliği bağlıyor. 57 karakter.
+    title: 'İstanbul Şehir İçi Evden Eve Nakliyat | Ege Kent Nakliyat',
     // AÇIKLAMA YENİLENDİ (ana sayfa yeni tasarıma geçtikten sonra):
     //   · "Ücretsiz keşif" ÇIKARILDI — doğrulanmış bir iş kuralı değil ve
     //     sayfadaki hiçbir bölüm bunu söylemiyor.
@@ -94,7 +99,7 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // fiyatını mesafe değil, iki adresin koşulları belirliyor. Bu, ana
     // sayfanın Kapsam ve Fiyat bölümlerinin zaten anlattığı şey.
     description:
-      "İstanbul'un 39 ilçesinde evden eve nakliyat. Fiyatı mesafe değil, iki adresin erişim ve kat koşulları belirliyor. Ambalajlama, marangozlu söküm ve kurulum dahil.",
+      "İstanbul şehir içi evden eve nakliyat: plan; bina erişimi, kat, asansör, güzergâh, ambalajlama ve montaj ihtiyaçlarına göre kuruluyor.",
   },
   {
     anahtar: 'about',
@@ -103,7 +108,7 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // `{marka}`: canlı marka adı istek anında yerleştiriliyor
     // (bkz. composables/usePageSeo.ts). Elle yazılmıyor — panelden ad
     // değişince bu sayfa eski adda kalırdı.
-    title: 'Hakkımızda | {marka}',
+    title: '{marka} | İstanbul Şehir İçi Taşıma',
     // ESKİ METİN: "… Ücretsiz keşif, yazılı sabit fiyat ve sigortalı
     // taşımacılık anlayışımız." Üç iddia da doğrulanmamıştı. Bu satır
     // yalnız panelde Meta kaydı YOKKEN basılıyor — yani sessiz bir yedek.
@@ -113,7 +118,7 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // yapıldığı doğrulanamadı; arama sonucunda görünen bir cümlenin
     // sayfanın kendisinden daha kesin konuşmaması gerekiyor.
     description:
-      "İstanbul'da evden eve, ofis ve parça eşya taşıması. Nasıl çalıştığımız, neyi ölçtüğümüz ve kapsamı nasıl belirlediğimiz.",
+      "İstanbul şehir içi taşımada nasıl çalıştığımız, neyi ölçtüğümüz ve bir taşımanın kapsamını neye göre belirlediğimiz.",
   },
   {
     anahtar: 'services',
@@ -123,7 +128,7 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // Sınır yaklaşık 60 karakter (aslında ~580 piksel genişlik). "Hizmetlerimiz"
     // yerine "Hizmetleri" ve listeden "Parça Eşya" çıkarılarak 59'a indirildi;
     // asıl anahtar kelime "evden eve nakliyat" başta korundu.
-    title: 'Evden Eve Nakliyat Hizmetleri | Asansörlü, Ofis, Parça Eşya',
+    title: 'İstanbul Şehir İçi Nakliyat Hizmetleri | {marka}',
     // "Ücretsiz keşif." ÇIKARILDI — doğrulanmış bir iş kuralı değil ve
     // sayfadaki hiçbir bölüm bunu söylemiyor.
     //
@@ -132,7 +137,7 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // yedek devreye girer ve iddia doğrudan arama sonucuna döner. Görünmeyen
     // metin, iddia taramasından muaf değil.
     description:
-      "İstanbul'da evden eve, asansörlü, parça eşya, ofis taşıma, depolama, paketleme ve şehirler arası nakliyat. Her hizmetin kapsamı ve planı ayrı ayrı.",
+      "İstanbul'da şehir içi nakliyat, evden eve, asansörlü, parça eşya, ofis taşıma, depolama ve paketleme. Her hizmetin kapsamı ve planı ayrı ayrı.",
   },
   {
     anahtar: 'region',
@@ -166,9 +171,9 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // … yazılı ve sabit fiyat teklifimizi sunalım." Panelde `Meta(contact)`
     // kaydı YOK, yani bu satırlar sessiz bir yedek değil — sayfanın
     // gerçekten bastığı metinlerdi.
-    title: 'İletişim | {marka}',
+    title: '{marka} İletişim | İstanbul',
     description:
-      "İstanbul'da evden eve, ofis ve parça eşya taşıması. Telefon, WhatsApp ve e-posta ile ulaşın ya da taşınmanızı formda anlatın.",
+      "İstanbul şehir içi taşıma için telefon, WhatsApp ve e-posta ile ulaşın ya da taşınmanızı formda anlatın; koşulları birlikte netleştirelim.",
   },
   {
     anahtar: 'fiyat-hesaplama',
@@ -183,9 +188,9 @@ export const SAYFA_METALARI: SayfaMeta[] = [
     // hesaplamadığını söylemek — bunu hangi aşamanın kapattığını taahhüt
     // etmek değil. Yeni son, hesaplayıcının kendi uyarı notuyla (`note`)
     // aynı sözleşmeyi kullanıyor.
-    title: 'Nakliyat Fiyat Hesaplama | {marka}',
+    title: 'Şehir İçi Nakliyat Fiyat Hesaplama | {marka}',
     description:
-      'Ev büyüklüğü, mesafe, kat ve asansör durumuna göre tahmini bir aralık görün. Sokak ve bina erişimi hesaba girmiyor; tutar koşullar değerlendirildikten sonra netleşiyor.',
+      'Ev büyüklüğü, mesafe, kat ve asansör durumuna göre tahmini bir aralık görün. Sokak ve bina erişimi hesaba girmiyor; tutar sonra netleşiyor.',
   },
   {
     anahtar: 'gizlilik-politikasi',

@@ -1,4 +1,5 @@
 <script setup>
+import { kurulusKimligi } from '#shared/utils/kurulus'
 /**
  * HİZMETLER DİZİNİ SAYFASI
  *
@@ -89,6 +90,7 @@ useHead({
             },
             {
               '@type': 'Organization',
+              '@id': kurulusKimligi(siteUrl.value),
               name: brandName.value,
               url: siteUrl.value,
             },

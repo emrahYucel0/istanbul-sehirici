@@ -42,7 +42,7 @@ export interface SiteSettingsData {
 // Önceden burada `'EveNakliyatEvden'` sabiti duruyordu: panelden ad
 // değiştirilse bile ayar satırı okunamadığı anlarda eski ad geri geliyordu
 // ve marka adı fiilen İKİ kaynaktan besleniyordu.
-const DEFAULT_SITE_URL = 'https://istanbulevenakliyat.com'
+const DEFAULT_SITE_URL = 'https://istanbulsehirici.com'
 // Eskiden `/img/ege-ozenle-tasima.jpg` idi: hem devralınan Ege markasının
 // dosya adını taşıyordu hem de `public/img/` klasörü artık yok — yani
 // paylaşım kartı yedeği 404 veriyordu. Yerine gerçekten var olan ve

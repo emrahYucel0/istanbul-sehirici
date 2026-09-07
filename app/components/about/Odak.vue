@@ -40,12 +40,18 @@ const bolgeAgiAcik = useRegionPages()
 
       <div class="ho-govde">
         <p v-if="bolum.lead" class="ho-metin tip-govde">{{ bolum.lead }}</p>
+        <!-- M19B3: cümlenin İKİNCİ yarısı yeniden yazıldı, GERÇEK korundu.
+             Eski hâli "Şehirler arası taşıma da yapıyoruz" diye başlıyordu ve
+             bunu bir hizmet satırı gibi duyuruyordu. Site artık İstanbul şehir
+             içi taşımaya konumlanıyor ve o adda bir hizmet sayfası yok — yani
+             cümle olmayan bir hizmeti tanıtır hâle gelmişti. İş gerçeği aynen
+             duruyor: İstanbul dışına çıkan işler oluyor ve o işlerde de iki
+             adresten biri İstanbul; şehir dışında yerel ekip yok. -->
         <p class="ho-metin tip-govde">
           İstanbul'un {{ ilceSayisi }} ilçesinin tamamı için ayrı sayfa
-          tutuyoruz; ilçe sayfalarından mahallelere iniliyor. Şehirler arası
-          taşıma da yapıyoruz — ama bu, İstanbul dışında da yerel bir ekibimiz
-          olduğu anlamına gelmiyor: o işlerde çıkış ya da varış adresi
-          İstanbul oluyor.
+          tutuyoruz; ilçe sayfalarından mahallelere iniliyor. İşin tamamı
+          İstanbul içinde geçmediğinde de iki adresten biri yine İstanbul
+          oluyor: şehir dışında yerel bir ekibimiz yok.
         </p>
       </div>
 

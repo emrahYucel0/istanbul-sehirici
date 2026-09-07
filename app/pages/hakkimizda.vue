@@ -1,4 +1,5 @@
 <script setup>
+import { kurulusKimligi } from '#shared/utils/kurulus'
 /**
  * /HAKKIMIZDA — V2
  *
@@ -85,7 +86,7 @@ const { data: hizmetler } = await useFetch('/api/services', {
       .map((h) => ({ ad: h.title, slug: h.slug })),
 })
 
-const { brandName } = await usePageSeo('about', sayfaMetasi('about'))
+const { brandName, siteUrl } = await usePageSeo('about', sayfaMetasi('about'))
 
 /**
  * YAPISAL VERİ — yalnız `AboutPage`.
@@ -109,7 +110,12 @@ useHead({
           '@type': 'AboutPage',
           name: 'Hakkımızda',
           description: hakkimizda.value?.description1 || undefined,
-          publisher: { '@type': 'Organization', name: brandName.value },
+          publisher: {
+            '@type': 'Organization',
+            '@id': kurulusKimligi(siteUrl.value),
+            name: brandName.value,
+            url: siteUrl.value,
+          },
         }),
     },
   ],
