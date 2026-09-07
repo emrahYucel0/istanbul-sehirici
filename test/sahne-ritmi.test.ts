@@ -214,3 +214,55 @@ describe('koyu yüzey sözleşmesi', () => {
     expect(navbar).toContain('gozlemci?.disconnect()')
   })
 })
+
+// ═══════════════════════════════════════════ DISPLAY KADEMESİ
+
+/**
+ * ANA SAYFA BÖLÜMLERİ BAŞLIKLARINI GENEL YARDIMCIYA BIRAKMIYOR.
+ *
+ * Yukarıdaki "dikey ritim" kuralının TERSİ yönde bir bozulma daha var ve
+ * o da sessiz: bir bölüm başlığını `.tip-anlati` / `.tip-alt` genel
+ * yardımcısına bırakırsa build geçer, test geçer, ekranda hata görünmez —
+ * yalnız o bölüm sayfanın geri kalanından KÜÇÜK kalır.
+ *
+ * Tam olarak bu yaşandı. 1440px'te ölçülen H2 puntoları:
+ *
+ *   ks Kapsam 72 · ce Üç İstanbul 82 · cw Hizmetler 128
+ *   qp Fiyat  63 · pd Sorular     72 · fs Kapanış   115
+ *   sr SÜREÇ  52  ← sayfanın en küçüğü
+ *
+ * Süreç, kendi kademesini kurmayan tek bölümdü; adım başlığı da 22,8px
+ * ile gövde ölçeğindeydi (kardeşlerinde 62–69px). Gövde metni ve künye
+ * zaten uyumluydu — sapan tek şey DISPLAY kademesiydi.
+ *
+ * Not: `.tip-govde` yasak DEĞİL. Gövde metninin ortak ölçeği kullanması
+ * doğru olan; kural yalnız başlıklar için.
+ */
+describe('display kademesi bölümlerde ayrışmıyor', () => {
+  const BOLUMLER = ['Hero', 'Kapsam', 'UcIstanbul', 'Surec', 'Hizmetler', 'Fiyat', 'Sorular', 'Kapanis']
+
+  it.each(BOLUMLER)('%s başlığını genel yardımcıya bırakmıyor', (ad) => {
+    const kaynak = kodu(bilesen(ad))
+    const basliklar = [...kaynak.matchAll(/<h[123][^>]*class="([^"]*)"/g)].map((m) => m[1])
+    for (const sinif of basliklar) {
+      expect(sinif, `${ad}: başlık genel kademede`).not.toMatch(/\btip-(anlati|alt|baslik|devasa)\b/)
+    }
+  })
+
+  it('Süreç kendi H2 ve H3 kademesini tanımlıyor', () => {
+    const sr = kodu(bilesen('Surec'))
+    // Her iki kural da display ailesini ve kendi clamp'ini taşımalı.
+    for (const secici of ['.sr-h2', '.sr-h3']) {
+      const blok = sr.slice(sr.indexOf(`${secici} {`))
+      const govde = blok.slice(0, blok.indexOf('}'))
+      expect(govde, `${secici} punto kademesi yok`).toMatch(/font-size:\s*clamp\(/)
+      expect(govde, `${secici} display ailesinde değil`).toMatch(/font-family:\s*var\(--f-display/)
+    }
+  })
+
+  it('Süreç gövde metni ORTAK ölçekte kalıyor', () => {
+    // Karşı yönde aşırıya kaçmanın koruması: gövde kendi punto icat ederse
+    // bu kez okuma ölçeği bölümden bölüme ayrışır.
+    expect(kodu(bilesen('Surec'))).toMatch(/class="sr-govde tip-govde"/)
+  })
+})

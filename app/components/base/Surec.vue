@@ -216,7 +216,7 @@ const parcaSinif = (p, kilif) => [
   <section class="sr-kap" aria-labelledby="surec-baslik">
     <div class="sr sahne-alan">
       <p class="sr-kunye op-kunye">03 / TAŞIMANIN İÇİNDE NE OLUYOR?</p>
-      <h2 id="surec-baslik" class="sr-h2 tip-anlati">{{ surec.heading }}</h2>
+      <h2 id="surec-baslik" class="sr-h2">{{ surec.heading }}</h2>
 
       <!-- SÜREÇ OMURGASI — bilgi gerçek başlıklarda olduğu için `aria-hidden`. -->
       <div class="sr-omurga" aria-hidden="true">
@@ -312,7 +312,7 @@ const parcaSinif = (p, kilif) => [
         <ol class="sr-ray">
           <li v-for="k in KARELER" :key="k.no" class="sr-durak">
             <p class="sr-etiket op-kunye">{{ k.no }} / {{ k.etiket }}</p>
-            <h3 class="sr-h3 tip-alt">{{ k.baslik }}</h3>
+            <h3 class="sr-h3">{{ k.baslik }}</h3>
             <p class="sr-govde tip-govde">{{ k.metin }}</p>
             <NuxtLink v-if="k.bag" :to="k.bag.yol" class="op-bag op-bag--sakin sr-bag">
               {{ k.bag.ad }}
@@ -346,7 +346,44 @@ const parcaSinif = (p, kilif) => [
   gap: clamp(2.25rem, 1.75rem + 1.5vw, 3.25rem);
 }
 .sr-kunye { margin-bottom: 0; order: 0; }
-.sr-h2 { max-width: 20ch; order: 1; }
+
+/* ---------------------------------------------------------------------------
+   BÖLÜM BAŞLIĞI — KENDİ KADEMESİ, GENEL YARDIMCI DEĞİL.
+   ---------------------------------------------------------------------------
+   ÖLÇÜLEN SORUN. Ana sayfadaki yedi bölümün H2'si 1440px'te tek tek
+   ölçüldü:
+
+     ks Kapsam        72 px      cw Hizmetler    128 px
+     ce Üç İstanbul   82 px      qp Fiyat         63 px
+     pd Sorular       72 px      fs Kapanış      115 px
+     sr SÜREÇ         52 px  ← sayfanın en küçüğü
+
+   Süreç, kendi kademesini tanımlamayan TEK bölümdü: genel `.tip-anlati`
+   yardımcısında kalmıştı, diğerlerinin hepsi `*-h2` kademesini kurmuştu.
+   Sonuç, display tipografisiyle kurulmuş bir sayfanın ortasında gövde
+   tipografisiyle yazılmış bir bölümdü — bölüm "sırıtıyordu" ve sebebi
+   buydu.
+
+   NEDEN 128 DEĞİL 72. Bu bölümün başlığı yapışkan sahnenin KALICI
+   satırında duruyor; kare değişirken hep ekranda. cw'nin 128px'i ise
+   kaydırılıp geçilen bir açılış ekranında. Kalıcı bir başlık o ölçekte
+   sahneyi yutardı. 72px sayfanın orta kademesi (ks ve pd ile aynı) ve
+   anomaliyi kapatıyor.
+
+   HİZALAMA. Başlık künyeyle aynı kolondan başlıyor (1). Önce 2. kolondan
+   giriyordu; girinti onu künyeden de omurgadan da kopardığı için sayfadaki
+   diğer bölümlerin sola dayalı açılışıyla uyuşmuyordu. */
+.sr-h2 {
+  order: 1;
+  margin: 0;
+  max-width: 16ch;
+  font-family: var(--f-display, var(--f-sans));
+  font-size: clamp(2.25rem, 5.2vw, 4.5rem);
+  font-weight: 760;
+  line-height: 0.94;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
 
 .sr-omurga { display: none; }
 
@@ -469,7 +506,39 @@ const parcaSinif = (p, kilif) => [
   padding: 0;
 }
 .sr-etiket { color: rgb(var(--c-ink-soft)); }
-.sr-h3 { max-width: 26ch; margin: 0.5rem 0 0; }
+
+/* ---------------------------------------------------------------------------
+   ADIM BAŞLIĞI — aynı sebep, aynı ölçüm.
+   ---------------------------------------------------------------------------
+   1440px'te kardeş bölümlerin adım başlıkları:
+
+     ce-h3 Üç İstanbul   61,9 px / 720 / -2,79px
+     cw-ad Hizmetler     69,1 px / 720 / -3,59px
+     sr-h3 SÜREÇ         22,8 px / 600 / -0,32px   ← gövde ölçeğinde
+
+   Gövde metni (17px) ve künye (11px) zaten kardeşleriyle aynıydı; sapan
+   tek şey display kademesiydi. 22,8px bir adım başlığı değil, kalın bir
+   paragraf gibi okunuyordu.
+
+   NEDEN 62 DEĞİL ~43. ce ve cw'de adım başlığı ekranda TEK BAŞINA ya da
+   kısa bir yardımcı metinle duruyor. Burada başlık, beş satırlık gövdeyle
+   BİRLİKTE ve dört kolonluk dar bir rayda duruyor; 62px'te başlık üç
+   satıra çıkıp gövdeyi sahnenin dışına itiyordu (ölçüldü). 43px hem
+   gövde ölçeğinden kesin olarak ayrılıyor hem de rayın içinde kalıyor.
+
+   Duraklar mutlak konumlu ve üst üste (koreografide `clip-path` ile teker
+   teker açılıyor), yani büyütme diğer adımların yerini kaydırmıyor —
+   yalnız en uzun adımın sahneye sığması gerekiyor. */
+.sr-h3 {
+  margin: 0.4rem 0 0;
+  max-width: 18ch;
+  font-family: var(--f-display, var(--f-sans));
+  font-size: clamp(1.6rem, 3vw, 2.7rem);
+  font-weight: 720;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
 .sr-govde { max-width: 54ch; margin: 0.75rem 0 0; }
 .sr-bag { margin-top: 1rem; }
 
@@ -525,7 +594,8 @@ const parcaSinif = (p, kilif) => [
         align-content: center;
       }
       .sr-kunye { grid-column: 1 / 6; grid-row: 1; margin-bottom: 0; }
-      .sr-h2 { grid-column: 2 / 6; grid-row: 2; }
+      /* Künyeyle aynı kolondan başlıyor — gerekçe taban kuralın yanında. */
+      .sr-h2 { grid-column: 1 / 6; grid-row: 2; }
 
       /* EKSEN A — süreç omurgası. */
       .sr-omurga {
