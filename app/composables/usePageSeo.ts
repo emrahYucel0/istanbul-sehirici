@@ -160,7 +160,23 @@ export async function usePageSeo(pageKey: string, fallback: PageSeoFallback, opt
   const image = computed(() => mutlakGorsel(fallback.image) || siteOgImage.value)
 
   // `useRoute()` yukarı, ilk await'in ÖNÜNE taşındı (gerekçe başta).
-  const canonicalUrl = computed(() => `${siteUrl.value}${route.path}`)
+  //
+  // SONDA EĞİK ÇİZGİ NORMALLEŞTİRİLİYOR — ölçülen sebep (M19A).
+  //
+  // Dosya tabanlı 7 statik rota (`/hizmetlerimiz`, `/fiyat-hesaplama`,
+  // `/hakkimizda`, `/iletisim` + 3 hukuki metin) eğik çizgili biçimde de
+  // HTTP 200 dönüyor ve `route.path` o biçimi olduğu gibi taşıdığı için
+  // sayfa KENDİNE eğik çizgili canonical veriyordu:
+  //
+  //     /iletisim   -> canonical .../iletisim
+  //     /iletisim/  -> canonical .../iletisim/      ← ikiz indekslenebilir URL
+  //
+  // 17 CMS rotası (`[...slug].vue`) ve `/blog` canonical'ı slug'dan
+  // kurduğu için zaten etkilenmiyordu; bu yüzden düzeltme tek merkezde.
+  // Yönlendirme EKLENMEDİ: canonical normalleştirmesi çiftliği kapatıyor,
+  // rotalama davranışı olduğu gibi kalıyor.
+  const canonicalPath = computed(() => route.path.replace(/\/+$/, '') || '/')
+  const canonicalUrl = computed(() => `${siteUrl.value}${canonicalPath.value}`)
 
   useSeoMeta({
     title,

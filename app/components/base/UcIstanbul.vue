@@ -1663,6 +1663,127 @@ const bolgeAgiAcik = useRegionPages()
 }
 
 /* ==========================================================================
+   MASAÜSTÜ İÇERİK YEDEĞİ  —  1280+ / sahne çalışmadığında
+   --------------------------------------------------------------------------
+   ÖLÇÜLEN KUSUR (M19A):
+
+     >=1280 normal hareket   .ce metni 1760 karakter, üç durak görünür
+     >=1280 azaltılmış       .ce metni  547 karakter, .ce-durak kutusu 0x0
+                             sayfanın main metni 7902 -> 6674 (1228 karakter)
+
+   SEBEBİ: `@media (min-width: 1280px)` bloğu `.ce-durak { display: none }`
+   diyor ve duraklar YALNIZCA
+   `@supports (animation-timeline: view())` + `no-preference` içinde geri
+   geliyordu. Yani hem azaltılmış hareket seçen kullanıcı hem de
+   scroll-driven animation desteklemeyen tarayıcı üç açıklama bloğunu
+   tamamen kaybediyordu.
+
+   ÇÖZÜM: sahne kurulamadığında >=768 için zaten çalışan STATİK akışa
+   dönülüyor — `.ce-metin/.ce-ray/.ce-masa` yeniden `display: contents`
+   oluyor, duraklar ve paftalar `.ce-track` ızgarasının doğrudan ögesi
+   olarak anlamlı sırayla (durak -> pafta -> durak -> pafta ...) diziliyor.
+
+   BU BLOK YALNIZ EKLEMEDİR: yukarıdaki hiçbir kural değiştirilmedi.
+   Koşullar `no-preference` + `supports` dalıyla karşılıklı dışlayıcı
+   olduğu için normal hareket koreografisi ve 5510af9 CLS düzeltmesi
+   bu bloktan hiç etkilenmiyor. Bedeli, iki koşulu CSS'te VEYA ile
+   birleştirmek mümkün olmadığı için kural listesinin iki kez yazılması.
+   ======================================================================= */
+
+@media (min-width: 1280px) and (prefers-reduced-motion: reduce) {
+  .ce { min-height: auto; }
+
+  .ce-track {
+    min-height: auto;
+    grid-template-rows: auto;
+    align-items: start;
+  }
+
+  .ce-metin,
+  .ce-ray,
+  .ce-masa { display: contents; }
+
+  .ce-durak {
+    display: grid;
+    grid-column: 1 / 7;
+  }
+
+  .ce-durak--son {
+    position: static;
+    width: auto;
+    grid-column: 1 / 7;
+  }
+
+  .ce-pafta {
+    position: relative;
+    width: 100%;
+    height: auto;
+    inset: auto;
+    grid-column: 6 / 13;
+  }
+
+  .ce-pafta--2 { grid-column: 7 / 12; }
+
+  /* Sahneye bağlı SVG katmanı: mutlak konumlu, sahnesiz anlamı yok. */
+  .ce-hedef,
+  .ce-kalibrasyon,
+  .ce-baglanti,
+  .ce-final-label,
+  .ce-eksen { display: none; }
+
+  .ce-h2 { font-size: clamp(4rem, 5vw, 6.4rem); }
+  .ce-h3 { font-size: clamp(2.7rem, 3.4vw, 4rem); }
+  .ce-sonuc { font-size: clamp(4rem, 4.6vw, 6rem); }
+}
+
+@supports not (animation-timeline: view()) {
+  @media (min-width: 1280px) {
+    .ce { min-height: auto; }
+
+    .ce-track {
+      min-height: auto;
+      grid-template-rows: auto;
+      align-items: start;
+    }
+
+    .ce-metin,
+    .ce-ray,
+    .ce-masa { display: contents; }
+
+    .ce-durak {
+      display: grid;
+      grid-column: 1 / 7;
+    }
+
+    .ce-durak--son {
+      position: static;
+      width: auto;
+      grid-column: 1 / 7;
+    }
+
+    .ce-pafta {
+      position: relative;
+      width: 100%;
+      height: auto;
+      inset: auto;
+      grid-column: 6 / 13;
+    }
+
+    .ce-pafta--2 { grid-column: 7 / 12; }
+
+    .ce-hedef,
+    .ce-kalibrasyon,
+    .ce-baglanti,
+    .ce-final-label,
+    .ce-eksen { display: none; }
+
+    .ce-h2 { font-size: clamp(4rem, 5vw, 6.4rem); }
+    .ce-h3 { font-size: clamp(2.7rem, 3.4vw, 4rem); }
+    .ce-sonuc { font-size: clamp(4rem, 4.6vw, 6rem); }
+  }
+}
+
+/* ==========================================================================
    REDUCED MOTION
    ======================================================================= */
 

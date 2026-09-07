@@ -101,9 +101,30 @@ const sinirla = (deger: number, enAz: number, enCok: number): number =>
  */
 export function katEki(kat: unknown, asansorVar: boolean, katUcreti: number): number {
   if (asansorVar) return 0
-  const guvenliKat = sinirla(Math.floor(sayiya(kat, 0)), KAT_EN_AZ, KAT_EN_COK)
   const ucret = Math.max(0, sayiya(katUcreti, 0))
-  return Math.max(0, guvenliKat - 1) * ucret
+  return Math.max(0, guvenliKat(kat) - 1) * ucret
+}
+
+/**
+ * HESABIN GÖRDÜĞÜ KAT DEĞERİ — TEK TANIM.
+ *
+ * İfade `katEki` içinden AYNEN çıkarıldı; hesap davranışı değişmedi,
+ * yalnız adı kondu ve dışa verildi.
+ *
+ * NEDEN GEREKLİ (M19A ölçümü): tutar bu sıkıştırmadan geçiyordu ama
+ * ekrandaki ÖZET ve `/iletisim` devri ham değeri taşıyordu:
+ *
+ *     45 girildi  → tutar 30'a göre,  özet "45. kat",  devir cikisKat=45
+ *     −3 girildi  → tutar  0'a göre,  özet "−3. kat",  devir cikisKat=-3
+ *
+ * Devri okuyan taraf (`fiyatDevriniOku`) aralık dışını zaten REDDEDİYOR,
+ * yani ham değer taşımak devrin tamamını sessizce düşürüyordu.
+ *
+ * Bileşen bu fonksiyonu kullanınca hesap / özet / devir üçü de aynı
+ * değeri görüyor ve ortada ikinci bir sıkıştırma uygulaması kalmıyor.
+ */
+export function guvenliKat(kat: unknown): number {
+  return sinirla(Math.floor(sayiya(kat, 0)), KAT_EN_AZ, KAT_EN_COK)
 }
 
 /**

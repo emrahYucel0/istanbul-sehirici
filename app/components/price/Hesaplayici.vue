@@ -46,7 +46,7 @@
  * bir tarafı yok ve anında tepki veriyor.
  */
 import { computed, ref } from 'vue'
-import { tahminiAralik, tlYaz, KAT_EN_AZ, KAT_EN_COK } from '~/utils/fiyat'
+import { tahminiAralik, tlYaz, guvenliKat, KAT_EN_AZ, KAT_EN_COK } from '~/utils/fiyat'
 import { fiyatDevriYolu } from '~/utils/fiyat-devri'
 
 /**
@@ -99,12 +99,29 @@ const seciliMesafe = computed(
   () => mesafeler.value.find((m) => m.id === form.value.mesafeId) ?? null
 )
 
-/** Alandan çıkıldığında değeri ilan edilen aralığa çekiyor. */
+/**
+ * Alandan çıkıldığında değeri ilan edilen aralığa çekiyor.
+ *
+ * Sıkıştırma ifadesi BURADA YAZILI DEĞİL: hesabın kullandığı tanım
+ * (`utils/fiyat.ts → guvenliKat`) çağrılıyor. Öncesinde aynı ifade iki
+ * yerde ayrı ayrı duruyordu; artık tek tanım var.
+ */
 const katiDuzelt = (alan) => {
-  const ham = Number(form.value[alan])
-  const guvenli = Number.isFinite(ham) ? Math.min(Math.max(Math.floor(ham), KAT_EN_AZ), KAT_EN_COK) : 0
-  form.value[alan] = guvenli
+  form.value[alan] = guvenliKat(form.value[alan])
 }
+
+/**
+ * Özetin ve devrin gördüğü kat değerleri.
+ *
+ * M19A ölçtü: tutar `guvenliKat`ten geçiyordu ama özet ve devir ham
+ * değeri taşıyordu — 45 girildiğinde tutar 30'a göre hesaplanıp özette
+ * "45. kat" yazıyor, devirde `cikisKat=45` gidiyordu. Devri okuyan taraf
+ * aralık dışını reddettiği için o devir sessizce tamamen düşüyordu.
+ * `katiDuzelt` yalnız `@blur`'de çalıştığı için alan odaktayken üçü
+ * ayrışıyordu. Artık üçü de aynı değeri okuyor.
+ */
+const cikisKatiGuvenli = computed(() => guvenliKat(form.value.cikisKat))
+const varisKatiGuvenli = computed(() => guvenliKat(form.value.varisKat))
 
 /**
  * KAT ALANININ İKİ SESSİZ DAVRANIŞI ARTIK YAZILI.
@@ -165,8 +182,8 @@ const ozet = computed(() => {
   const liste = [
     { etiket: 'EV', deger: seciliOda.value.ad },
     { etiket: 'MESAFE', deger: seciliMesafe.value.ad },
-    { etiket: 'ÇIKIŞ', deger: kat(form.value.cikisKat, form.value.cikisAsansor) },
-    { etiket: 'VARIŞ', deger: kat(form.value.varisKat, form.value.varisAsansor) },
+    { etiket: 'ÇIKIŞ', deger: kat(cikisKatiGuvenli.value, form.value.cikisAsansor) },
+    { etiket: 'VARIŞ', deger: kat(varisKatiGuvenli.value, form.value.varisAsansor) },
   ]
   const ekler = []
   if (form.value.paketleme) ekler.push('paketleme')
@@ -195,9 +212,9 @@ const eylemYolu = computed(() => {
   return fiyatDevriYolu({
     odaId: seciliOda.value.id,
     mesafeId: seciliMesafe.value.id,
-    cikisKat: form.value.cikisKat,
+    cikisKat: cikisKatiGuvenli.value,
     cikisAsansor: form.value.cikisAsansor,
-    varisKat: form.value.varisKat,
+    varisKat: varisKatiGuvenli.value,
     varisAsansor: form.value.varisAsansor,
     paketleme: form.value.paketleme,
     depolama: form.value.depolama,

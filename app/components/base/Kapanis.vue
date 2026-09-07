@@ -133,6 +133,14 @@ const telHref = computed(() => telefonYolu(phone.value))
   --fs-measure: rgb(var(--c-measure));
   --fs-signal: rgb(var(--c-signal));
 
+  /* METİN İÇİN AYRI BAKIR — WCAG 1.4.3
+     Ölçüldü: --c-signal rgb(180,68,28), koyu yüzey rgb(27,26,24) üzerinde
+     3.13:1. `.fs-pre` 10px/400 normal metin olduğu için AA eşiği 4.5.
+     Grafik katmanı (signal çizgisi ve uçları) AYNI kalıyor: onlar için
+     geçerli eşik 1.4.11'in 3:1'i ve 3.13 zaten geçiyor. Bu yüzden token
+     global DEĞİL, yalnız metin için ayrıldı — hairline'ın tonu korunuyor. */
+  --fs-signal-metin: rgb(209, 100, 56);
+
   position: relative;
   overflow: clip;
   background: var(--fs-ink);
@@ -221,7 +229,7 @@ const telHref = computed(() => telefonYolu(phone.value))
   letter-spacing: 0.12em;
   text-transform: uppercase;
 
-  color: var(--fs-signal);
+  color: var(--fs-signal-metin);
 }
 
 .fs-h2 {
@@ -1105,9 +1113,27 @@ const telHref = computed(() => telefonYolu(phone.value))
     max-width: 12ch;
   }
 
+  /* KIRPMA DÜZELTMESİ — ölçümle belirlendi, tercihle değil.
+     15vw'de en uzun kelime ("netleştirebiliriz.") satır kutusuna sığmıyordu;
+     `.fs` overflow:clip olduğu için taşan kısım GERÇEKTEN kesiliyordu:
+     440'ta ink 453 / klip 440, 390'da 403/390, 360'ta 373/360 — üçünde de
+     13px. Görünen zarar: başlığın son noktası kayboluyor, "z" yarım kalıyor,
+     iki ↗ oku üçte iki oranında kesiliyor.
+
+     En uzun kelimenin min-content'i ile `.fs-track` içerik kutusu dokuz
+     genişlikte ikili aramayla karşılaştırıldı; hepsinde geçerli azami değer
+     13.375vw çıktı (en dar nokta 320px). 13vw en dar yerde 1.2px, en geniş
+     yerde 4.1px pay bırakıyor.
+
+     Alt sınır da düşürüldü: 3.2rem (51.2px) 375px'in altında TEK BAŞINA
+     taşma üretiyordu (320'de güvenli azami 42.8px). 2.4rem 320-479
+     aralığında hiç devreye girmiyor, yalnız 320 altı için güvenlik payı.
+
+     >=480 DOKUNULMADI: orada kelime yalnız sağ dolguyu yiyor, klip sınırını
+     aşmıyor (767'de ink 758.5 / klip 767). */
   .fs-h2 {
     font-size:
-      clamp(3.2rem, 15vw, 5.3rem);
+      clamp(2.4rem, 13vw, 5.3rem);
   }
 
   .fs-ghost {
