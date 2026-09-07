@@ -189,6 +189,22 @@
   --c-signal: 180 68 28;         /* aksan — oksitlenmiş bakır */
   --c-signal-deep: 140 52 20;    /* hover / basılı */
 
+  /* KOYU ZEMİNDE METİN OLAN BAKIR — ayrı basamak, keyfi değil.
+     `--c-signal` mürekkep (27 26 24) üzerinde 3.13:1 veriyor. Grafik için
+     yeterli (WCAG 1.4.11 eşiği 3:1) ama METİN için değil (1.4.3 eşiği
+     4.5:1). Bu basamak 4.63:1 veriyor.
+     Ters yönde de geçerli: bu ton KÂĞIT üstünde 3.42:1'e düşüyor, yani
+     açık zeminde metin için KULLANILMAZ — orada `--c-signal` doğru olan
+     (5.06:1). Yani ikisi birbirinin yedeği değil, iki ayrı zeminin karşılığı.
+
+     `--c-signal` BİLEREK değiştirilmedi: hairline ve çizgi katmanı onun
+     tonunu koruyor. Bu token yalnız METİN için.
+
+     Değer ilk olarak `Kapanis.vue` içinde yerel olarak türetilmişti; ikinci
+     tüketici (Navbar marka vurgusu) çıkınca buraya alındı — aynı sayının
+     iki dosyada durması, zamanla ayrışması demekti. */
+  --c-signal-metin: 209 100 56;
+
   /* TİPOGRAFİNİN TEK KAYNAĞI — düz CSS blokları buradan okur, Tailwind
      `font-archivo` / `font-mono` sınıflarından. İki paralel sistem yok.
      Bileşen içinde `font-family` yazılmaz; bu ikisinden biri kullanılır. */

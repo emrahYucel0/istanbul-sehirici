@@ -99,8 +99,12 @@ const { brandName, siteUrl } = await usePageSeo('about', sayfaMetasi('about'))
  * BİLİNÇLİ OLARAK YOK: hiçbiri için doğrulanmış kayıt yok. Uydurulmuş bir
  * kuruluş yılı, yapısal veride sayfadaki metinden daha kalıcı olurdu.
  */
+// SEKME İKONU BAĞLANTISI BURADAN KALDIRILDI.
+// Üç ayrı sorunu vardı: (1) `/favicon.ico` diye bir dosya YOKTU, yani 404
+// veriyordu; (2) apple-touch-icon PNG bekler, .ico değil; (3) yalnız BU
+// sayfadaydı — sitenin geri kalanı ikonsuzdu. İkonların tamamı artık
+// `nuxt.config.ts` head'inde, her sayfa için tanımlı.
 useHead({
-  link: [{ rel: 'apple-touch-icon', href: '/favicon.ico', sizes: '180x180' }],
   script: [
     {
       type: 'application/ld+json',

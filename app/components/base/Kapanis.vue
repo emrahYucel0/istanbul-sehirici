@@ -137,9 +137,17 @@ const telHref = computed(() => telefonYolu(phone.value))
      Ölçüldü: --c-signal rgb(180,68,28), koyu yüzey rgb(27,26,24) üzerinde
      3.13:1. `.fs-pre` 10px/400 normal metin olduğu için AA eşiği 4.5.
      Grafik katmanı (signal çizgisi ve uçları) AYNI kalıyor: onlar için
-     geçerli eşik 1.4.11'in 3:1'i ve 3.13 zaten geçiyor. Bu yüzden token
-     global DEĞİL, yalnız metin için ayrıldı — hairline'ın tonu korunuyor. */
-  --fs-signal-metin: rgb(209, 100, 56);
+     geçerli eşik 1.4.11'in 3:1'i ve 3.13 zaten geçiyor — yani `--c-signal`
+     bilerek değiştirilmedi, hairline'ın tonu korunuyor.
+
+     DEĞER ARTIK BURADA TÜREMİYOR. Başlangıçta bu satır `rgb(209, 100, 56)`
+     idi ve not "token global DEĞİL" diyordu; o karar tek tüketici varken
+     doğruydu. Navbar'daki marka vurgusu aynı basamağı isteyince sayı iki
+     dosyada durur hâle geldi, `tokens.css` de tam bunu yasaklıyor
+     ("sayı tekrar edilirse ikisi zamanla ayrışır"). Değer `--c-signal-metin`
+     olarak oraya alındı; hesaplanan renk AYNI. Yerel takma ad duruyor,
+     çünkü bu bileşenin bütün renkleri `--fs-*` adlarından okunuyor. */
+  --fs-signal-metin: rgb(var(--c-signal-metin));
 
   position: relative;
   overflow: clip;

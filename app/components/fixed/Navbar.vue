@@ -221,7 +221,16 @@ if (import.meta.client) {
        (bkz. assets/css/main.css). -->
   <header class="nb" :class="{ 'nb--koyu on-dark': koyuBar }">
     <div class="nb-bar">
-      <NuxtLink to="/" class="nb-marka">{{ brandLabel }}</NuxtLink>
+      <!-- Marka adı kelimelere bölünüp basılıyor: "Kent" bakır (footer ile
+           aynı işlem, aynı yardımcı). Ad YİNE panelden geliyor — `brandLabel`
+           `navbarData.logo || brandName` zinciri; bölme onu değiştirmiyor.
+           Ayırıcı boşluk parçanın metnine dahil, çünkü Vue etiketler
+           arasındaki satır sonlu boşluğu derlemede siliyor. -->
+      <NuxtLink to="/" class="nb-marka"><span
+        v-for="(parca, i) in markaParcalari(brandLabel)"
+        :key="i"
+        :class="parca.vurgulu ? 'nb-marka-kent' : null"
+      >{{ parca.metin }}</span></NuxtLink>
 
       <!-- Masaüstü menü -->
       <nav class="nb-menu" aria-label="Ana menü">
@@ -315,6 +324,10 @@ if (import.meta.client) {
 .nb--koyu .nb-marka {
   color: rgb(var(--c-paper));
 }
+/* Koyu barda bakır bir basamak açılıyor — gerekçe `.nb-marka-kent` yanında. */
+.nb--koyu .nb-marka-kent {
+  color: rgb(var(--c-signal-metin));
+}
 .nb--koyu .nb-tel,
 .nb--koyu .nb-tel-etiket,
 .nb--koyu .nb-tel-no {
@@ -360,6 +373,24 @@ if (import.meta.client) {
   color: rgb(var(--c-ink));
   text-decoration: none;
   margin-right: auto;
+}
+
+/* Marka adındaki "Kent" — bakır. Footer'daki `.fr-marka-kent` ile aynı fikir,
+   ama BURADA BAŞKA BİR BASAMAK gerekiyor ve sebebi ölçüldü:
+
+     kâğıt bar  --c-signal (180 68 28)   kâğıt üstünde  5.06:1  ✔
+     koyu  bar  --c-signal              mürekkep üstünde 3.13:1  ✗
+
+   Bar tonunu değiştirdiğinde tek bir renk iki zeminde birden çalışmıyor.
+   `.nb-marka` 16px/700; WCAG'ın "büyük metin" tanımına (18,66px kalın)
+   girmediği için geçerli eşik 4.5:1. Koyu barda `--c-signal-metin`
+   (209 100 56) kullanılıyor: mürekkep üstünde 4.63:1.
+
+   Not: 1.4.3 logotype'ları kontrast şartından muaf tutuyor, yani bu
+   zorunlu değildi. Doğru basamağı kullanmanın bedeli olmadığı için
+   muafiyete yaslanılmadı. */
+.nb-marka-kent {
+  color: rgb(var(--c-signal));
 }
 
 /* Masaüstü menü mobilde YOK — küçültülmüyor, kaldırılıyor. */

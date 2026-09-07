@@ -183,9 +183,18 @@ const yil = new Date().getFullYear()
 
       <section class="fr-kimlik" aria-label="İşletme bilgileri">
 
+        <!-- Marka adı kelimelere bölünüp basılıyor: "Kent" bakır renkte.
+             Bölmeyi `markaParcalari` yapıyor (app/utils/marka-vurgusu.ts);
+             ad yine panelden geliyor, burada sabitlenmiyor. Ayırıcı boşluk
+             parçanın metnine dahil — Vue, etiketler arasındaki satır sonlu
+             boşluğu derlemede siliyor. -->
         <p class="fr-marka">
 
-          {{ brandName }}
+          <span
+            v-for="(parca, i) in markaParcalari(brandName)"
+            :key="i"
+            :class="parca.vurgulu ? 'fr-marka-kent' : null"
+          >{{ parca.metin }}</span>
 
         </p>
 
@@ -592,6 +601,24 @@ const yil = new Date().getFullYear()
   letter-spacing: -0.07em;
 
   text-wrap: balance;
+
+}
+
+/* Marka adındaki "Kent" — bakır.
+
+   RENK TOKEN'DAN, SABİT DEĞİL. `--fr-signal` footer'ın kendi sinyal
+   token'ı ve `--c-signal`e (180 68 28) bağlı. Footer KÂĞIT zeminde
+   olduğu için kanonik sinyal doğru olan: açık zeminde daha kontrastlı.
+   Logo ve sekme ikonu MÜREKKEP zeminde durduğu için orada bir tık daha
+   parlak bakır (#C0592A) kullanılıyor — aynı ailenin iki zemine göre
+   ayarlanmış iki basamağı, iki ayrı renk değil.
+
+   Yalnız renk değişiyor: punto, ağırlık ve harf aralığı ortak, çünkü
+   vurgu ayrı bir kelime gibi değil AYNI yazının bir parçası gibi
+   okunmalı. */
+.fr-marka-kent {
+
+  color: var(--fr-signal);
 
 }
 

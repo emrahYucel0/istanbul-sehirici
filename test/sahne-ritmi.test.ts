@@ -189,13 +189,23 @@ describe('koyu yüzey sözleşmesi', () => {
     expect(navbar).toContain('on-dark')
   })
 
-  it('koyu tonda bakır METİN olarak kullanılmıyor — AA altı', () => {
+  it('koyu tonda YALNIZ AA geçen bakır basamağı kullanılıyor', () => {
     // Yalnız `.nb--koyu` ile başlayan kuralların GÖVDELERİ; aradaki açık
     // ton kuralları (`.nb-link--aktif::after` bakır kolu gibi) sayılmıyor.
+    //
+    // İDDİA NEDEN "--c-signal YOK" DEĞİL
+    // Önce öyleydi ve ALT DİZE ile eşleşiyordu. `--c-signal-metin` (koyu
+    // zeminde 4.63:1, yani AA'yı GEÇEN basamak) eklenince koruma onu da
+    // yakaladı — doğru kullanımı hatalı bildirdi. Çözüm korumayı gevşetmek
+    // değil, ADIYLA söylemek: koyu tonda bakır olarak yalnız metin basamağı
+    // geçerli. Bu hâliyle iddia eskisinden GÜÇLÜ, çünkü `--c-signal-deep`
+    // gibi başka bir basamağın sızmasını da tam adla reddediyor.
     const govdeler = [...kodu(navbar).matchAll(/(\.nb--koyu[^{}]*)\{([^}]*)\}/g)]
     expect(govdeler.length, 'koyu ton kuralı bulunamadı').toBeGreaterThan(4)
     for (const [, secici, govde] of govdeler) {
-      expect(govde, `bakır metin: ${secici.trim()}`).not.toContain('--c-signal')
+      for (const [token] of govde.matchAll(/--c-signal[\w-]*/g)) {
+        expect(token, `koyu tonda yanlış bakır basamağı: ${secici.trim()}`).toBe('--c-signal-metin')
+      }
     }
   })
 

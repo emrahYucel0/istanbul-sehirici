@@ -30,6 +30,22 @@ const kodu = (k: string) =>
   k.replace(/<!--[\s\S]*?-->/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ')
 
 const kapanis = kodu(oku('app', 'components', 'base', 'Kapanis.vue'))
+const tokenlar = kodu(oku('app', 'assets', 'css', 'tokens.css'))
+
+/**
+ * Metin bakırının SAYISAL değeri.
+ *
+ * Başlangıçta `Kapanis.vue` içinde `rgb(209, 100, 56)` olarak yazılıydı ve
+ * bu test onu oradan okuyordu. Navbar'daki marka vurgusu aynı basamağı
+ * isteyince değer `tokens.css`e `--c-signal-metin` olarak taşındı — aynı
+ * sayı iki dosyada durmasın diye. Test bu yüzden artık kanonik tanımı
+ * okuyor; ölçtüğü şey DEĞİŞMEDİ: gerçek renk, gerçek kontrast.
+ */
+const signalMetin = (() => {
+  const m = tokenlar.match(/--c-signal-metin:\s*(\d+)\s+(\d+)\s+(\d+)\s*;/)
+  if (!m) return null
+  return [Number(m[1]), Number(m[2]), Number(m[3])]
+})()
 const uc = kodu(oku('app', 'components', 'base', 'UcIstanbul.vue'))
 const seo = kodu(oku('app', 'composables', 'usePageSeo.ts'))
 const fiyat = kodu(oku('app', 'utils', 'fiyat.ts'))
@@ -120,17 +136,27 @@ describe('M19B/B — Kapanış künyesi WCAG AA kontrastında', () => {
     expect(kapanis).toMatch(/border:\s*1px solid var\(--fs-signal\)/)
   })
 
+  it('Kapanış metin bakırı kanonik tokena BAĞLI — sayı burada tekrar edilmiyor', () => {
+    // Değer `tokens.css`e taşındı (ikinci tüketici: Navbar marka vurgusu).
+    // Bileşen kendi sayısını yazarsa ikisi zamanla ayrışır; bu iddia o
+    // kopmayı yakalıyor.
+    expect(kapanis).toMatch(/--fs-signal-metin:\s*rgb\(var\(--c-signal-metin\)\)/)
+    expect(signalMetin, '--c-signal-metin tokens.css içinde tanımlı değil').not.toBeNull()
+  })
+
   it('metin bakırı koyu yüzeyde >= 4.5:1', () => {
-    const m = kapanis.match(/--fs-signal-metin:\s*rgb\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*\)/)
-    expect(m, '--fs-signal-metin tanımlı değil').not.toBeNull()
-    const on = [Number(m![1]), Number(m![2]), Number(m![3])]
     const zemin = [27, 26, 24] // rgb(var(--c-ink)) — ölçüldü
-    expect(oran(on, zemin)).toBeGreaterThanOrEqual(4.5)
+    expect(oran(signalMetin!, zemin)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('metin bakırı KÂĞIT üstünde kullanılmamalı — orada AA altı', () => {
+    // Bu basamak koyu zemin için. Açık zeminde 3.42:1 veriyor, yani
+    // `--c-signal` ile yer değiştirilemez; ikisi iki ayrı zeminin karşılığı.
+    expect(oran(signalMetin!, [247, 244, 239])).toBeLessThan(4.5)
   })
 
   it('hâlâ bakır: turuncu/neona kaçmadı', () => {
-    const m = kapanis.match(/--fs-signal-metin:\s*rgb\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*\)/)
-    const [r, g, b] = [Number(m![1]), Number(m![2]), Number(m![3])]
+    const [r, g, b] = signalMetin!
     expect(r).toBeGreaterThan(g)
     expect(g).toBeGreaterThan(b)
     // Ton açısı orijinal bakıra (≈16°) yakın kalmalı.

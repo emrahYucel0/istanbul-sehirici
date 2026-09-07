@@ -1,11 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <!-- Sekme ikonu. Şeffaf değil DOLU KARE: tarayıcı sekmesi açık da koyu da
-       olabiliyor, şeffaf bir sembol birinde kayboluyordu. Marka yeşili karo
-       ikisinde de seçiliyor.
-       Sembol kareye göre biraz küçültülmüş (payda nefes olsun) ve kapı
-       oransal olarak büyütülmüş — 16px'te görünür kalması için. -->
-  <rect width="32" height="32" rx="7" fill="#3B5D50"/>
-  <path d="M16 6.6 L26.6 15.8 a1.2 1.2 0 0 1 -0.8 2.1 H6.2 a1.2 1.2 0 0 1 -0.8 -2.1 Z" fill="#FFFFFF"/>
-  <rect x="8.4" y="17.8" width="15.2" height="8.2" rx="1.6" fill="#FFFFFF"/>
-  <path d="M13.4 26 v-3.4 a2.6 2.6 0 0 1 5.2 0 v3.4 z" fill="#F9BF29"/>
+  <rect width="32" height="32" rx="7" fill="#1B1A18"/>
+  <rect x="5.6" y="6.8" width="20.8" height="6.4" fill="#F7F4EF"/>
+  <rect x="7.2" y="15.4" width="17.6" height="9.8" fill="#F7F4EF"/>
+  <rect x="5.6" y="13.2" width="20.8" height="2.2" fill="#C0592A"/>
 </svg>

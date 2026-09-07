@@ -50,7 +50,9 @@
     "surum-geri-yukle": "node --env-file=.env scripts/surum-geri-yukle.mjs",
     "politika-kimlik": "node --env-file=.env prisma/politika-kimlik.mjs",
     "harita-cizimi": "node scripts/harita-cizimi.mjs",
-    "kesit-cizimleri": "node scripts/kesit-cizimleri.mjs"
+    "kesit-cizimleri": "node scripts/kesit-cizimleri.mjs",
+    "marka-ikonu": "node scripts/marka-ikonu.mjs",
+    "marka-logosu": "node scripts/marka-logosu.mjs"
   },
   "dependencies": {
     "@nuxt/image": "^2.1.0",

@@ -175,6 +175,31 @@ export default defineNuxtConfig({
           href: "/fonts/jetbrains-mono.woff2",
           crossorigin: "anonymous",
         },
+
+        // SEKME İKONU — burada HİÇ TANIMLI DEĞİLDİ.
+        //
+        // `public/` içinde favicon dosyaları duruyordu ama hiçbir sayfa
+        // onlara <link> vermiyordu. Tarayıcı bu durumda yalnız tek bir şey
+        // dener: kökteki /favicon.ico. O dosya da yoktu (adı yanlışlıkla
+        // `favicon.ico.png` idi), yani site SEKMEDE İKONSUZ açılıyordu.
+        //
+        // Sıra bilinçli: SVG önce. Onu destekleyen tarayıcı (Chrome 80+,
+        // Firefox, Edge) tek bir 0,3 KB dosyayla her ekran yoğunluğunda
+        // net ikon alıyor; PNG'lere hiç inmiyor. Desteklemeyen istemci
+        // listede aşağı düşüp 32/16'yı alıyor. `sizes="any"` olmadan
+        // Chrome SVG'yi atlayıp .ico'yu tercih ediyor.
+        //
+        // .ico ayrıca duruyor: <link> etiketlerinden ÖNCE davranan ya da
+        // onları hiç okumayan istemciler (Windows kısayolu, bazı sohbet
+        // ve RSS önizlemeleri) doğrudan /favicon.ico istiyor.
+        //
+        // Dosyaların tamamı `npm run marka-ikonu` ile TEK geometriden
+        // üretiliyor; elle düzenlenmez (bkz. scripts/marka-ikonu.mjs).
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg", sizes: "any" },
+        { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
+        { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
+        { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+        { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
       ],
     },
   },
