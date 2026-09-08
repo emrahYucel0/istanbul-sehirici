@@ -52,7 +52,13 @@ const bolgeAgiAcik = useRegionPages()
            ÜST KÜNYE
            ================================================================ -->
       <div class="ce-kunye">
-        <span>03 / ŞEHİR PLANI DEĞİŞTİRİR</span>
+        <!-- 02 — 03 DEĞİL. Bölüm numarası burada `03` yazıyordu ve Süreç
+             bölümü de `03` basıyordu; ana sayfada aynı numara iki kez
+             görünüyordu. Doğru değer uydurulmadı, `pages/index.vue`
+             içindeki bölüm kütüğünde zaten yazılı:
+               02  ŞEHİR PLANI DEĞİŞTİRİR    UcIstanbul
+               03  TAŞIMANIN İÇİNDE          Surec -->
+        <span>02 / ŞEHİR PLANI DEĞİŞTİRİR</span>
       </div>
 
       <!-- ================================================================

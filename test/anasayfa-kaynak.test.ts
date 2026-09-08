@@ -108,8 +108,24 @@ const STATIK_KALAN: Record<string, string[]> = {
   // M17 pafta: sayaç etiketi "TOPLAM İLÇE" yerini "İLÇE / TEK OPERASYON AĞI"
   // künyesine bıraktı. Sözleşme aynı: bu metinler KODDA, CMS'te değil.
   'Kapsam.vue': ['AVRUPA YAKASI', 'ANADOLU YAKASI', 'İLÇE / TEK OPERASYON AĞI', 'Bölgelerimizi incele'],
-  // M17 pafta: bölüm sırası değişince künye numarası 02 → 03 oldu.
-  'UcIstanbul.vue': ['03 / ŞEHİR PLANI DEĞİŞTİRİR'],
+  /**
+   * KÜNYE NUMARALARI BENZERSİZ OLMALI — burada değildi.
+   *
+   * Yukarıdaki not "M17 pafta: bölüm sırası değişince künye numarası
+   * 02 → 03 oldu" diyordu. Değişiklik UcIstanbul'a uygulanmış ama diziye
+   * yayılmamış: Süreç de `03` basmaya devam etti, yani ana sayfada aynı
+   * numara İKİ bölümde birden göründü.
+   *
+   * Doğru değer uydurulmadı, üç kaynak da aynı yeri gösteriyor:
+   *   · `pages/index.vue` bölüm kütüğü → "02 ŞEHİR PLANI DEĞİŞTİRİR"
+   *   · sayfadaki gerçek sıra (ölçüldü) → Hero · Kapsam · UcIstanbul ·
+   *     Süreç · Hizmetler · Fiyat · Sorular
+   *   · numaralı dizi 01, ?, 03, 04, 05 — boşluğa oturan tek değer 02
+   *
+   * Süreç'i 04'e kaydırmak da diziyi düzeltirdi ama Fiyat/Sorular'ı da
+   * kaydırmayı gerektirirdi; en küçük ve kütükle uyumlu düzeltme bu.
+   */
+  'UcIstanbul.vue': ['02 / ŞEHİR PLANI DEĞİŞTİRİR'],
   'Surec.vue': ['03 / TAŞIMANIN İÇİNDE NE OLUYOR?'],
   // "Keşif sonrası fiyat yazılı veriliyor." BURADAN ÇIKARILDI, silinmedi:
   // aşağıdaki TASINAN listesine geçti. Cümle doğrulanmamış bir süreç
@@ -251,5 +267,49 @@ describe('hizmet sayısı hiçbir metne gömülmemiş', () => {
     const kaynakHizmetler = oku('Hizmetler.vue')
     expect(kaynakHizmetler).toContain('ÇOK YETKİNLİK')
     expect(kaynakHizmetler).toContain('operasyon yetenekleri')
+  })
+})
+
+// ═══════════════════════════════════════════ KÜNYE NUMARALARI
+
+/**
+ * ANA SAYFADA AYNI BÖLÜM NUMARASI İKİ KEZ GÖRÜNEMEZ.
+ *
+ * Yaşandı: M17'de bölüm sırası değişince UcIstanbul'un künyesi 02'den
+ * 03'e alındı ama Süreç de 03 basmaya devam etti. Ekranda hata yok,
+ * derleme geçiyor, test geçiyordu — yalnız sayfayı okuyan biri aynı
+ * numarayı iki bölümde görüyordu.
+ *
+ * Yukarıdaki `STATIK_KALAN` listesi her künyeyi TEK TEK sabitliyor; bu
+ * iddia ise aralarındaki İLİŞKİYİ koruyor. Biri güncellenip diğeri
+ * unutulursa burada kırılır.
+ */
+describe('bölüm künye numaraları benzersiz', () => {
+  const NUMARALI = ['Hero.vue', 'UcIstanbul.vue', 'Surec.vue', 'Fiyat.vue', 'Sorular.vue']
+
+  const numara = (dosya: string) => {
+    // Şablondaki "NN / ETİKET" künyesi; yorum satırları elenmiş kaynakta.
+    const kaynak = oku(dosya).replace(/<!--[\s\S]*?-->/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ')
+    const m = kaynak.match(/>\s*(\d{2}) \/ [^<]+</)
+    return m ? m[1] : null
+  }
+
+  it.each(NUMARALI)('%s künyesini basıyor', (dosya) => {
+    expect(numara(dosya), `${dosya}: künye numarası bulunamadı`).not.toBeNull()
+  })
+
+  it('numaralar tekrar etmiyor', () => {
+    const bulunan = NUMARALI.map((d) => [d, numara(d)] as const)
+    const sayilar = bulunan.map(([, n]) => n)
+    const tekrar = sayilar.filter((n, i) => sayilar.indexOf(n) !== i)
+    expect(tekrar, `tekrar eden numara: ${tekrar.join(', ')} — ${bulunan.map(([d, n]) => d + '=' + n).join(' · ')}`).toEqual([])
+  })
+
+  it('numaralar sayfa sırasını izliyor — artan', () => {
+    // Dizi, bölümlerin sayfadaki gerçek sırası (ölçüldü).
+    const sayilar = NUMARALI.map((d) => Number(numara(d)))
+    for (let i = 1; i < sayilar.length; i++) {
+      expect(sayilar[i], `${NUMARALI[i]} önceki bölümden küçük ya da eşit`).toBeGreaterThan(sayilar[i - 1]!)
+    }
   })
 })
