@@ -224,3 +224,59 @@ describe('.env.example', () => {
     expect(ornek).not.toMatch(/@(gmail|hotmail|yandex)\./i)
   })
 })
+
+// ═══════════════════════════════════════════ YÜKLEME ROTASI
+
+/**
+ * PANELDEN YÜKLENEN GÖRSELLERİN ROTASI — HEAD DE KARŞILANMALI.
+ *
+ * Bu kusur EKRANDA GÖRÜNMÜYOR: tarayıcı GET attığı için site kusursuz
+ * çalışıyor, yalnız sosyal tarayıcılar takılıyor.
+ *
+ *   GET  /yuklemeler/…-og.jpg → 200 · image/jpeg
+ *   HEAD /yuklemeler/…-og.jpg → 404 · text/html   ← ölçüldü, canlıda
+ *
+ * WhatsApp, Twitter ve Facebook görseli indirmeden önce çoğunlukla HEAD
+ * atıp tipini ve boyutunu doğruluyor; 404 alınca kartı görselsiz basıyor.
+ * Etiketler, format, boyut ve oran kusursuz olduğu hâlde WhatsApp'ta
+ * görselin bir türlü çıkmamasının sebebi buydu.
+ *
+ * Sebep dosya ADIYDI: `[...ad].get.ts` soneki rotayı yalnız GET'e bağlıyor.
+ *
+ * İKİNCİ TUZAK: HEAD dalında `return null` yazılamaz — h3 bunu 204'e
+ * çevirip `Content-Length`i düşürüyor (ölçüldü). Tarayıcılar boyutu o
+ * başlıktan okuyor.
+ */
+describe('yükleme rotası sosyal tarayıcılara açık', () => {
+  const ROTA = join('server', 'routes', 'yuklemeler')
+
+  it('dosya adı metoda KİLİTLİ DEĞİL', () => {
+    expect(existsSync(join(process.cwd(), ROTA, '[...ad].get.ts')), 'ad .get.ts — HEAD 404 döner').toBe(false)
+    expect(existsSync(join(process.cwd(), ROTA, '[...ad].ts'))).toBe(true)
+  })
+
+  it('GET ve HEAD kabul, diğerleri 405', () => {
+    const kaynak = oku(ROTA, '[...ad].ts')
+    expect(kaynak).toMatch(/metot !== 'GET' && metot !== 'HEAD'/)
+    expect(kaynak).toContain('statusCode: 405')
+  })
+
+  it('HEAD 200 dönüyor — 204 değil, Content-Length korunuyor', () => {
+    const kaynak = oku(ROTA, '[...ad].ts')
+    const dal = kaynak.slice(kaynak.indexOf("if (metot === 'HEAD')"))
+    expect(dal).toContain('setResponseStatus(event, 200)')
+    expect(dal, 'null dönerse h3 204 üretir ve Content-Length düşer').not.toMatch(/if \(metot === 'HEAD'\) return null/)
+    // Content-Length HEAD dalından ÖNCE konmalı ki yanıtta kalsın.
+    expect(kaynak.indexOf("setHeader(event, 'Content-Length'")).toBeLessThan(
+      kaynak.indexOf("if (metot === 'HEAD')")
+    )
+  })
+
+  it('rotanın KAYNAĞI depoda — gitignore onu yutmuyor', () => {
+    // Çıpasız `yuklemeler` deseni `server/routes/yuklemeler/`i de kapsıyordu;
+    // rota yerelde çalıştığı için fark edilmiyordu ama depoda YOKTU.
+    const yoksay = oku('.gitignore')
+    expect(yoksay, 'çıpasız desen alt klasörleri de yutar').toMatch(/^\/yuklemeler$/m)
+    expect(yoksay).not.toMatch(/^yuklemeler$/m)
+  })
+})

@@ -16,7 +16,14 @@ yedekler
 
 # Panelden yüklenen görseller. Çalışma anında oluşuyor, dağıtımla gelmiyor;
 # yeni sürüm atarken bu klasör KORUNMALI.
-yuklemeler
+#
+# BAŞTAKİ EĞİK ÇİZGİ ŞART. Burada çıpasız `yuklemeler` yazıyordu ve git
+# çıpasız deseni HER SEVİYEDE arıyor — yani `server/routes/yuklemeler/`
+# klasörü de kapsama giriyordu. Sonuç: panelden yüklenen görselleri servis
+# eden rotanın KAYNAĞI depoda hiç yoktu. Yerelde çalıştığı ve derlemeye
+# girdiği için fark edilmiyordu; depo temiz bir makineye klonlansa bütün
+# yüklenen görseller 404 verirdi.
+/yuklemeler
 
 # Görsellerin dokunulmamış orijinalleri. public/images altındaki optimize
 # dosyalar bunlardan üretiliyor (scripts/gorsel-hazirla.mjs). Depoya girmiyor

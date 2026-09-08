@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 530 370" width="530" height="370" role="img">
+<rect x="108" y="72" width="376" height="208" rx="0" fill="none" stroke="#1B1A18" stroke-width="1.2" stroke-dasharray="10 5"/>
+<rect x="103" y="158" width="10" height="34" rx="0" fill="#DCD4C7" stroke="#1B1A18" stroke-width="1"/>
+<rect x="103" y="208" width="10" height="34" rx="0" fill="#DCD4C7" stroke="#1B1A18" stroke-width="1"/>
+<line x1="110" y1="192" x2="176" y2="192" stroke="#1B1A18" stroke-width="2.6"/>
+<line x1="120" y1="188" x2="128" y2="196" stroke="#1B1A18" stroke-width="0.8"/>
+<line x1="134" y1="188" x2="142" y2="196" stroke="#1B1A18" stroke-width="0.8"/>
+<line x1="148" y1="188" x2="156" y2="196" stroke="#1B1A18" stroke-width="0.8"/>
+<line x1="162" y1="188" x2="170" y2="196" stroke="#1B1A18" stroke-width="0.8"/>
+<circle cx="110" cy="192" r="3.4" fill="#1B1A18"/>
+<rect x="200" y="170" width="78" height="50" rx="0" fill="none" stroke="#C0592A" stroke-width="1.2" stroke-dasharray="5 4"/>
+<rect x="212" y="184" width="54" height="24" rx="0" fill="none" stroke="#1B1A18" stroke-width="1.2"/>
+<line x1="228" y1="184" x2="228" y2="208" stroke="#1B1A18" stroke-width="0.9"/>
+<rect x="322" y="98" width="74" height="52" rx="0" fill="#DCD4C7" stroke="#B9AE9C" stroke-width="1"/>
+<text x="359" y="129" fill="#1B1A18" font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace" font-size="14" font-weight="600" letter-spacing="1.6" text-anchor="middle">A</text>
+<rect x="408" y="98" width="74" height="52" rx="0" fill="#DCD4C7" stroke="#B9AE9C" stroke-width="1"/>
+<text x="445" y="129" fill="#1B1A18" font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace" font-size="14" font-weight="600" letter-spacing="1.6" text-anchor="middle">B</text>
+<rect x="322" y="202" width="74" height="62" rx="0" fill="none" stroke="#C0592A" stroke-width="1.6"/>
+<text x="359" y="238" fill="#C0592A" font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace" font-size="14" font-weight="600" letter-spacing="1.6" text-anchor="middle">C</text>
+<rect x="408" y="202" width="74" height="52" rx="0" fill="#DCD4C7" stroke="#B9AE9C" stroke-width="1"/>
+<text x="445" y="233" fill="#1B1A18" font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace" font-size="14" font-weight="600" letter-spacing="1.6" text-anchor="middle">D</text>
+<rect x="372" y="240" width="18" height="18" rx="0" fill="none" stroke="#C0592A" stroke-width="1.2"/>
+<path d="M381 254 V245 m0 0 l-3 4 m3 -4 l3 4" fill="none" stroke="#C0592A" stroke-width="1" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M74 192 L239 192 L239 238 L304 238 L304 248 L319 248" fill="none" stroke="#C0592A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="319" cy="248" r="4" fill="#C0592A"/>
+<path d="M74 226 L86 226 L86 202 L96 202" fill="none" stroke="#B9AE9C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<path d="M99 196 l11 11 m0 -11 l-11 11" fill="none" stroke="#B9AE9C" stroke-width="1.6" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="46" y="330" fill="#B9AE9C" font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace" font-size="12" font-weight="400" letter-spacing="1.2" text-anchor="start">RANDEVUSUZ BEKLER</text>
+<text x="484" y="330" fill="#C0592A" font-family="ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace" font-size="14" font-weight="500" letter-spacing="1.3" text-anchor="end">RANDEVULU ROTA · İZİN ÖNCEDEN</text>
+</svg>
