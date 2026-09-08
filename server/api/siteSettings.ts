@@ -67,7 +67,13 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === 'GET') {
-    return siteSettingsCrudService.get();
+    const sonuc = await siteSettingsCrudService.get();
+    // Paylaşım kartı görselini jpeg'e çevir — VARSA. Kayıtlı değer webp
+    // kalıyor; değişen yalnız dışarı verilen `ogImage`. Gerekçesi ve
+    // "varsa" koşulunun neden şart olduğu: server/utils/sosyal-gorsel.ts
+    const veri = (sonuc as { data?: { ogImage?: unknown } })?.data;
+    if (veri && veri.ogImage) veri.ogImage = sosyalGorsel(veri.ogImage);
+    return sonuc;
   }
 
   if (method === 'POST') {

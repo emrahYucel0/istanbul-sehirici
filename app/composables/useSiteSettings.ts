@@ -47,7 +47,23 @@ const DEFAULT_SITE_URL = 'https://istanbulsehirici.com'
 // dosya adını taşıyordu hem de `public/img/` klasörü artık yok — yani
 // paylaşım kartı yedeği 404 veriyordu. Yerine gerçekten var olan ve
 // derleme öncesi üretilen kahraman kare kullanılıyor.
-const DEFAULT_OG_IMAGE = '/images/hero-istanbul-1024.webp'
+/**
+ * PAYLAŞIM KARTI YEDEĞİ — JPEG, webp DEĞİL.
+ *
+ * Önce `/images/hero-istanbul-1024.webp` idi. Ölçüldü: WhatsApp link
+ * önizlemesinde WebP çizilmiyor (görsel HTTP 200 dönse bile), JPEG/PNG
+ * bekleniyor. Yani panelden hiç görsel yüklenmemiş bir kurulumda paylaşım
+ * kartı kalıcı olarak görselsiz kalıyordu.
+ *
+ * Üretimi (kaynak depoda, `sharp` yalnız geliştirmede gerekiyor):
+ *   sharp('public/images/hero-istanbul-1448.webp')
+ *     .resize({ width: 1200 }).flatten({ background: '#F7F4EF' })
+ *     .jpeg({ quality: 82, mozjpeg: true })
+ *
+ * 1200px Open Graph'ın önerdiği genişlik; `flatten` saydamlığı kâğıt zemine
+ * düzlüyor (JPEG'de alfa yok, yoksa siyaha düşerdi).
+ */
+const DEFAULT_OG_IMAGE = '/images/hero-istanbul-og.jpg'
 
 export async function useSiteSettings() {
   const { data } = await useAsyncData<SiteSettingsData | null>(

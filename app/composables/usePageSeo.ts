@@ -187,6 +187,30 @@ export async function usePageSeo(pageKey: string, fallback: PageSeoFallback, opt
     ogTitle: title,
     ogDescription: description,
     ogImage: image,
+    /**
+     * `og:image:type` ve `og:image:secure_url` — paylaşım çizicileri için.
+     *
+     * Tip, adresin uzantısından TÜRETİLİYOR, sabitlenmiyor: paylaşım
+     * görseli panelden geliyor ve yükleyici artık webp'nin yanında bir de
+     * jpeg üretiyor; hangisinin verildiğine sunucu karar veriyor
+     * (server/utils/sosyal-gorsel.ts). Sabit bir tip, o kararla ilk
+     * ayrışmada yanlış bilgi yaymaya başlardı.
+     *
+     * `secure_url` aynı adres: site zaten yalnız https. Bazı çiziciler
+     * `og:image` yerine bu alanı okuyor.
+     *
+     * GENİŞLİK/YÜKSEKLİK BİLEREK YOK: doğru sayıyı ancak dosyayı okuyarak
+     * bilebilirdik ve üretimde görsel işleyici yok. Uydurulmuş bir ölçü,
+     * eksik ölçüden daha kötü — çiziciler ona göre yer ayırıp kartı bozar.
+     */
+    ogImageType: () => {
+      const u = String(image.value || '').toLowerCase()
+      if (u.endsWith('.jpg') || u.endsWith('.jpeg')) return 'image/jpeg'
+      if (u.endsWith('.png')) return 'image/png'
+      if (u.endsWith('.webp')) return 'image/webp'
+      return undefined
+    },
+    ogImageSecureUrl: image,
     ogUrl: canonicalUrl,
     ogSiteName: brandName,
     ogLocale: 'tr_TR',

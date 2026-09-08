@@ -75,8 +75,8 @@ const gorselYukle = (dosya) =>
     img.src = url
   })
 
-/** Verilen genişlikte webp Blob üretir. */
-const varyantUret = (img, genislik) =>
+/** Verilen genişlikte Blob üretir. Varsayılan webp; sosyal kart için jpeg. */
+const varyantUret = (img, genislik, tip = 'image/webp', kalite = WEBP_KALITE) =>
   new Promise((resolve, reject) => {
     const oran = img.naturalHeight / img.naturalWidth
     const tuval = document.createElement('canvas')
@@ -85,12 +85,17 @@ const varyantUret = (img, genislik) =>
 
     const ctx = tuval.getContext('2d')
     ctx.imageSmoothingQuality = 'high'
+    // JPEG'de saydamlık yok: alfa siyaha düşmesin diye önce kâğıt zemin.
+    if (tip === 'image/jpeg') {
+      ctx.fillStyle = '#F7F4EF'
+      ctx.fillRect(0, 0, tuval.width, tuval.height)
+    }
     ctx.drawImage(img, 0, 0, tuval.width, tuval.height)
 
     tuval.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error('Dönüştürme başarısız'))),
-      'image/webp',
-      WEBP_KALITE
+      tip,
+      kalite
     )
   })
 
@@ -163,16 +168,51 @@ const yukle = async () => {
       fd.append('file', blob, `${taban}-${g}.webp`)
     }
 
+    /**
+     * SOSYAL KART KOPYASI — JPEG, webp'nin YANINDA.
+     *
+     * ÖLÇÜLEN SORUN: WhatsApp'ta paylaşılan bağlantıda başlık ve açıklama
+     * çıkıyor, görsel çıkmıyordu. Canlıdan ölçüldü — `og:image` erişilebilir
+     * (HTTP 200, 110 KB) ama `image/webp`. WhatsApp link önizlemesinde WebP
+     * çizmiyor; JPEG/PNG bekliyor. Panelden çözülemiyordu çünkü bu yükleyici
+     * her rasteri webp'ye çeviriyor.
+     *
+     * Sunucuda `sharp` yok (paylaşımlı hosting) — dönüşüm zaten burada,
+     * tarayıcıda yapılıyor. Tek fazladan kare, tek fazladan dosya.
+     *
+     * 1200px: Open Graph'ın önerdiği genişlik. Kaynak daha küçükse
+     * büyütülmüyor. Kalite 0.82 — 1200px'te tipik olarak 100–200 KB, yani
+     * WhatsApp'ın pratikte takıldığı boyutların altında.
+     *
+     * ADI SABİT (`-og.jpg`): sunucu, kayıtlı webp adresinin yanında bu
+     * dosya var mı diye bakıp sosyal kartta onu veriyor
+     * (bkz. server/api/siteSettings.ts). Genişlik ada yazılmıyor ki
+     * arayanın bilmesi gereken tek şey son ek olsun.
+     */
+    const OG_GENISLIK = Math.min(1200, img.naturalWidth)
+    durum.value = 'sosyal kart kopyası (jpeg) üretiliyor…'
+    const ogBlob = await varyantUret(img, OG_GENISLIK, 'image/jpeg', 0.82)
+    toplam += ogBlob.size
+    fd.append('file', ogBlob, `${taban}-og.jpg`)
+
     durum.value = `Yükleniyor… (${hedefler.length} boyut, ${kb(toplam)})`
     const cevap = await $fetch('/api/files', { method: 'POST', body: fd })
 
     const yuklenen = cevap.files ?? []
     if (yuklenen.length === 0) throw new Error('Sunucu dosya döndürmedi')
 
-    // En büyük varyantın adresi kaydediliyor; sayfa daha küçüğünü isterse
-    // sağlayıcı adresteki genişliği değiştiriyor.
-    emit('file-uploaded', yuklenen[yuklenen.length - 1].url)
-    durum.value = `Yüklendi — ${kb(dosya.size)} → ${kb(toplam)} (${hedefler.length} boyut)`
+    // En büyük WEBP varyantının adresi kaydediliyor; sayfa daha küçüğünü
+    // isterse sağlayıcı adresteki genişliği değiştiriyor.
+    //
+    // NEDEN "son dosya" DEĞİL: sosyal kart kopyası (`-og.jpg`) listeye en
+    // sonda ekleniyor. Eskiden burada `yuklenen.at(-1)` vardı ve o hâliyle
+    // bırakılsaydı kayıt jpeg'i işaret ederdi — yani sitedeki bütün
+    // görseller bir anda webp merdiveni olmayan tek bir jpeg'e düşerdi.
+    // Sosyal kopyayı sunucu ayrıca buluyor, adresin kendisi webp kalmalı.
+    const webpler = yuklenen.filter((d) => String(d.url).endsWith('.webp'))
+    const kayit = webpler.at(-1) ?? yuklenen.at(-1)
+    emit('file-uploaded', kayit.url)
+    durum.value = `Yüklendi — ${kb(dosya.size)} → ${kb(toplam)} (${hedefler.length} boyut + sosyal kart)`
   } catch (e) {
     hata.value = e?.data?.message || e?.message || 'Dosya yüklenemedi'
     durum.value = ''
