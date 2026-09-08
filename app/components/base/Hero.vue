@@ -178,7 +178,33 @@ const kapanisSatirlari = computed(() =>
 }
 
 .jr-h1-sehir {
-  font-size: clamp(4.2rem, 20vw, 8rem);
+  /* ŞEHİR ADI SATIR KIRMIYOR — bu yüzden PAY ŞART.
+     ─────────────────────────────────────────────────────────────────────
+     ÖLÇÜLEN SORUN. Eski değer `clamp(4.2rem, 20vw, 8rem)` idi ve mobil
+     sorgudaki karşılığı kabın %95'ini dolduruyordu; 320px'te zaten
+     TAŞIYORDU (metin 281px, kap 280px).
+
+       genişlik   punto   metin   kap   doluluk
+        320       54,4     281    280    %100  ← taşma
+        390       64,4     334    350     %95
+        414       68,3     355    373     %95
+
+     `white-space: nowrap` yüzünden satır kırılamıyor, `text-transform:
+     uppercase` yüzünden de metin en geniş hâlinde. %5 pay hiçbir render
+     farkını kaldırmıyor: canlıda bir iPhone'da başlık ekranın dışına
+     taştı ve son harf kırpıldı.
+
+     YENİ DEĞER kabın ~%85'ini dolduruyor. Ölçülen oran sabit: bu yazı
+     tipinde metin genişliği ≈ 5,2 × punto (320–767 arası 5,16–5,23).
+
+     TABAN KURALIN vw'si de düşürüldü. Taban yalnız ≥1280px'te geçerli ve
+     orada üst sınır (8rem) zaten devrede — yani masaüstünde HİÇBİR ŞEY
+     DEĞİŞMİYOR. Düşürmenin tek amacı emniyet: mobil sorgu herhangi bir
+     sebeple uygulanmazsa taban kural artık taşıran bir punto üretmiyor.
+
+     NOT: pay, "İstanbul" uzunluğuna göre hesaplandı. Şehir adı panelden
+     çok daha uzun bir kelimeyle değiştirilirse bu satır yeniden ölçülmeli. */
+  font-size: clamp(2.9rem, 14.8vw, 8rem);
   line-height: 0.76;
   text-transform: uppercase;
   white-space: nowrap;
@@ -358,8 +384,12 @@ const kapanisSatirlari = computed(() =>
     max-width: 100%;
   }
 
+  /* Mobil kademe — pay gerekçesi taban kuralın yanında.
+     16,5vw → 14,8vw ve alt sınır 3,4rem → 2,9rem. Alt sınırın da inmesi
+     şart: 320px'te taşmayı yapan tam olarak 3,4rem (54,4px) idi, orada
+     vw terimi zaten daha küçüktü. */
   .jr-h1-sehir {
-    font-size: clamp(3.4rem, 16.5vw, 6.4rem);
+    font-size: clamp(2.9rem, 14.8vw, 6.4rem);
   }
 
   .jr-h1-alt {

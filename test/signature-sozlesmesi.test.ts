@@ -171,10 +171,38 @@ describe('Signature #1 — afiş → takeover → ölçüm bandı', () => {
     expect(kural(hero, '.jr-h1-sehir', 'line-height: 0.76')).toContain('margin-bottom: 0.2em')
   })
 
-  it('BÜYÜK BAŞLIK mobilde içerik kutusuna sığıyor', () => {
-    // `white-space: nowrap` sarmayı engelliyor; katsayı ölçülen orandan
-    // türetildi (21vw'de 390'da 77px taşıyordu).
-    expect(kodu(hero)).toContain('clamp(3.4rem, 16.5vw, 6.4rem)')
+  it('BÜYÜK BAŞLIK mobilde içerik kutusuna PAYLA sığıyor', () => {
+    /**
+     * Bu iddia önce `clamp(3.4rem, 16.5vw, 6.4rem)` metnini birebir
+     * arıyordu. İki sorunu vardı:
+     *
+     *   1. Sabitlediği değer ASLINDA SIĞMIYORDU. Ölçüm: 320px'te metin
+     *      281px, kap 280px — yani test "sığıyor" derken taşan bir değeri
+     *      koruyordu. 390–414'te de doluluk %95'ti.
+     *   2. Metin eşleşmesi, kuralın NEDEN doğru olduğunu söylemiyordu.
+     *
+     * Canlıda bir iPhone'da başlık ekran dışına taştı ve son harf
+     * kırpıldı. Sebep tek bir cihaz değil, PAYSIZLIKTI.
+     *
+     * Artık ölçülen orandan aritmetik yapılıyor: bu yazı tipinde
+     * `metin genişliği ≈ 5,23 × punto` (320–767 arasında 5,16–5,23
+     * ölçüldü, en kötüsü alınıyor). Kap ≈ görünüm − 40px yatay pay.
+     * En dar iki gerçek cihazda doluluk %90'ın altında kalmalı.
+     */
+    const m = kodu(hero).match(/font-size:\s*clamp\(([\d.]+)rem,\s*([\d.]+)vw,\s*([\d.]+)rem\)/g) || []
+    const mobil = m.map((s) => s.match(/clamp\(([\d.]+)rem,\s*([\d.]+)vw,\s*([\d.]+)rem\)/)!)
+      .map((p) => ({ alt: Number(p[1]) * 16, vw: Number(p[2]) / 100, ust: Number(p[3]) * 16 }))
+    // `.jr-h1-sehir` kademelerinden mobil olanı: üst sınırı 6.4rem olan.
+    const kademe = mobil.find((k) => k.ust === 6.4 * 16)
+    expect(kademe, 'mobil şehir kademesi bulunamadı').toBeTruthy()
+
+    const ORAN = 5.23 // metin genişliği / punto — ölçüldü, en kötü hâli
+    const YATAY_PAY = 40 // kabın görünümden farkı (ölçüldü: 320→280, 414→373)
+    for (const gorunum of [320, 360, 375, 390, 414]) {
+      const punto = Math.max(kademe!.alt, Math.min(kademe!.vw * gorunum, kademe!.ust))
+      const doluluk = (punto * ORAN) / (gorunum - YATAY_PAY)
+      expect(doluluk, `${gorunum}px: doluluk %${Math.round(doluluk * 100)}`).toBeLessThan(0.9)
+    }
   })
 
   it('boyanamayan ayraç geri gelmedi', () => {
