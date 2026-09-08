@@ -75,8 +75,8 @@ const gorselYukle = (dosya) =>
     img.src = url
   })
 
-/** Verilen genişlikte Blob üretir. Varsayılan webp; sosyal kart için jpeg. */
-const varyantUret = (img, genislik, tip = 'image/webp', kalite = WEBP_KALITE) =>
+/** Verilen genişlikte webp Blob üretir. Sosyal kart ayrı: `sosyalKartUret`. */
+const varyantUret = (img, genislik) =>
   new Promise((resolve, reject) => {
     const oran = img.naturalHeight / img.naturalWidth
     const tuval = document.createElement('canvas')
@@ -85,19 +85,81 @@ const varyantUret = (img, genislik, tip = 'image/webp', kalite = WEBP_KALITE) =>
 
     const ctx = tuval.getContext('2d')
     ctx.imageSmoothingQuality = 'high'
-    // JPEG'de saydamlık yok: alfa siyaha düşmesin diye önce kâğıt zemin.
-    if (tip === 'image/jpeg') {
-      ctx.fillStyle = '#F7F4EF'
-      ctx.fillRect(0, 0, tuval.width, tuval.height)
-    }
     ctx.drawImage(img, 0, 0, tuval.width, tuval.height)
 
     tuval.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error('Dönüştürme başarısız'))),
-      tip,
-      kalite
+      'image/webp',
+      WEBP_KALITE
     )
   })
+
+/**
+ * SOSYAL KART — SABİT 1200×630 JPEG.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * NEDEN SABİT ÖLÇÜ, NEDEN BÜTÇE
+ *
+ * İlk sürüm yalnız "1200px genişlikte jpeg" üretiyordu ve YETMEDİ. Canlıda
+ * ölçüldü: dikey bir kaynak yüklendiğinde çıktı 1200×1600 (0,75:1) ve
+ * 394 KB oldu. İki ayrı sebeple WhatsApp'ta yine görsel çıkmadı:
+ *
+ *   · BOYUT — WhatsApp önizleme küçük resmini pratikte ~300 KB üstünde
+ *     çizmiyor. 394 KB o sınırın üstünde.
+ *   · ORAN — paylaşım kartı 1,91:1 yatay bir kutu. 0,75:1 dikey bir görsel
+ *     o kutuya oturmuyor.
+ *
+ * Bu yüzden kart artık KAYNAĞIN oranını değil, KARTIN oranını izliyor.
+ *
+ * KIRPMA (cover) TERCİH EDİLDİ. Alternatif, görseli olduğu gibi içeri
+ * sığdırıp (contain) yanları kâğıt rengiyle doldurmaktı; dikey bir
+ * fotoğrafta bu, kartın yarısından fazlasını boş bırakırdı. Merkezden
+ * kırpma standart davranış — ama dikey bir kaynak seçilirse üst ve alt
+ * kırpılır, o yüzden paylaşım görseli olarak YATAY bir kare seçmek daha
+ * iyi sonuç verir.
+ *
+ * KALİTE DÖNGÜSÜ: 1200×630'da 0,82 tipik olarak 120–200 KB veriyor ama
+ * gürültülü fotoğraflarda bütçeyi aşabiliyor. Aşarsa kalite kademeli
+ * düşürülüyor; sabit bir kaliteye güvenmek, sınırı sessizce aşan bir
+ * dosya üretmek demekti — bu hata bir kez zaten yaşandı.
+ */
+const OG_EN = 1200
+const OG_BOY = 630
+const OG_BUTCE = 280 * 1024 // WhatsApp'ın ~300 KB sınırının altında pay
+
+const sosyalKartUret = async (img) => {
+  const tuval = document.createElement('canvas')
+  tuval.width = OG_EN
+  tuval.height = OG_BOY
+
+  const ctx = tuval.getContext('2d')
+  ctx.imageSmoothingQuality = 'high'
+  // JPEG'de alfa yok: saydam kaynak siyaha düşmesin diye kâğıt zemin.
+  ctx.fillStyle = '#F7F4EF'
+  ctx.fillRect(0, 0, OG_EN, OG_BOY)
+
+  // cover: kaynağın kısa kenarı kartı doldursun, taşan kısım merkezden kırpılsın.
+  const olcek = Math.max(OG_EN / img.naturalWidth, OG_BOY / img.naturalHeight)
+  const g = img.naturalWidth * olcek
+  const y = img.naturalHeight * olcek
+  ctx.drawImage(img, (OG_EN - g) / 2, (OG_BOY - y) / 2, g, y)
+
+  const uret = (kalite) =>
+    new Promise((resolve, reject) =>
+      tuval.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('Sosyal kart üretilemedi'))),
+        'image/jpeg',
+        kalite,
+      ),
+    )
+
+  let blob = await uret(0.82)
+  for (const kalite of [0.7, 0.6, 0.5]) {
+    if (blob.size <= OG_BUTCE) break
+    blob = await uret(kalite)
+  }
+  return blob
+}
 
 /**
  * "Kaynak Foto (1).JPG" → "kaynak-foto-1-a3f9c2"
@@ -189,9 +251,8 @@ const yukle = async () => {
      * (bkz. server/api/siteSettings.ts). Genişlik ada yazılmıyor ki
      * arayanın bilmesi gereken tek şey son ek olsun.
      */
-    const OG_GENISLIK = Math.min(1200, img.naturalWidth)
     durum.value = 'sosyal kart kopyası (jpeg) üretiliyor…'
-    const ogBlob = await varyantUret(img, OG_GENISLIK, 'image/jpeg', 0.82)
+    const ogBlob = await sosyalKartUret(img)
     toplam += ogBlob.size
     fd.append('file', ogBlob, `${taban}-og.jpg`)
 
