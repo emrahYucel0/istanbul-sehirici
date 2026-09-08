@@ -118,8 +118,22 @@ describe('mahalle dalı paylaşım etiketlerini basıyor', () => {
     expect(mahalleDali).toContain(parca)
   })
 
-  it('görsel shareImage üzerinden geliyor', () => {
-    expect(mahalleDali).toContain('content: shareImage.value')
+  it('paylaşım görseli SİTE GENELİ karttan geliyor', () => {
+    // Önce `shareImage` (sayfanın kendi görseli) kullanılıyordu ve bu test
+    // onu birebir arıyordu. Sayfa görselleri panelden webp olarak geliyor;
+    // WhatsApp WebP önizleme çizmiyor, dolayısıyla blog/bölge/hizmet
+    // sayfaları kartta görselsiz kalıyordu. Site geneli görsel tek dosya
+    // olduğu için jpeg'li hâle geldiğinde bütün sayfalar birden düzeliyor.
+    expect(mahalleDali).toContain("{ property: 'og:image', content: sosyalKart.value }")
+    expect(mahalleDali).toContain("{ name: 'twitter:image', content: sosyalKart.value }")
+  })
+
+  it('YAPISAL VERİ hâlâ sayfanın KENDİ görselini veriyor', () => {
+    // Ayrım bilinçli: sosyal kart tek görsel, JSON-LD sayfaya ait. Zengin
+    // sonuçta her yazının altına aynı marka karesini koymak, yapısal veriyi
+    // yanlış beyan etmek olurdu.
+    expect(kodu(slugSayfasi)).toContain('image: shareImage.value')
+    expect(kodu(slugSayfasi)).toMatch(/const shareImage = computed\(/)
   })
 
   it('pasif mahalle kabuğu HÂLÂ noindex — asıl korunan davranış bu', () => {

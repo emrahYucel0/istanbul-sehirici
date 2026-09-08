@@ -402,6 +402,33 @@ const shareImage = computed(
 )
 
 /**
+ * SOSYAL KART GÖRSELİ — HER SAYFADA AYNI, Site Ayarları'ndaki görsel.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * NEDEN SAYFANIN KENDİ GÖRSELİ DEĞİL
+ *
+ * Paylaşım kartları JPEG istiyor: WhatsApp WebP çizmiyor (ölçüldü — dosya
+ * HTTP 200 dönüyor, önizleme yine boş). Panelden yüklenen görsellerin
+ * jpeg kopyası ancak yükleme sırasında üretiliyor, yani bu değişiklikten
+ * önce yüklenmiş her blog/hizmet/bölge görselinin kopyası YOK. Sayfa
+ * görselini kullanmayı sürdürseydik o sayfalar WhatsApp'ta görselsiz
+ * kalmaya devam ederdi.
+ *
+ * Site geneli görsel tek bir dosya: bir kez jpeg'li hâle gelince BÜTÜN
+ * sayfaların kartı aynı anda düzeliyor.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * YAPISAL VERİ BUNDAN ETKİLENMİYOR
+ *
+ * JSON-LD (`BlogPosting.image`, hizmet şeması) `shareImage`i kullanmaya
+ * DEVAM EDİYOR ve o, sayfanın kendi görselini veriyor. Sebebi: Google
+ * zengin sonuçta yazının kendi görselini bekliyor; oraya her sayfada aynı
+ * marka karesini koymak, yapısal veriyi yanlış beyan etmek olurdu.
+ * Yani ayrım bilinçli: SOSYAL KART tek görsel, YAPISAL VERİ sayfaya ait.
+ */
+const sosyalKart = computed(() => siteOgImage.value)
+
+/**
  * Hizmet sayfasında bağlantı verilecek bölgeler. Türkiye genelinde 120
  * bölge var; hepsini listelemek sayfayı bir dizine çevirirdi. Bunun yerine
  * İstanbul ilçelerinden ve büyük illerden sınırlı bir seçki gösteriliyor,
@@ -590,12 +617,12 @@ useHead(() => {
         ...(mahalle.value.aktif ? [] : [{ name: 'robots', content: 'noindex, follow' }]),
         { property: 'og:title', content: h1 },
         { property: 'og:description', content: aciklama },
-        { property: 'og:image', content: shareImage.value },
+        { property: 'og:image', content: sosyalKart.value },
         { property: 'og:type', content: 'article' },
         { property: 'og:url', content: canonical.value },
         { property: 'og:site_name', content: brandName.value },
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:image', content: shareImage.value },
+        { name: 'twitter:image', content: sosyalKart.value },
       ],
       link: [{ rel: 'canonical', href: canonical.value }],
     }
@@ -650,7 +677,7 @@ useHead(() => {
          "indexle" demeye devam ediyordu. Varsayılan zaten indekslenmek. */
       { property: 'og:title', content: data.title },
       { property: 'og:description', content: aramaAciklamasi },
-      { property: 'og:image', content: shareImage.value },
+      { property: 'og:image', content: sosyalKart.value },
       { property: 'og:type', content: 'article' },
       { property: 'og:url', content: canonical.value },
       { property: 'og:site_name', content: brandName.value },
@@ -659,7 +686,7 @@ useHead(() => {
       // görünür bir hata değildi; ama `usePageSeo` ile basılan on sabit
       // sayfa ikisini birden veriyor. İki emitter aynı etiket kümesini
       // versin diye eklendi.
-      { name: 'twitter:image', content: shareImage.value },
+      { name: 'twitter:image', content: sosyalKart.value },
     ],
     link: [{ rel: 'canonical', href: canonical.value }],
   }
