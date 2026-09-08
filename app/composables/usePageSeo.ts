@@ -194,7 +194,28 @@ export async function usePageSeo(pageKey: string, fallback: PageSeoFallback, opt
     twitterTitle: title,
     twitterDescription: description,
     twitterImage: image,
-    robots: 'index, follow',
+    /**
+     * `robots` BURADA SABİTLENMİYOR — kaldırıldı.
+     *
+     * ÖLÇÜLEN SORUN. Burada `robots: 'index, follow'` yazılıydı ve site
+     * geneli indekslenebilirlik anahtarını EZİYORDU. `@nuxtjs/robots`
+     * kurulu; `NUXT_SITE_ENV=staging` (ya da `NUXT_SITE_INDEXABLE=false`)
+     * verildiğinde modül robots.txt'yi `Disallow: /` yapıyor ve
+     * `X-Robots-Tag: noindex, nofollow` başlığını gönderiyor — ama bu
+     * satır yüzünden sayfadaki etiket `index, follow` olarak kalıyordu:
+     *
+     *   X-Robots-Tag : noindex, nofollow     ✔
+     *   robots.txt   : Disallow: /           ✔
+     *   meta robots  : index, follow         ✗  ← çelişki
+     *
+     * Yani uygulama kendi modülüyle çelişik iki sinyal üretiyordu. Etiket
+     * artık modülden geliyor; yayın öncesi kapatma ortam değişkeniyle,
+     * YENİDEN DERLEME OLMADAN çalışıyor.
+     *
+     * SAYFA BAZLI KARARLAR ETKİLENMİYOR: pasif mahalle kabuğu kendi
+     * `noindex, follow` etiketini `useHead` ile sonradan veriyor
+     * (`pages/[...slug].vue`), o çağrı bunun üstüne yazıyor.
+     */
   })
 
   if (!options.skipCanonical) {

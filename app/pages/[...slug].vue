@@ -580,7 +580,14 @@ useHead(() => {
       title: aramaBasligi,
       meta: [
         { name: 'description', content: aciklama },
-        { name: 'robots', content: mahalle.value.aktif ? 'index, follow' : 'noindex, follow' },
+        /* PASİF KABUK `noindex, follow` KALIYOR — aktif olan ETİKET BASMIYOR.
+           Önce aktif dal da `index, follow` yazıyordu; o etiket site geneli
+           indekslenebilirlik anahtarını (`NUXT_SITE_ENV=staging`) eziyordu,
+           yani yayın öncesi kapatmada bu sayfalar "indexle" demeye devam
+           ediyordu. Aktif sayfada karar yok: varsayılan zaten indekslenmek
+           ve onu `@nuxtjs/robots` yönetiyor. Pasif kabuk ise gerçek bir
+           sayfa kararı, olduğu gibi duruyor. */
+        ...(mahalle.value.aktif ? [] : [{ name: 'robots', content: 'noindex, follow' }]),
         { property: 'og:title', content: h1 },
         { property: 'og:description', content: aciklama },
         { property: 'og:image', content: shareImage.value },
@@ -637,7 +644,10 @@ useHead(() => {
     meta: [
       { name: 'description', content: aramaAciklamasi },
       { name: 'author', content: brandName.value },
-      { name: 'robots', content: 'index, follow' },
+      /* `robots` SABİTİ KALDIRILDI — gerekçe `usePageSeo.ts` içinde.
+         Kısaca: bu etiket site geneli indekslenebilirlik anahtarını
+         eziyordu; hizmet, bölge ve yazı sayfaları yayın öncesi kapatmada
+         "indexle" demeye devam ediyordu. Varsayılan zaten indekslenmek. */
       { property: 'og:title', content: data.title },
       { property: 'og:description', content: aramaAciklamasi },
       { property: 'og:image', content: shareImage.value },

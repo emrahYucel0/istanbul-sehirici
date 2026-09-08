@@ -122,8 +122,22 @@ describe('mahalle dalı paylaşım etiketlerini basıyor', () => {
     expect(mahalleDali).toContain('content: shareImage.value')
   })
 
-  it('robots davranışı DEĞİŞMEDİ', () => {
-    expect(mahalleDali).toContain("mahalle.value.aktif ? 'index, follow' : 'noindex, follow'")
+  it('pasif mahalle kabuğu HÂLÂ noindex — asıl korunan davranış bu', () => {
+    expect(mahalleDali).toContain("{ name: 'robots', content: 'noindex, follow' }")
+    expect(mahalleDali).toContain('mahalle.value.aktif ? [] :')
+  })
+
+  it('aktif mahalle robots ETİKETİ BASMIYOR — site anahtarını ezmesin', () => {
+    // Önce burada `mahalle.value.aktif ? 'index, follow' : 'noindex, follow'`
+    // yazıyordu ve bu test o ifadeyi birebir arıyordu. Aktif daldaki
+    // `index, follow`, site geneli indekslenebilirlik anahtarını
+    // (`NUXT_SITE_ENV=staging`) EZİYORDU: yayın öncesi kapatmada robots.txt
+    // ve X-Robots-Tag "noindex" derken sayfadaki etiket "index" diyordu.
+    //
+    // Aktif sayfada basılacak bir karar yok — varsayılan zaten indekslenmek
+    // ve onu `@nuxtjs/robots` yönetiyor. Pasif kabuk gerçek bir karar
+    // olduğu için duruyor (üstteki iddia).
+    expect(mahalleDali).not.toContain("'index, follow'")
   })
 
   it('canonical hâlâ kendi adresi', () => {
