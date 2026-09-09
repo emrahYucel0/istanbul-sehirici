@@ -433,6 +433,10 @@ const kapanisSatirlari = computed(() =>
     }
 
     .jr-sahne {
+      /* DEV BAŞLIĞIN ÖLÇEĞİ — künye de buna bağlı, gerekçe `.jr-meta`da.
+         Değer eskiden `.jr-h1-sehir` içinde yazılıydı; sayı DEĞİŞMEDİ. */
+      --jr-sehir-punto: clamp(8.25rem, 15.2vw, 17.5rem);
+
       position: sticky;
       top: var(--sahne-navbar);
       left: 50%;
@@ -471,7 +475,10 @@ const kapanisSatirlari = computed(() =>
       top: calc(clamp(0.35rem, 1.2vh, 0.9rem) + 0.115em);
       width: min(95vw, 108rem);
       transform: translate3d(-50%, 0, 0);
-      font-size: clamp(8.25rem, 15.2vw, 17.5rem);
+      /* Punto artık `--jr-sehir-punto` tokenından. Değer DEĞİŞMEDİ; künye
+         de aynı tokena bağlandığı için ikisi bir daha ayrışamıyor
+         (gerekçe `.jr-meta` kuralının yanında). */
+      font-size: var(--jr-sehir-punto);
       line-height: 0.80;
       letter-spacing: -0.072em;
       text-align: center;
@@ -573,7 +580,49 @@ const kapanisSatirlari = computed(() =>
     .jr-meta {
       position: absolute;
       left: var(--sahne-pad);
-      top: clamp(10.4rem, 23vh, 15.8rem);
+      /* KÜNYE, DEV BAŞLIĞIN ÖLÇEĞİNİ İZLİYOR — eskiden `23vh` idi.
+         ─────────────────────────────────────────────────────────────────
+         ÖLÇÜLEN SORUN. `01 / İSTANBUL'DA TAŞINMAK` künyesi dev başlığın
+         "İ" ve "S" harflerinin altına giriyor, "TAŞINMAK" okunmuyordu.
+         Kesişim (künye mürekkebi × başlık mürekkebi):
+
+           1280x720   69x14 px      1440x900   51x14 px
+           1366x768   60x14 px      1536x864   41x14 px
+           1920x1080  temiz
+
+         KÖK NEDEN İKİ AYRI EKSEN. Künyenin yeri EKRAN YÜKSEKLİĞİNE
+         (`23vh`), başlığın kapladığı alan ise EKRAN GENİŞLİĞİNE
+         (`15.2vw` punto) bağlıydı. Kısa-ve-geniş ekranlarda başlık aşağı
+         doğru büyürken künye yerinde kalıyor ve ikisi kesişiyordu. 1920
+         temiz görünüyordu çünkü orada başlık yatayda genişleyip sol
+         kenarı künyenin sağına geçiyor — yani tesadüf, çözüm değil.
+
+         DÜZELTME. Künye artık başlığın KENDİ tokenına bağlı; ikisi aynı
+         eksende ölçekleniyor ve bir daha ayrışamıyorlar.
+
+         KATSAYI ÖLÇÜLEREK SEÇİLDİ, hesaplanarak değil. Önce "başlığın
+         mürekkep altının da altına in" mantığıyla 1,19 denendi ve DAHA
+         KÖTÜ çıktı: çakışma bitiyor ama künye çizimin üstüne düşüyor,
+         zemin gürültüsü 1280'de %9,9'dan %42,2'ye fırlıyordu.
+
+         Dikey eksen 12px adımlarla tarandı (künye şeridindeki, metni
+         yutacak kadar koyu piksellerin oranı). Temiz bant başlığın ALTI
+         DEĞİL, harflerin taban çizgisi ile çizimin çatısı ARASI çıktı —
+         yani birkaç piksellik bir nudge yetiyor. Beş katsayı denendi:
+
+           K      1280   1366   1440   1536   1920
+           0,86   %8,6   %9,1  %11,1   %6,5   %0
+           0,88   %3,8   %3,9   %4,9   %3,2   %0
+           0,895  %0,8   %0     %1,2   %0     %0
+           0,91   %1,4   %0     %0     %0     %0   ← seçilen
+           0,93   %1,9   %0     %0     %0     %0
+
+         0,91 beş genişlikte de temiz ve başlığa en çok payı bırakan
+         değer. 1280'de künye orijinaline göre yalnız 11px iniyor.
+
+         KOREOGRAFİ DEĞİŞMEDİ: `jr-meta-kay` keyframe'ine dokunulmadı,
+         künyenin bittiği yer aynı. Değişen yalnız başladığı yer. */
+      top: calc(var(--jr-sehir-punto) * 0.91);
       z-index: 7;
       color: rgb(var(--c-ink-soft));
       animation-name: jr-meta-kay;

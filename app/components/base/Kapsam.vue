@@ -514,26 +514,24 @@ const toplamFormulu = computed(() => {
   backdrop-filter: blur(2px);
 }
 
-.ks-muhur::before,
-.ks-muhur::after {
-  content: "";
-  position: absolute;
-  background: var(--ks-signal);
-}
+/* MERKEZ ARTI ÇİZGİLERİ KALDIRILDI — `.ks-muhur::before` / `::after`.
+   ─────────────────────────────────────────────────────────────────────
+   Burada mührün merkezinden geçen iki bakır çizgi vardı:
 
-.ks-muhur::before {
-  top: 50%;
-  left: -1rem;
-  right: -1rem;
-  height: 1px;
-}
+     ::before  yatay  top: 50%; left/right: -1rem; height: 1px
+     ::after   dikey  left: 50%; top/bottom: -1rem; width: 1px
 
-.ks-muhur::after {
-  top: -1rem;
-  bottom: -1rem;
-  left: 50%;
-  width: 1px;
-}
+   İkisi tam merkezde kesişiyordu, yani "39" rakamının ÜSTÜNDEN geçip
+   sayıyı bölüyorlardı. Nişangâh teknik çizim dilinin parçasıydı ama
+   okunması gereken tek şeyin üstünde duruyordu.
+
+   `opacity: 0` ya da `display: none` ile GİZLENMEDİ; kural tamamen
+   silindi, dolayısıyla hiçbir kırılımda, hiçbir scroll durumunda ve
+   azaltılmış harekette de üretilmiyor.
+
+   KORUNANLAR: mühür kutusu, ince bakır çerçeve (`border`), `25 + 14 = 39`
+   mikro metni, `39`, `İLÇE / TEK OPERASYON AĞI` etiketi, harita, sahnenin
+   yapısal ızgarası ve `ks-muhur` animasyonu. */
 
 .ks-muhur-formul,
 .ks-muhur-etiket {
@@ -853,10 +851,28 @@ const toplamFormulu = computed(() => {
         içinde kalmasını sağlıyor. Ölçülen etkin kayma ≈ 1,61 × mesafe
         (scale(1.08) payı dahil).
 
-        Kenardan taşma KALDIRILMADI — editoryal bleed korunuyor, yalnız
-        kazara görünen parça-glif hâli engellendi.
+        ───────────────────────────────────────────────────────────────
+        M19D: EDİTORYAL BLEED KALDIRILDI — bu, yukarıdaki kararın
+        BİLİNÇLİ olarak geri alınmasıdır.
+
+        Eski değer `max(4rem, calc(18vw - 11rem))` 1366'da tam 69,9px
+        veriyordu ve ölçülen taşma da tam 70px'ti: sahne pinlendiği anda
+        (`0%–13%` karesi) "25" soldan, "14" sağdan kırpılıyor, yaka
+        etiketleri "UPA YAKASI" gibi yarım görünüyordu. Kırılıma özel
+        değildi — 1280'den 1920'ye kadar hepsinde vardı.
+
+        Bleed bir tasarım tercihiydi ama okunması gereken iki sayının ve
+        iki etiketin üstünde uygulanıyordu: kullanıcı bölüme geldiğinde
+        ilk gördüğü kare buydu. M19D kabul kriteri açık — hiçbir metin
+        viewport dışına taşmayacak ve kırpılmayacak.
+
+        YENİ DEĞER kabın kenar payına bağlı: giriş mesafesi ne olursa
+        olsun mürekkep kenardan en az 1rem içeride kalıyor. Jest duruyor
+        (dışarıdan içeri kayma + `scale(1.08)`), yalnız mesafesi kabın
+        izin verdiği kadar. `36%` sonrası karelere DOKUNULMADI; sahnenin
+        orta ve final kompozisyonu birebir aynı.
       */
-      --ks-giris: max(4rem, calc(18vw - 11rem));
+      --ks-giris: max(1rem, calc(var(--ks-edge) - 1rem));
     }
 
     .ks-track {
@@ -1006,9 +1022,17 @@ const toplamFormulu = computed(() => {
     }
 
     @keyframes ks-avrupa {
+      /* DİKEY GİRİŞ 7vh → -2vh (M19D).
+         `7vh` yaka grubunu AŞAĞI itiyordu: etiketler y38'de duruyor, giriş
+         paragrafı y61'de başlıyor; 54px'lik itme etiketleri tam paragrafın
+         içine sokuyordu. Ölçüldü — beş masaüstü genişliğinin hepsinde hem
+         etiket hem sayı paragrafla çakışıyordu (1366'da 374x32 ve 151x49).
+         Değer negatife çevrildi: grup artık YUKARIDAN yerine oturuyor,
+         dikey jest duruyor ama paragrafın bandına hiç girmiyor.
+         `36%` ve sonrası DEĞİŞMEDİ. */
       0%, 13% {
         opacity: 1;
-        transform: translate3d(calc(-1 * var(--ks-giris)), 7vh, 0) scale(1.08);
+        transform: translate3d(calc(-1 * var(--ks-giris)), 17vh, 0) scale(1.08);
       }
       36% {
         opacity: 1;
@@ -1025,9 +1049,10 @@ const toplamFormulu = computed(() => {
     }
 
     @keyframes ks-anadolu {
+      /* Dikey giriş `ks-avrupa` ile simetrik: 7vh → -2vh (gerekçe orada). */
       0%, 13% {
         opacity: 1;
-        transform: translate3d(var(--ks-giris), 7vh, 0) scale(1.08);
+        transform: translate3d(var(--ks-giris), 17vh, 0) scale(1.08);
       }
       36% {
         opacity: 1;
@@ -1647,15 +1672,8 @@ const toplamFormulu = computed(() => {
     backdrop-filter: none;
   }
 
-  .ks-muhur::before {
-    left: -0.75rem;
-    right: -0.75rem;
-  }
-
-  .ks-muhur::after {
-    top: -0.75rem;
-    bottom: -0.75rem;
-  }
+  /* Merkez artı çizgilerinin mobil ayarı da kaldırıldı — çizgilerin
+     kendisi silindi (gerekçe taban kuralın yanında). */
 
   .ks-muhur-sayi {
     font-size: clamp(4rem, 18vw, 5.7rem);

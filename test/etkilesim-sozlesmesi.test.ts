@@ -374,10 +374,25 @@ describe('pafta geçiş geometrisi — ölçülmüş kusurlar geri gelmesin', ()
     // (ölçüldü: 1920'de %24, 1440'ta %29 görünür kalıyordu).
     const k = kodu(kapsam)
     expect(k).toContain('--ks-giris')
-    // Sabit bir pay düşülüyor: mesafe ekranla büyüyor ama kabı tanıyor.
-    expect(k).toMatch(/--ks-giris:\s*max\([^;]*calc\([\d.]+vw\s*-\s*[\d.]+rem\)/)
-    // Keyframe artık ham vw yazmıyor.
+    /*
+     * M19D: iddia GÜÇLENDİ, gevşemedi.
+     *
+     * Eski yazım `max(4rem, calc(18vw - 11rem))` idi ve bu test onu
+     * biçimiyle arıyordu. O değer 1366'da tam 69,9px veriyordu; ölçülen
+     * taşma da tam 70px'ti — yani "kabı tanıyor" denen ifade kabın
+     * kenarını gerçekten TANIMIYORDU, yalnız ona yaklaşıyordu. Sonuç:
+     * sahne pinlendiği anda "25" soldan, "14" sağdan kırpılıyordu.
+     *
+     * Yeni değer doğrudan `--ks-edge`den türüyor, yani kabın kenar payı
+     * ne ise giriş mesafesi ondan küçük kalıyor ve mürekkep her genişlikte
+     * içeride duruyor. Aranan şey artık bir biçim değil, BAĞ.
+     */
+    expect(k, 'giriş mesafesi kabın kenarına bağlı değil').toMatch(
+      /--ks-giris:\s*max\([^;]*var\(--ks-edge\)/
+    )
+    // Keyframe ham vw yazmıyor (ne 18vw ne başka bir çıplak değer).
     expect(k).not.toMatch(/translate3d\(-?18vw/)
+    expect(k).not.toMatch(/translate3d\(calc\(-1 \* [\d.]+vw\)/)
   })
 
   it('Kapanış perdesi GİRİŞ sırasında açılmaya başlıyor', () => {

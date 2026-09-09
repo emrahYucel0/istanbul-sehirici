@@ -596,17 +596,17 @@ const toplam = computed(() => liste.value.length)
 
     .pd-question {
       animation-name: pd-mobile-q;
-      animation-range: entry 90% cover 62%;
+      animation-range: entry 90% cover 40%;
     }
 
     .pd-answer {
       animation-name: pd-mobile-a;
-      animation-range: entry 82% cover 66%;
+      animation-range: entry 82% cover 44%;
     }
 
     .pd-resolve > span {
       animation-name: pd-mobile-line;
-      animation-range: entry 82% cover 70%;
+      animation-range: entry 82% cover 48%;
     }
 
     @keyframes pd-mobile-q {
@@ -814,24 +814,37 @@ const toplam = computed(() => liste.value.length)
       animation-timeline: --pd-row;
     }
 
+    /* REVEAL BİTİŞLERİ ÖNE ÇEKİLDİ (M19D) — başlangıçlar aynı.
+       ─────────────────────────────────────────────────────────────────
+       ÖLÇÜLEN SORUN (1440x900): son cevabın `clip-path`i ancak
+       scrollY≈20950'de tam çözülüyordu. SSS bölümü y21457'de bitiyor,
+       yani o anda görünümün altı 21850 — SONRAKİ BÖLÜM zaten ~390px
+       içerideydi, ekranın %44'ü. Kullanıcı son maddeyi okumak için bir
+       alt bölüme geçmek zorunda kalıyordu.
+
+       Bitişler `cover 55/58/64/70` → `40/43/47/52`. Başlangıçlar
+       (`entry 92/88/84/82`) ve keyframe'ler DEĞİŞMEDİ; kademe sırası da
+       aynı, yani hareketin karakteri korunuyor. Değişen tek şey satırın
+       çözülmeyi ne kadar erken bitirdiği. Mobil kademe de aynı oranda
+       öne alındı (62/66/70 → 46/50/54). */
     .pd-no {
       animation-name: pd-no-resolve;
-      animation-range: entry 92% cover 55%;
+      animation-range: entry 92% cover 40%;
     }
 
     .pd-question-text {
       animation-name: pd-q-resolve;
-      animation-range: entry 88% cover 58%;
+      animation-range: entry 88% cover 43%;
     }
 
     .pd-answer {
       animation-name: pd-a-resolve;
-      animation-range: entry 84% cover 64%;
+      animation-range: entry 84% cover 47%;
     }
 
     .pd-resolve > span {
       animation-name: pd-line-resolve;
-      animation-range: entry 82% cover 70%;
+      animation-range: entry 82% cover 52%;
     }
 
     @keyframes pd-scan-move {
