@@ -93,7 +93,7 @@
     "@types/sanitize-html": "^2.16.1",
     "prisma": "^7.9.1",
     "typescript": "^5.8.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "allowScripts": {
     "@prisma/client@6.19.3": true,
