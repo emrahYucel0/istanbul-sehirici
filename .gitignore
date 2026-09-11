@@ -66,3 +66,9 @@ dagitim
 # metinleri sürüm geçmişine sabitler hem de yanlış ortamda çalıştırılıp
 # içeriği geriye döndürebilirler.
 scripts/.*-onceki.json
+
+# Yerel veritabanı dosyaları — hesap kaydı içerebilir, repoya girmez
+*.db
+*.sqlite
+*.sqlite3
+prisma/prisma/
